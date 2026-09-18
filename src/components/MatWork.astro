@@ -1,0 +1,22 @@
+---
+import groups from '../data/mat-work.json';
+import dimensions from '../data/mat-dimensions.json';
+import SketchArrow from './SketchArrow.astro';
+const sizes = dimensions as Record<string,{width:number;height:number}>;
+---
+<div class="mat-work">
+  {groups.map((group, chapter) => <section class={`mat-chapter mat-chapter--${group.layout}`}>
+    <header><span class="mat-chapter-number">0{chapter + 1}<SketchArrow /></span><div><h3>{group.title}</h3><p>{group.note}</p></div></header>
+    <div class="mat-art-grid">{group.files.map((file, index) => <figure>
+      <a href={`/projects/mat/selected/${encodeURIComponent(file)}`} target="_blank" rel="noopener" aria-label={`Open ${file.replace(/\.(jpg|png)$/i,'')} full size`}><img src={`/projects/mat/selected/web/${encodeURIComponent(file)}.webp`} width={sizes[file].width} height={sizes[file].height} alt={`MAT — ${file.replace(/[_-]/g,' ').replace(/\.(jpg|png)$/i,'')}`} loading="lazy" decoding="async" /></a>
+      <figcaption><span>{String(index + 1).padStart(2,'0')}</span> {group.layout === 'real' && ['PCT06634.jpg','00.jpg'].includes(file) ? 'The framed artwork, in person.' : group.layout === 'real' && file.startsWith('2024') ? 'On the stadium screen.' : 'Moghreb Atletico Tétouan'}</figcaption>
+    </figure>)}</div>
+  </section>)}
+</div>
+<style>
+  .mat-work{width:100%;min-width:0}.mat-chapter{margin:2rem 0 6rem}.mat-chapter header{display:flex;gap:2rem;align-items:start;margin-bottom:2rem}.mat-chapter-number{color:var(--blue,#304cdd);font-size:.85rem;display:grid;gap:.5rem;padding-top:.5rem}.mat-chapter h3{font-size:clamp(1.8rem,4vw,3.2rem);font-weight:500;letter-spacing:-.045em;margin:0 0 .6rem}.mat-chapter header p{max-width:560px;line-height:1.7;opacity:.65;margin:0}.mat-art-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.5rem;align-items:start}.mat-art-grid figure{margin:0;min-width:0}.mat-art-grid a{display:block;border-radius:12px;overflow:hidden;box-shadow:0 5px 20px #15204a0c;transition:transform .45s,box-shadow .45s}.mat-art-grid img{display:block;width:100%;height:auto}.mat-art-grid figcaption{font-size:.65rem;opacity:.5;margin-top:.7rem;letter-spacing:.025em}.mat-art-grid figcaption span{margin-right:.6rem}.mat-chapter--city .mat-art-grid,.mat-chapter--real .mat-art-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mat-chapter--cinema{padding:2rem;background:#f5f6fa;border-radius:24px}.mat-chapter--banner .mat-art-grid{grid-template-columns:1fr}.mat-chapter--extras .mat-art-grid figure:last-child{grid-column:2}.mat-chapter--real .mat-art-grid figure:nth-child(5),.mat-chapter--real .mat-art-grid figure:nth-child(6){grid-column:1/-1;max-width:900px;width:100%;justify-self:center}.mat-chapter--real .mat-art-grid figure:nth-child(3){align-self:center}.mat-chapter--banner header{justify-content:center}.mat-chapter--banner{margin-bottom:1rem}
+  @media(hover:hover) and (prefers-reduced-motion:no-preference){.mat-art-grid a:hover{transform:translateY(-5px);box-shadow:0 12px 30px #15204a20}}
+  .mat-art-grid a:focus-visible{outline:3px solid #304cdd;outline-offset:5px}
+  @media(max-width:650px){.mat-art-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem}.mat-chapter header{gap:1rem}.mat-chapter--cinema{padding:1rem}.mat-chapter{margin-bottom:3.5rem}.mat-chapter--extras .mat-art-grid figure:last-child{grid-column:auto}.mat-art-grid figcaption{font-size:.55rem}}
+  @media(max-width:400px){.mat-art-grid,.mat-chapter--city .mat-art-grid,.mat-chapter--real .mat-art-grid{grid-template-columns:1fr}.mat-art-grid a{border-radius:9px}}
+</style>

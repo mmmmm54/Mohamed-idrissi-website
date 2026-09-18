@@ -1,0 +1,15 @@
+---
+import projects from '../data/additional-work.json';
+import dimensions from '../data/additional-dimensions.json';
+import SketchArrow from './SketchArrow.astro';
+interface Props {slug:keyof typeof projects;opening?:boolean}
+const {slug,opening=false}=Astro.props;
+const project=projects[slug];
+const sizes=dimensions as Record<string,{width:number;height:number}>;
+const url=(file:string,preview=true)=>`/projects/${slug}/selected/${preview?'web/':''}${file.split('/').map(encodeURIComponent).join('/')}${preview?'.webp':''}`;
+---
+{opening ? <div class="opening">{project.groups[0].files.map(file=><img src={url(file)} alt={`${project.name} — ${file.split('/').pop()}`} {...sizes[`${slug}/${file}`]} />)}</div> : <div class="collection">{project.groups.map((group,i)=><section class="chapter"><header><span>{String(i+1).padStart(2,'0')}<SketchArrow /></span><div><h3>{group.title}</h3><p>{group.note}</p></div></header><div class:list={['artworks',{'pair':group.files.length===2}]}>{group.files.map(file=><a href={url(file,false)} target="_blank" rel="noopener" aria-label={`Open ${file.split('/').pop()} full size`}><img src={url(file)} alt={`${project.name} — ${file.split('/').pop()}`} {...sizes[`${slug}/${file}`]} loading="lazy" decoding="async" /></a>)}</div></section>)}</div>}
+<style>
+ .collection{width:100%;min-width:0}.opening,.artworks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(.7rem,2vw,1.5rem);align-items:start}.opening{margin:3rem 0 0;grid-template-columns:repeat(auto-fit,minmax(0,1fr));align-items:center}.opening img:nth-child(2){transform:translateY(-.7rem)}img{display:block;width:100%;height:auto;border-radius:16px}.chapter{padding:clamp(1rem,3vw,2rem);background:#f2f5f8;border-radius:24px;margin:1rem 0 4rem}.chapter header{display:flex;gap:1.2rem;margin-bottom:2rem}.chapter header>span{display:grid;align-content:start;gap:.5rem;color:var(--blue);font-size:.8rem}.chapter h3{font-size:clamp(1.6rem,3vw,2.5rem);font-weight:550;line-height:1.15;letter-spacing:-.035em;margin:0 0 .7rem}.chapter p{line-height:1.65;max-width:620px;color:var(--ink-soft);margin:0}.artworks.pair{grid-template-columns:repeat(2,minmax(0,1fr))}.artworks a{display:block;border-radius:16px;box-shadow:0 8px 25px #14213d10;overflow:hidden}
+ @media(max-width:600px){.artworks,.artworks.pair{grid-template-columns:1fr}.opening img{border-radius:8px}}
+</style>

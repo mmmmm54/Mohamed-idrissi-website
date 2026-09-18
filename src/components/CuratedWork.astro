@@ -1,0 +1,17 @@
+---
+import projects from '../data/curated-work.json';
+import SketchArrow from './SketchArrow.astro';
+interface Props { slug: keyof typeof projects; opening?: boolean }
+const {slug,opening=false}=Astro.props;
+const project=projects[slug];
+const openingFiles=project.groups.map(g=>g.files[0]);
+---
+{opening ? <div class="curated-opening" aria-label="Selected artwork preview">{openingFiles.map(file=><img src={`/projects/${slug}/selected/web/${encodeURIComponent(file)}.webp`} alt={`${slug==='exploremorocco'?'ExploreMorocco':'Dr. Majed Mikhail'} — ${file.replace(/\.(png|jpg)$/i,'')}`} width="1200" height="1500" />)}</div> : <div class="curated-work">{project.groups.map((group,i)=><section class={`curated-chapter tone-${group.tone}`}>
+ <header><span class="chapter-index">0{i+1}<SketchArrow /></span><div><h3>{group.title}</h3><p>{group.note}</p></div></header>
+ <div class="curated-grid">{group.files.map((file,index)=><figure><a href={`/projects/${slug}/selected/${encodeURIComponent(file)}`} target="_blank" rel="noopener" aria-label={`Open ${file} full size`}><img src={`/projects/${slug}/selected/web/${encodeURIComponent(file)}.webp`} alt={`${group.title} — design ${index+1}`} width="1200" height="1500" loading="lazy" decoding="async" /></a></figure>)}</div>
+ </section>)}</div>}
+<style>
+ .curated-opening{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(.6rem,2vw,1.5rem);margin:3rem 0 1rem;align-items:center;padding:1.5rem 0}.curated-opening img{display:block;width:100%;height:auto;border-radius:12px;box-shadow:0 8px 30px #17274910}.curated-opening img:nth-child(2){transform:translateY(-1rem)}.curated-work{width:100%;min-width:0}.curated-chapter{margin:1rem 0 5rem;padding:clamp(1rem,3vw,2rem);border-radius:22px}.curated-chapter header{display:flex;gap:1.5rem;margin-bottom:2rem}.chapter-index{font-size:.8rem;color:#2a37dd;display:grid;gap:.5rem;align-content:start;padding-top:.5rem}.curated-chapter h3{font-size:clamp(1.6rem,3vw,2.6rem);letter-spacing:-.04em;line-height:1.12;font-weight:500;margin:0 0 .8rem}.curated-chapter p{max-width:570px;line-height:1.65;color:#61666a;margin:0}.curated-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(.75rem,2vw,1.5rem);align-items:start}.curated-grid figure{margin:0;min-width:0}.curated-grid a{display:block;border-radius:12px;overflow:hidden;box-shadow:0 5px 20px #1727490c;transition:transform .5s,box-shadow .5s}.curated-grid img{display:block;width:100%;height:auto}.tone-teal{background:#f1f7f5}.tone-paper{background:#fbf8f2}.tone-blue{background:#f0f4f9}.tone-cream{background:#faf5ec}.tone-rose{background:#faf0ef}.curated-grid a:focus-visible{outline:3px solid #2a37dd;outline-offset:4px}
+ @media(hover:hover) and (prefers-reduced-motion:no-preference){.curated-grid a:hover{transform:translateY(-5px);box-shadow:0 12px 30px #17274920}}
+ @media(max-width:600px){.curated-grid{grid-template-columns:1fr;max-width:420px;margin:auto}.curated-chapter{margin-bottom:2.5rem}.curated-chapter header{gap:.8rem}.curated-opening{gap:.5rem}.curated-opening img{border-radius:7px}}
+</style>

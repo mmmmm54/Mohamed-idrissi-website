@@ -1,0 +1,72 @@
+{
+  "exploremorocco": {
+    "source": "E:/Brands/Exploremorocco/export",
+    "groups": [
+      {
+        "title": "An invitation from the north.",
+        "note": "A doorway, a shared table, a postcard. The journey starts in Tétouan.",
+        "tone": "teal",
+        "files": [
+          "explore-morocco_01 1.png",
+          "explore-morocco_02 1.png",
+          "explore-morocco_03 1.png"
+        ]
+      },
+      {
+        "title": "Made by hand. Shared with heart.",
+        "note": "Leather, clay and slow cooking — a closer look at the gestures behind the place.",
+        "tone": "paper",
+        "files": [
+          "explore-morocco2_02 1.png",
+          "explore-morocco3_02 1.png",
+          "explore-morocco2_03 1.png"
+        ]
+      },
+      {
+        "title": "Take the slower road.",
+        "note": "From mountain paths and water to the city walls. Room to wander.",
+        "tone": "teal",
+        "files": [
+          "explore-morocco2_01 1.png",
+          "explore-morocco3_01 1.png",
+          "explore-morocco3_03 1.png"
+        ]
+      }
+    ]
+  },
+  "dr-majed-mikhail": {
+    "source": "E:/Brands/Docteur/export",
+    "groups": [
+      {
+        "title": "Bleu. Precision in the frame.",
+        "note": "Deep blue, focused imagery and a consistent Arabic–French hierarchy.",
+        "tone": "blue",
+        "files": [
+          "01 — BLEU · Autorité-2.jpg",
+          "01 — BLEU · Autorité.jpg",
+          "01 — BLEU · Autorité-1.jpg"
+        ]
+      },
+      {
+        "title": "Crème. The human connection.",
+        "note": "Warm portrait-led compositions bring a softer, more conversational rhythm.",
+        "tone": "cream",
+        "files": [
+          "CW.jpg",
+          "02 — CRÈME · Humain.jpg",
+          "02 — CRÈME · Humain-1.jpg"
+        ]
+      },
+      {
+        "title": "Or rose. Space for emotion.",
+        "note": "Hands, flowers and generous space create a quieter visual language.",
+        "tone": "rose",
+        "files": [
+          "03 — OR ROSE · Émotion.jpg",
+          "03 — OR ROSE · Émotion-1.jpg",
+          "03 — OR ROSE · Émotion-2.jpg"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+---
+const groups = [
+  { title: 'The everyday energy.', files: ['123_02.jpg','123_03.jpg','123_01.jpg'] },
+  { title: 'More than a workout.', files: ['POST_01.jpg','POST_02.jpg','POST_03.jpg'] },
+  { title: 'A season. A new reason.', files: ['5_1.jpg','5_2.jpg','5_1_1.jpg','5_4.jpg','5_6.jpg','5_7.jpg','7_5.jpg','8_1.jpg','4_1.jpg'] },
+  { title: 'Moments that bring people in.', files: ['8mars.jpg','8marss.jpg','عرض-الحب.jpg','4_4.jpg','EID-MUBARAK - Copy.jpg','new-years1.jpg'] },
+  { title: 'A different kind of atmosphere.', files: ['halloween2.jpg','halloween6.jpg','48.jpg','promo-winter.jpg','superman10.jpg','TEST.jpg'] },
+  { title: 'Made for the story.', files: ['story.jpg','4_10.jpg','story33333.jpg','story3.jpg','storymixed.jpg'] },
+  { title: 'Product in focus.', files: ['PRODUCT1.jpg'] },
+];
+---
+<div class="justfit-work">
+  {groups.map(group => <section class="justfit-chapter">
+    <header><h3>{group.title}</h3></header>
+    <div class:list={['justfit-grid', {'justfit-grid--single':group.files.length === 1}]}>
+      {group.files.map((file, index) => <a href={`/projects/justfit/selected/${encodeURIComponent(file)}`} target="_blank" rel="noopener" aria-label={`Open ${group.title} artwork ${index + 1} full size`}><img src={`/projects/justfit/selected/web/${encodeURIComponent(file)}.webp`} alt={`JustFit — ${group.title} Artwork ${index + 1}`} loading="lazy" decoding="async" /></a>)}
+    </div>
+  </section>)}
+</div>

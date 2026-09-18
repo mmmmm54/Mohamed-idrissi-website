@@ -1,0 +1,19 @@
+---
+import groups from '../data/vanysis-work.json';
+import sizes from '../data/vanysis-dimensions.json';
+import SketchArrow from './SketchArrow.astro';
+interface Props {opening?:boolean}
+const {opening=false}=Astro.props;
+const dimensions=sizes as Record<string,{width:number;height:number}>;
+const source=(file:string,preview=true)=>`/projects/vanysis/selected/${preview?'web/':''}${encodeURIComponent(file)}${preview?'.webp':''}`;
+---
+{opening ? <div class="opening">{['27.png','POST 15c.png','T-01.png'].map(file=><img src={source(file)} alt={`Vanysis selected artwork — ${file}`} {...dimensions[file]} />)}</div> : <div class="vanysis-work">{groups.map((group,index)=><section class:list={['chapter',{'chapter-dark':index===2||index===4}]}>
+ <header><span class="number">{String(index+1).padStart(2,'0')}<SketchArrow /></span><div><h3>{group.title}</h3><p>{group.note}</p></div></header>
+ <div class="art-grid">{group.files.map((file,i)=><figure class:list={{wide:dimensions[file].width>dimensions[file].height}}><a href={source(file,false)} target="_blank" rel="noopener" aria-label={`Open ${file} at full size`}><img src={source(file)} {...dimensions[file]} alt={`${group.title} — artwork ${i+1}`} loading="lazy" decoding="async" /></a>{dimensions[file].width>dimensions[file].height&&<figcaption>Complete carousel <span>Open full size ↗</span></figcaption>}</figure>)}</div>
+ </section>)}</div>}
+<style>
+ .opening{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(.5rem,2vw,1.5rem);align-items:center;margin:4rem 0 2rem}.opening img{width:100%;height:auto;border-radius:12px;box-shadow:0 8px 30px #17274915}.opening img:nth-child(2){transform:translateY(-1rem)}.vanysis-work{min-width:0;width:100%}.chapter{background:#f5f8f8;border-radius:22px;padding:clamp(1rem,3vw,2rem);margin:1rem 0 4rem}.chapter-dark{background:#edf4f4}.chapter header{display:flex;gap:1.5rem;margin-bottom:2rem}.number{display:grid;align-content:start;gap:.5rem;color:#2a37dd;font-size:.8rem;padding-top:.5rem}.chapter h3{font-size:clamp(1.6rem,3vw,2.6rem);font-weight:500;letter-spacing:-.04em;line-height:1.12;margin:0 0 .8rem}.chapter p{max-width:620px;color:#61666a;line-height:1.65;margin:0}.art-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(.75rem,2vw,1.5rem);align-items:start}figure{margin:0;min-width:0}.wide{grid-column:1/-1}a{display:block;border-radius:12px;overflow:hidden;box-shadow:0 5px 20px #17274910;transition:transform .4s,box-shadow .4s}img{display:block;width:100%;height:auto}a:focus-visible{outline:3px solid #2a37dd;outline-offset:4px}figcaption{display:flex;justify-content:space-between;gap:1rem;font-size:.72rem;color:#61666a;padding:.7rem .2rem}figcaption span{color:#2a37dd}
+ @media(hover:hover) and (prefers-reduced-motion:no-preference){a:hover{transform:translateY(-4px);box-shadow:0 12px 28px #17274920}}
+ .opening img,a{border-radius:16px}.art-grid img{border-radius:inherit}.chapter h3{font-family:var(--font-ui);font-weight:550;letter-spacing:-.035em}.chapter p,figcaption{font-family:var(--font-ui)}
+ @media(max-width:600px){.art-grid{grid-template-columns:1fr}.chapter{margin-bottom:2.5rem}.chapter header{gap:.8rem}.opening img{border-radius:12px}}
+</style>

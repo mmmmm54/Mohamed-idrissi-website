@@ -1,0 +1,20 @@
+---
+interface Props { kind: 'identity' | 'direction' | 'production'; }
+const { kind } = Astro.props;
+---
+<!-- Small original line drawings; decorative because each service is named beside it. -->
+<svg class="service-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  {kind === 'identity' && <>
+    <path d="M12 30 31 9q3-3 6 0l2 2q3 3 0 6L20 36 9 39Z" />
+    <path d="m28 13 8 8M12 30l8 6M10 38l4-1M24 40q8-4 16-1" />
+  </>}
+  {kind === 'direction' && <>
+    <path d="m8 18 1-10 11 1M29 8l11 1-1 11M40 29l-1 11-11-1M19 40 8 39l1-11" />
+    <path d="m16 30 7-12 9 11Z" />
+    <path d="m24 5 1-2M44 23l2 1" />
+  </>}
+  {kind === 'production' && <>
+    <path d="M8 13q15-3 32 0l-1 24q-15 3-31-1Z" />
+    <path d="m21 20 10 5-10 7ZM13 7l5-2M25 6l5-1M37 7l5 1" />
+  </>}
+</svg>

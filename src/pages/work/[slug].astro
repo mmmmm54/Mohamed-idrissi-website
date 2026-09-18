@@ -1,0 +1,201 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/case.css';
+import SketchArrow from '../../components/SketchArrow.astro';
+import JustfitWork from '../../components/JustfitWork.astro';
+import MatWork from '../../components/MatWork.astro';
+import CuratedWork from '../../components/CuratedWork.astro';
+import VanysisWork from '../../components/VanysisWork.astro';
+import AdditionalWork from '../../components/AdditionalWork.astro';
+import ServiceIcon from '../../components/ServiceIcon.astro';
+import { slugOf, coverOf, galleryOf, isWideAt, isTodo } from '../../lib/projects';
+
+export async function getStaticPaths() {
+  const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+  return projects.map((project, index) => ({
+    params: { slug: slugOf(project.id) },
+    props: {
+      project,
+      next: projects[(index + 1) % projects.length],
+    },
+  }));
+}
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+
+const { project, next }: Props = Astro.props;
+const data = project.data;
+const slug = slugOf(project.id);
+const curatedSlug = slug === 'exploremorocco' || slug === 'dr-majed-mikhail' ? slug : undefined;
+const additionalSlug = slug === 'is-nutrition' || slug === 'e-botola' || slug === 'morocco-travel' ? slug : undefined;
+const nextSlug = slugOf(next.id);
+const gallery = galleryOf(slug);
+const collections = [
+  { title: 'Brand identity', key: 'identity' as const },
+  { title: 'Social media', key: 'social' as const },
+  { title: 'Campaigns & applications', key: 'campaigns' as const },
+].map(group => ({ ...group, images: galleryOf(slug, group.key) }));
+const hasArtwork = !!additionalSlug || !!curatedSlug || ['justfit','mat','vanysis'].includes(slug) || gallery.length > 0 || collections.some(group => group.images.length > 0);
+const availableFilms = data.films.filter(film => film.embed);
+const nextMark = nextSlug === 'exploremorocco' ? '/images/clients/exploremorocco.png' : nextSlug === 'mat' ? '/images/clients/mat.png' : nextSlug === 'dr-majed-mikhail' ? '/images/clients/dr-majed-mikhail.svg' : ['is-nutrition','e-botola','morocco-travel'].includes(nextSlug) ? `/images/clients/${nextSlug}.png` : next.data.notebook?.image;
+const services = data.services.join(', ');
+---
+
+<BaseLayout title={`${data.title} — Mohamed Idrissi`} description={data.summary}>
+  <header class="case-nav page-width">
+    <a class="nav-back" href="/#work"><SketchArrow /> All work</a>
+    <a class="nav-mark" href="/" aria-label="Mohamed Idrissi, home"><img src="/images/brand-icon.svg" alt="" /></a>
+  </header>
+
+  <main>
+    <article>
+      <section class:list={['case-hero page-width', { 'case-hero--mat': slug === 'mat' }]} data-project={slug} aria-labelledby="case-title">
+        <p class="eyebrow">{additionalSlug || curatedSlug || slug === 'vanysis' ? 'Selected work / Social art direction' : slug === 'mat' ? 'Football, through a creative lens' : slug === 'justfit' ? 'Social design & campaigns' : 'Project direction / draft case study'}</p>
+        <h1 id="case-title">{data.title}<svg class="case-title-stroke" viewBox="0 0 500 20" fill="none" aria-hidden="true"><path d="M3 12c123-14 275 10 490-6M80 18c98-7 238-1 356-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg></h1>
+        <p class="case-summary">{data.summary}</p>
+        <p class="draft-note">{additionalSlug ? 'Selected campaign artwork. Explore the original designs below.' : slug === 'vanysis' ? '35 selected artworks and carousel boards. Explore the collection below.' : curatedSlug ? (slug === 'dr-majed-mikhail' ? 'Design portfolio: original campaign artwork shown as supplied, not medical advice or a claim of clinical outcomes.' : 'Nine selected designs. Original Spanish-language artwork, presented uncropped.') : slug === 'mat' ? 'Selected artwork and real-world photographs. Fixtures, lineups and scores belong to the original designs.' : slug === 'justfit' ? 'Selected client artwork. Offers and event dates belong to the original designs, not current promotions.' : 'Draft narrative for review. Scope, dates and outcomes need confirmation. Final application images will follow; non-MAT covers are illustrative.'}</p>
+
+        <dl class="info-row">
+          <div>
+            <dt>Role</dt>
+            <dd>{isTodo(data.role) ? <span class="todo">{data.role}</span> : data.role}</dd>
+          </div>
+          <div>
+            <dt>Year</dt>
+            <dd>{isTodo(data.year) ? 'To be confirmed' : data.year}</dd>
+          </div>
+          <div>
+            <dt>Services</dt>
+            <dd>{isTodo(services) ? <span class="todo">{services}</span> : services}</dd>
+          </div>
+        </dl>
+
+        {additionalSlug ? <AdditionalWork slug={additionalSlug} opening /> : slug === 'vanysis' ? <VanysisWork opening /> : curatedSlug ? <CuratedWork slug={curatedSlug} opening /> : slug === 'justfit' ? <figure class="justfit-opening">{['123_02.jpg','123_03.jpg','123_01.jpg'].map(file => <img src={`/projects/justfit/selected/web/${file}.webp`} alt="JustFit training and community social artwork" width="1000" height="1000" />)}</figure> : <figure class="case-cover">
+          <img src={slug === 'mat' ? '/projects/mat/selected/web/FACEBOK-COVER2.jpg.webp' : coverOf(slug)} alt={slug === 'mat' ? 'MAT memories and player collage around the club crest' : `${data.title} cover image`} width={slug === 'mat' ? 1600 : 1586} height={slug === 'mat' ? 609 : 992} fetchpriority="high" />
+          <figcaption>{slug === 'mat' ? 'A club. A thousand stories.' : 'Visual direction'} <span>{slug === 'mat' ? 'Viva Moghreb' : 'Illustrative cover — final work to follow'}</span></figcaption>
+        </figure>}
+      </section>
+
+      <nav class="case-jump page-width" aria-label="Case study sections"><a href="#challenge-label">The brief</a><a href="#approach-label">The thinking</a><a href="#deliverables-label">The work</a><a href="#case-contact">Let’s talk <SketchArrow /></a></nav>
+      <div class="case-body page-width">
+        {data.notebook && slug !== 'vanysis' && <section class="project-notebook" data-notebook={slug} aria-labelledby="notebook-title">
+          <div class="notebook-topline"><p>Inside the project</p><span>{data.shortTitle || data.title} / Working notebook</span></div>
+          <h2 id="notebook-title">{data.notebook.headline}</h2>
+          <p class="notebook-intro">{data.notebook.intro}</p>
+          <div class:list={['notebook-spread', { 'notebook-spread--text': slug !== 'mat' && !data.notebook.image }]}>
+            {slug === 'mat' ? <figure class="crest-detail"><div><img src="/images/clients/mat.png" alt="Close-up of the architecture and palm tree in the supplied crest" width="976" height="1170" loading="lazy" /></div><figcaption>02 / A closer look <span>Detail from the same crest</span></figcaption></figure> : data.notebook.image && <figure class="notebook-mark"><div><img src={data.notebook.image} alt={data.notebook.imageLabel || `${data.title} supplied logo`} loading="lazy" decoding="async" /></div><figcaption>Supplied brand asset <span>{data.notebook.imageLabel}</span></figcaption></figure>}
+            <div class="notebook-notes">{data.notebook.notes.map((note) => <article><span class="notebook-number" aria-hidden="true"><svg viewBox="0 0 30 30" fill="none"><path d="M14 2c1 9 5 12 13 13-9 1-12 5-13 12-1-8-4-11-12-12 8-1 11-5 12-13Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" /></svg></span><h3>{note.title}</h3><p>{note.text}</p></article>)}</div>
+          </div>
+          <p class="notebook-signoff">{slug === 'mat' ? 'From Tétouan, with a designer’s eye.' : 'Working direction — to be refined with the final applications.'}</p>
+        </section>}
+        <section class="case-section" aria-labelledby="challenge-label">
+          <h2 class="section-label" id="challenge-label">The brief.</h2>
+          <div class="section-prose">
+            {data.challenge.map((line) => (
+              <p>{isTodo(line) ? <span class="todo">{line}</span> : line}</p>
+            ))}
+          </div>
+        </section>
+
+        <section class="case-section" aria-labelledby="approach-label">
+          <h2 class="section-label" id="approach-label">The thinking.</h2>
+          <div class="section-prose">
+            {data.approach.map((line) => (
+              <p>{isTodo(line) ? <span class="todo">{line}</span> : line}</p>
+            ))}
+          </div>
+        </section>
+
+        {availableFilms.length > 0 && (
+          <section class="case-section case-section--full" aria-labelledby="films-label">
+            <h2 class="section-label" id="films-label">The films</h2>
+            <div class="film-list">
+              {availableFilms.map((film) => (
+                <figure class="film">
+                  <div class="film-frame">
+                    {film.embed ? (
+                      <iframe src={film.embed} title={film.title} loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                    ) : (
+                      <p class="todo">TODO — film embed link</p>
+                    )}
+                  </div>
+                  <figcaption>
+                    <strong>{film.title}</strong>
+                    {film.note && <span>{film.note}</span>}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section class="case-section case-section--full" aria-labelledby="deliverables-label">
+          <h2 class="section-label" id="deliverables-label">The work.</h2>
+          {slug === 'justfit' && <JustfitWork />}
+          {slug === 'mat' && <MatWork />}
+          {slug === 'vanysis' && <VanysisWork />}
+          {additionalSlug && <AdditionalWork slug={additionalSlug} />}
+          {curatedSlug && <CuratedWork slug={curatedSlug} />}
+          <div class="deliverable-grid">{data.deliverables.map((item, index) => <article><ServiceIcon kind={index % 3 === 0 ? 'identity' : index % 3 === 1 ? 'direction' : 'production'} /><h3>{item.title}</h3><p>{item.description}</p></article>)}</div>
+          {collections.filter(group => group.images.length > 0).map(group => <section class={`work-collection work-collection--${group.key}`} aria-label={group.title}><h3>{group.title}</h3><div class="application-grid">{group.images.map((src, index) => <figure><img src={src} alt={`${data.title} — ${group.title}, ${index + 1}`} loading="lazy" decoding="async" /></figure>)}</div></section>)}
+          {gallery.length > 0 && (
+            <div class="gallery">
+              {gallery.map((src, index) => (
+                <figure class={isWideAt(index) ? 'wide' : 'half'}>
+                  <img src={src} alt={`${data.title} deliverable ${index + 1}`} loading="lazy" decoding="async" />
+                </figure>
+              ))}
+            </div>
+          )}
+          {!hasArtwork && <div class="artwork-pending"><SketchArrow /><div><h3>The full picture is on its way.</h3><p>Brand details, social posts and campaign applications will be added here. This case study is still being assembled.</p></div></div>}
+        </section>
+
+        {!additionalSlug && !curatedSlug && !['justfit','mat','vanysis'].includes(slug) && <section class="case-section" aria-labelledby="results-label">
+          <h2 class="section-label" id="results-label">Outcomes to validate</h2>
+          <ul class="results">
+            <li>TODO — confirm the delivered scope and add a real result, client comment or before-and-after comparison. No performance figures are claimed in this draft.</li>
+            {data.results.map((line) => (
+              <li>{isTodo(line) ? <span class="todo">{line}</span> : line}</li>
+            ))}
+          </ul>
+        </section>}
+      </div>
+
+      <section class="case-enquiry page-width" id="case-contact"><img class="case-mascot" src="/images/brand-mark.svg" width="80" height="80" alt="" aria-hidden="true" /><div><h2>Your idea.<br /><span>Our next conversation.</span></h2><p>Tell me what you’re building. We’ll find the right creative direction together.</p><a class="round-link primary-link" href={`mailto:mohamedidrissi205@gmail.com?subject=${encodeURIComponent('Project enquiry — inspired by ' + data.title)}`}>Let’s talk about it <SketchArrow /></a></div></section>
+      <section class="next page-width" aria-labelledby="next-label">
+        <h2 class="next-heading" id="next-label">One more <span>story.<svg viewBox="0 0 180 15" fill="none" aria-hidden="true"><path d="M3 10C53 1 105 13 176 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg></span></h2>
+        <a class="next-story" href={`/work/${nextSlug}/`}>
+          <div class="next-story-copy">
+            <span class="next-note">Next page in the sketchbook</span>
+            <h3>{next.data.title}</h3>
+            <p class="card-description">{next.data.description}</p>
+            <span class="story-link">Explore the project <SketchArrow /></span>
+          </div>
+          <div class="next-story-mark" data-brand={nextSlug}><svg class="next-orbit" viewBox="0 0 300 220" fill="none" aria-hidden="true"><path d="M269 68C237 6 93 9 36 66S19 191 137 201 291 153 279 87M57 49C112 14 235 27 271 76" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="m270 23 3 17 15-6m-19 7-10 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>{nextMark ? <img src={nextMark} alt="" loading="lazy" decoding="async" /> : <img src="/images/brand-mark.svg" alt="" loading="lazy" />}</div>
+        </a>
+      </section>
+    </article>
+  </main>
+
+  <footer class="site-footer page-width">
+    <a class="footer-mark" href="/" aria-label="Back to the homepage"><img src="/images/brand-icon.svg" alt="" /></a>
+    <p>From Tétouan,<br /><em>with a little ink.</em></p>
+    <a class="case-home-link" href="/#work">More work <SketchArrow /></a>
+  </footer>
+  <script>
+    import '../../scripts/smooth-wheel';
+    const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
+    if (!motionPreference.matches && 'IntersectionObserver' in window) {
+      const sections = document.querySelectorAll('.case-section, .project-notebook, .case-enquiry');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.remove('case-waiting'); observer.unobserve(entry.target); } });
+      }, { threshold: 0, rootMargin: '0px 0px -24px 0px' });
+      sections.forEach((section) => { section.classList.add('case-waiting'); observer.observe(section); });
+      motionPreference.addEventListener('change', () => { sections.forEach(section => section.classList.remove('case-waiting')); observer.disconnect(); }, { once: true });
+    }
+  </script>
+</BaseLayout>

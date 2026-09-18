@@ -1,0 +1,91 @@
+{
+  "is-nutrition": {
+    "name": "IS Nutrition",
+    "source": "D:/Old_projects/WORK/IS_NUTRITION/photos",
+    "groups": [
+      {
+        "title": "Product. Sport. Personality.",
+        "note": "Product compositions, a football celebration and a playful illustration share a bold visual voice.",
+        "files": [
+          "333.jpg",
+          "u20.jpg",
+          "1_ISNUTRITIO.jpg"
+        ]
+      }
+    ]
+  },
+  "e-botola": {
+    "name": "E-Botola",
+    "source": "D:/Old_projects/WORK/E_Botola",
+    "groups": [
+      {
+        "title": "Two players. Two identities.",
+        "note": "Haitam JR and Brahim JR, framed by club colours, city architecture and layered portraits.",
+        "files": [
+          "Haitam-Jr1.jpg",
+          "BrahimJR.jpg"
+        ]
+      }
+    ]
+  },
+  "morocco-travel": {
+    "name": "Morocco Travel",
+    "source": "D:/Old_projects/WORK/AFRISTAR/MOROCCO_TRAVEL",
+    "groups": [
+      {
+        "title": "A world of possibilities.",
+        "note": "Bright skies, destination collages and a human introduction.",
+        "files": [
+          "New folder/POST1c.jpg",
+          "New folder/POST2b.jpg",
+          "New folder/4.jpg"
+        ]
+      },
+      {
+        "title": "Mint and midnight.",
+        "note": "A coordinated three-part campaign, from the destination to the practical details.",
+        "files": [
+          "1/Artboard 1@2x-80.jpg",
+          "1/Artboard 2@2x-80.jpg",
+          "1/Artboard 3@2x-80.jpg"
+        ]
+      },
+      {
+        "title": "Ramadan, in gold.",
+        "note": "The complete campaign sequence with its original supporting layouts.",
+        "files": [
+          "1/OMRA-RAMADAN1_01.jpg",
+          "1/OMRA-RAMADAN1_02.jpg",
+          "1/OMRA-RAMADAN1_03.jpg"
+        ]
+      },
+      {
+        "title": "A blue chapter.",
+        "note": "Architectural framing and a blue palette connect the three panels.",
+        "files": [
+          "1/OMRA-RAMADAN2_01.jpg",
+          "1/OMRA-RAMADAN2_02.jpg",
+          "1/OMRA-RAMADAN2_03.jpg"
+        ]
+      },
+      {
+        "title": "The journey continues.",
+        "note": "Destination photography paired with clear campaign information.",
+        "files": [
+          "1/OMRA-RAMADAN3_01.jpg",
+          "1/OMRA-RAMADAN3_02.jpg",
+          "1/OMRA-RAMADAN3_03.jpg"
+        ]
+      },
+      {
+        "title": "Sky, stone and sunlight.",
+        "note": "A final sequence of destination and information designs.",
+        "files": [
+          "1/POSTS_02.jpg",
+          "1/POSTS_03.jpg",
+          "1/POSTS_04.jpg"
+        ]
+      }
+    ]
+  }
+}

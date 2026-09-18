@@ -1,0 +1,188 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { slugOf, coverOf, loopVideoOf, galleryOf } from '../lib/projects';
+import '../styles/editorial.css';
+import ServiceIcon from '../components/ServiceIcon.astro';
+import SketchArrow from '../components/SketchArrow.astro';
+import ProjectCover from '../components/ProjectCover.astro';
+import projectCovers from '../data/project-covers.json';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const email = 'mohamedidrissi205@gmail.com';
+const projectMarks: Record<string, string> = { mat: 'mat.png', exploremorocco: 'exploremorocco.png', justfit: 'justfit.png', maalem: 'maalem.jpg', vanysis: 'vanysis.png' };
+// Supplied brand assets. Originals are preserved; sizing is handled in CSS.
+const collaborators = [
+  { name: 'ExploreMorocco', file: 'exploremorocco.png', style: 'wide' },
+  { name: 'MAALEM', file: 'maalem.jpg', style: 'maalem' },
+  { name: 'Asia This Way', file: 'asia-this-way.png', style: 'compact' },
+  { name: 'Moghreb Atletico Tétouan', file: 'mat.png', style: 'crest' },
+  { name: 'JustFit', file: 'justfit.png', style: 'standard' },
+  { name: 'IS Nutrition', file: 'is-nutrition.png', style: 'nutrition' },
+  { name: 'Morocco Travel', file: 'morocco-travel.png', style: 'standard' },
+  { name: 'Vanysis', file: 'vanysis.png', style: 'wide' },
+  { name: 'Overt', file: 'overt.avif', style: 'wide' },
+  { name: 'Nomad Vélo', file: 'nomad-velo.webp', style: 'wide' },
+  { name: 'E-Botola', file: 'e-botola.png', style: 'crest' },
+  { name: 'The Norvale Club', file: 'norvale.png', style: 'norvale' },
+  { name: 'Dr. Majed Mikhail', file: 'dr-majed-mikhail.svg', style: 'doctor' },
+];
+---
+
+<BaseLayout>
+  <!-- Blue ink mapping: black → #2a37dd, white → white (for the JPEG logo). -->
+  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute"><defs><filter id="brand-blue-ink" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.835294 0 0 0 0.164706 0 0.784314 0 0 0.215686 0 0 0.133333 0 0.866667 0 0 0 1 0" /></filter></defs></svg>
+  <nav class="portfolio-nav page-width" aria-label="Main navigation"><a href="/" aria-label="Mohamed Idrissi home"><img src="/images/brand-icon.svg" width="64" height="44" alt="" /></a><div><a href="#work">Work</a><a href="#services">Services</a><a href="#contact">Let’s talk ↗</a></div></nav>
+  <main id="top">
+    <section class="hero page-width reveal" aria-labelledby="hero-title">
+      <img class="hero-logo" src="/images/brand-mark.svg" alt="" aria-hidden="true" />
+      <h1 id="hero-title"><span>Brand identity for</span><span class="sketch-word">brands that move.<svg class="sketch-underline" viewBox="0 0 620 25" fill="none" aria-hidden="true" focusable="false"><path d="M5 14C132 3 312 21 610 7M84 21C257 9 413 17 575 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></span></h1>
+      <p class="hero-copy">I’m Mohamed. Graphic designer & creative director in Tétouan, Morocco.<br />Identities, campaigns and films for sports, fitness and lifestyle.</p>
+      <div class="hero-actions"><a class="round-link" href="#work">Selected work <span aria-hidden="true">↓</span></a></div>
+    </section>
+
+    <section class="work page-width" id="work" aria-labelledby="work-title">
+      <div class="section-heading"><h2 id="work-title">Selected work</h2></div>
+
+      <div class="work-mosaic">
+        {projects.map((project, index) => {
+          const slug = slugOf(project.id);
+          const video = loopVideoOf(slug);
+          const detail = galleryOf(slug)[0];
+          const hasPostCover = slug in projectCovers;
+          return (
+            <article class="mosaic-project reveal" data-project={slug} style={`--delay: ${(index % 3) * 70}ms`}>
+              <div class="card-copy">
+                <h3>{project.data.title}</h3>
+                <p class="card-description">{project.data.description}</p>
+                <a class="case-link" href={`/work/${slug}/`}>View project <SketchArrow /></a>
+              </div>
+              <a class:list={['mosaic-visual', { 'mosaic-visual--posts': hasPostCover }]} href={`/work/${slug}/`} aria-label={`View ${project.data.title}`} tabindex="-1">
+                {hasPostCover ? <ProjectCover slug={slug} /> : video ? (
+                  <video src={video} poster={coverOf(slug)} autoplay muted loop playsinline aria-hidden="true"></video>
+                ) : (
+                  <img src={coverOf(slug)} alt="" loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />
+                )}
+                {detail && !video && !hasPostCover && <img class="project-preview-detail" src={detail} alt="" loading="lazy" decoding="async" />}
+                {!hasPostCover && !video && <span class="mosaic-draft">Illustrative direction</span>}
+              </a>
+            </article>
+          );
+        })}
+      </div>
+
+    </section>
+
+    <section class="collaborations page-width reveal" id="brands" aria-labelledby="collaborations-title">
+      <div class="collaborations-heading"><h2 id="collaborations-title">Good brands.<br /><span class="brands-title-ink">Shared stories.<svg viewBox="0 0 350 20" fill="none" aria-hidden="true"><path d="M3 10c85-13 194 9 341-4M45 17c85-9 169 1 264-3" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" /></svg></span></h2><p>A few of the brands I’ve worked with.</p></div>
+      <div class="brand-marquee"><div class="brand-track">
+        {[0, 1].map((copy) => <ul class="brand-strip" aria-hidden={copy === 1 ? 'true' : undefined}>
+          {collaborators.map((brand) => <li><span class={`client-logo client-logo--${brand.style}`}><img src={`/images/clients/${brand.file}`} alt={copy === 0 ? brand.name : ''} loading="lazy" decoding="async" /></span></li>)}
+        </ul>)}
+      </div></div>
+      <button class="motion-toggle" type="button" aria-label="Pause moving logos" aria-pressed="false" title="Pause moving logos"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" fill="currentColor"><g class="pause-symbol"><rect x="7" y="5" width="3" height="14" /><rect x="14" y="5" width="3" height="14" /></g><path class="play-symbol" d="m8 5 11 7-11 7Z" /></svg></button>
+    </section>
+
+    <section class="services page-width" id="services" aria-labelledby="services-title">
+      <div class="section-heading"><h2 id="services-title">What I do</h2><p>From the first idea to the final files.</p></div>
+      <div class="service-grid"><article><ServiceIcon kind="identity" /><h3>Brand identity</h3><p>Strategy, logos, typography, colour and guidelines.</p></article><article><ServiceIcon kind="direction" /><h3>Art direction</h3><p>Campaign concepts, editorial direction and social media systems.</p></article><article><ServiceIcon kind="production" /><h3>Creative production</h3><p>AI-assisted imagery, cinematic films and video editing.</p></article></div>
+      <div class="process-note"><h3>From conversation to creation.</h3><ol class="process-line"><li>Find the idea</li><li>Explore the direction</li><li>Make it work</li></ol></div>
+    </section>
+    <section class="about page-width" id="about" aria-labelledby="about-title">
+      <div class="about-intro reveal">
+        <h2 id="about-title">Mohamed.<br /><span class="about-heading-accent">Mind & hand.</span></h2>
+        <figure class="portrait-card">
+          <div class="portrait-image">
+            <img src="/images/mohamed-sketch.png" alt="Mohamed Idrissi, black-and-white portrait with blue hand-drawn accents" width="1254" height="1254" loading="lazy" />
+          </div>
+        </figure>
+      </div>
+
+      <div class="about-copy reveal">
+        <p class="about-lead">I think in systems.<br />I care about the details.</p>
+        <p>I’m a graphic designer and creative director from Tétouan, with 6 years of experience in sports, fitness and lifestyle branding. My background in data science and full-stack development shapes how I approach design—not just how it looks, but how it works.</p>
+        <p>Today I combine brand strategy with AI-assisted production to deliver identities, campaigns and content faster, without losing the craft.</p>
+        <div class="secondary-links" aria-label="Professional profiles">
+          <a href="https://www.behance.net/Mohamed_Idrissi" target="_blank" rel="noreferrer">Behance <span aria-hidden="true">↗</span></a>
+          <a href="https://wa.me/212691865970" target="_blank" rel="noreferrer">WhatsApp <span aria-hidden="true">↗</span></a>
+          <!-- TODO: Add a CV link when available. -->
+        </div>
+      </div>
+    </section>
+
+    <section class="contact page-width reveal" id="contact" aria-labelledby="contact-title">
+      <div class="contact-signature"><img class="contact-logo" src="/images/brand-mark.svg" alt="" aria-hidden="true" /></div>
+      <h2 id="contact-title">Have something<br /><span class="contact-idea">in mind?</span></h2>
+      <p class="contact-copy">Launching something new or ready for a refresh? Tell me about your brand, what you need and your ideal timeline. A rough brief is a good start.</p>
+      <a class="email-pill contact-letter" href={`mailto:${email}`} data-copy-email={email}>
+        <svg class="letter-icon" viewBox="0 0 48 40" fill="none" aria-hidden="true"><path d="M4 9L43 6l1 28-39 2L4 9Zm1 1 20 15L42 7M6 34l12-14m24 13L31 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <span><span class="letter-label">Send me your idea</span><span class="letter-address">{email}</span></span>
+        <SketchArrow />
+      </a>
+      <p class="copy-status" aria-live="polite"></p>
+      <a class="whatsapp-link" href="https://wa.me/212691865970" target="_blank" rel="noreferrer"><svg class="chat-sketch" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M7 24l-3 5 10-3c18 2 20-22 3-23C2 1-3 17 7 24Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /><path d="M9 12h13M9 17h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg> More of a voice-note person? <span class="whatsapp-name">WhatsApp</span><SketchArrow /></a>
+    </section>
+  </main>
+
+  <footer class="site-footer page-width">
+    <a class="footer-mark" href="#top" aria-label="Back to the top"><img src="/images/brand-icon.svg" alt="" /></a>
+    <p class="footer-signoff">From Tétouan,<br /><span>with a little ink.</span></p>
+    <a class="footer-top" href="#top">Back to top <SketchArrow /></a>
+  </footer>
+
+  <script>
+    import '../scripts/smooth-wheel';
+    const emailLink = document.querySelector('[data-copy-email]');
+    const status = document.querySelector('.copy-status');
+    document.querySelectorAll('.section-heading, .service-grid article, .process-note').forEach((item, index) => {
+      item.classList.add('reveal');
+      (item as HTMLElement).style.setProperty('--delay', `${(index % 3) * 90}ms`);
+    });
+    const revealItems = document.querySelectorAll('.reveal');
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const motionToggle = document.querySelector<HTMLButtonElement>('.motion-toggle');
+    motionToggle?.addEventListener('click', () => {
+      const paused = motionToggle.getAttribute('aria-pressed') !== 'true';
+      motionToggle.setAttribute('aria-pressed', String(paused));
+      const motionLabel = paused ? 'Resume moving logos' : 'Pause moving logos';
+      motionToggle.setAttribute('aria-label', motionLabel);
+      motionToggle.setAttribute('title', motionLabel);
+      document.querySelector('.brand-track')?.classList.toggle('is-paused', paused);
+    });
+    const reducedMotion = motionPreference.matches;
+    const syncMotion = () => {
+      document.querySelectorAll('video').forEach((video) => {
+        if (motionPreference.matches) video.pause();
+        else video.play().catch(() => {});
+      });
+      if (motionPreference.matches) revealItems.forEach((item) => item.classList.add('is-visible'));
+    };
+    motionPreference.addEventListener('change', syncMotion);
+    syncMotion();
+
+    if (!reducedMotion && 'IntersectionObserver' in window) {
+      const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.08, rootMargin: '0px 0px -5% 0px' });
+      revealItems.forEach((item) => revealObserver.observe(item));
+    } else {
+      revealItems.forEach((item) => item.classList.add('is-visible'));
+    }
+
+    emailLink?.addEventListener('click', () => {
+      const email = emailLink.getAttribute('data-copy-email');
+      if (email && navigator.clipboard) {
+        navigator.clipboard.writeText(email).then(() => {
+          if (status) status.textContent = 'Email copied — your mail app is opening.';
+        }).catch(() => {
+          if (status) status.textContent = 'Your mail app is opening.';
+        });
+      }
+    });
+  </script>
+</BaseLayout>
