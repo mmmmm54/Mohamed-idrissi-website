@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { slugOf, coverOf, loopVideoOf, galleryOf } from '../lib/projects';
+import { slugOf, coverOf, loopVideoOf, galleryOf, postersOf } from '../lib/projects';
 import '../styles/editorial.css';
 import ServiceIcon from '../components/ServiceIcon.astro';
 import SketchArrow from '../components/SketchArrow.astro';
@@ -9,6 +9,7 @@ import ProjectCover from '../components/ProjectCover.astro';
 import projectCovers from '../data/project-covers.json';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const coverPicks = projectCovers as Record<string, string[]>;
 const email = 'mohamedidrissi205@gmail.com';
 const projectMarks: Record<string, string> = { mat: 'mat.png', exploremorocco: 'exploremorocco.png', justfit: 'justfit.png', maalem: 'maalem.jpg', vanysis: 'vanysis.png' };
 // Supplied brand assets. Originals are preserved; sizing is handled in CSS.
@@ -49,7 +50,7 @@ const collaborators = [
           const slug = slugOf(project.id);
           const video = loopVideoOf(slug);
           const detail = galleryOf(slug)[0];
-          const hasPostCover = slug in projectCovers;
+          const hasPostCover = postersOf(slug, coverPicks[slug] || []).length > 0;
           return (
             <article class="mosaic-project reveal" data-project={slug} style={`--delay: ${(index % 3) * 70}ms`}>
               <div class="card-copy">

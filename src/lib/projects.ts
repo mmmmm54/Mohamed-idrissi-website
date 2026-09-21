@@ -34,12 +34,12 @@ export function galleryOf(slug: string, category?: 'identity' | 'social' | 'camp
 
 /*
   Posters shown on the homepage card, cycled one after another.
-  src/data/project-covers.json is the pick order. List four or more files there
-  and exactly those are used; list fewer and the rest of selected/web/ fills up
-  to POSTER_MAX. Keep it small: every poster is downloaded by the visitor.
+  Every file in selected/web/ is used. src/data/project-covers.json only sets
+  which ones come first; the rest follow in file order. Posters load one at a
+  time, just before each is shown, so the visitor never downloads the whole set
+  at once.
 */
-const POSTER_MAX = 6;
-const POSTER_FILE = /\.webp$/i;
+const POSTER_FILE = /\.(webp|png|jpe?g)$/i;
 
 export function postersOf(slug: string, curated: string[] = []): string[] {
   const dir = path.join(PUBLIC_PROJECTS, slug, 'selected', 'web');
@@ -47,12 +47,17 @@ export function postersOf(slug: string, curated: string[] = []): string[] {
   const url = (name: string) =>
     `/projects/${slug}/selected/web/${name.split('/').map(encodeURIComponent).join('/')}`;
   const picked = curated.map((file) => `${file}.webp`).filter((name) => fs.existsSync(path.join(dir, name)));
-  if (picked.length >= 4) return picked.map(url);
   const rest = fs
     .readdirSync(dir)
     .filter((file) => POSTER_FILE.test(file) && !picked.includes(file))
     .sort();
-  return [...picked, ...rest].slice(0, POSTER_MAX).map(url);
+  return [...picked, ...rest].map(url);
+}
+
+/* Each card runs at its own pace so the cards never flip together. */
+export function posterHoldOf(slug: string): number {
+  const spread = [...slug].reduce((sum, char, i) => sum + char.charCodeAt(0) * (i + 3), 0);
+  return 6000 + (spread % 9) * 350;
 }
 
 /* Full-width, then two side by side, repeating. */

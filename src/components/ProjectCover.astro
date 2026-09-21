@@ -1,15 +1,16 @@
 ---
 import covers from '../data/project-covers.json';
-import { postersOf } from '../lib/projects';
+import { postersOf, posterHoldOf } from '../lib/projects';
 interface Props {slug:string}
 const {slug}=Astro.props;
 const shots=postersOf(slug,(covers as Record<string,string[]>)[slug]||[]);
+const hold=posterHoldOf(slug);
 ---
 <div class:list={['post-cover',`cover-${slug}`]} aria-hidden="true">
- <div class="cover-stack" data-count={shots.length}>{shots.map((src,i)=><img class:list={{'is-on':i===0}} src={i<2?src:undefined} data-src={i<2?undefined:src} alt="" width="900" height="1125" loading={i===0?'eager':'lazy'} decoding="async" />)}</div>
+ <div class="cover-stack" data-count={shots.length} style={`--poster-hold:${hold}ms`}>{shots.map((src,i)=><img class:list={{'is-on':i===0}} src={i<2?src:undefined} data-src={i<2?undefined:src} alt="" width="900" height="1125" loading={i===0?'eager':'lazy'} decoding="async" />)}</div>
 </div>
 <style>
- .post-cover{position:absolute;inset:0;overflow:hidden;background:#edf1f8}.cover-mat{background:#f4e9e9}.cover-exploremorocco{background:#eaf1eb}.cover-justfit{background:#eeeef1}.cover-vanysis{background:#e4f1f1}.cover-dr-majed-mikhail{background:#f3efeb}.cover-is-nutrition{background:#f2eee3}.cover-e-botola{background:#e8f1f8}.cover-morocco-travel{background:#eaf2f7}
+ .post-cover{position:absolute;inset:0;overflow:hidden;background:#edf1f8}.cover-mat{background:#f4e9e9}.cover-exploremorocco{background:#eaf1eb}.cover-justfit{background:#eeeef1}.cover-vanysis{background:#e4f1f1}.cover-dr-majed-mikhail{background:#f3efeb}.cover-is-nutrition{background:#f2eee3}.cover-e-botola{background:#e8f1f8}.cover-morocco-travel{background:#eaf2f7}.cover-maalem{background:#0c1b2e}
  .cover-stack{position:absolute;inset:0}
  .cover-stack img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
  .cover-stack img.is-on{opacity:1}
