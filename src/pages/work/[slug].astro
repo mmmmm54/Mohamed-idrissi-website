@@ -1,6 +1,7 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import projectCovers from '../../data/project-covers.json';
 import '../../styles/case.css';
 import SketchArrow from '../../components/SketchArrow.astro';
 import JustfitWork from '../../components/JustfitWork.astro';
@@ -9,7 +10,7 @@ import CuratedWork from '../../components/CuratedWork.astro';
 import VanysisWork from '../../components/VanysisWork.astro';
 import AdditionalWork from '../../components/AdditionalWork.astro';
 import ServiceIcon from '../../components/ServiceIcon.astro';
-import { slugOf, coverOf, galleryOf, isWideAt, isTodo } from '../../lib/projects';
+import { slugOf, coverOf, galleryOf, isWideAt, isTodo, postersOf } from '../../lib/projects';
 
 export async function getStaticPaths() {
   const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
@@ -30,6 +31,8 @@ interface Props {
 const { project, next }: Props = Astro.props;
 const data = project.data;
 const slug = slugOf(project.id);
+/* Share the first real poster, never an illustrative placeholder cover. */
+const shareImage = postersOf(slug, (projectCovers as Record<string, string[]>)[slug] || [])[0] ?? '/og-image.png';
 const curatedSlug = slug === 'exploremorocco' || slug === 'dr-majed-mikhail' ? slug : undefined;
 const additionalSlug = slug === 'is-nutrition' || slug === 'e-botola' || slug === 'morocco-travel' ? slug : undefined;
 const nextSlug = slugOf(next.id);
@@ -45,7 +48,7 @@ const nextMark = nextSlug === 'exploremorocco' ? '/images/clients/exploremorocco
 const services = data.services.join(', ');
 ---
 
-<BaseLayout title={`${data.title} — Mohamed Idrissi`} description={data.summary}>
+<BaseLayout title={`${data.title} | Mohamed Idrissi, Graphic Designer`} description={data.summary} image={shareImage}>
   <header class="case-nav page-width">
     <a class="nav-back" href="/#work"><SketchArrow /> All work</a>
     <a class="nav-mark" href="/" aria-label="Mohamed Idrissi, home"><img src="/images/brand-icon.svg" alt="" /></a>
