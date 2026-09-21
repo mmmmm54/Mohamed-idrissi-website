@@ -90,5 +90,137 @@
   "morocco-travel/1/POSTS_04.jpg": {
     "width": 1200,
     "height": 1200
+  },
+  "aqluma/01.webp": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/02.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/03.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/04.webp": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/05.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/06.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/07.webp": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/08.webp": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/09.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/10.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/11.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/12.webp": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/13.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/14.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/15.webp": {
+    "width": 1125,
+    "height": 2000
+  },
+  "aqluma/16.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/17.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/18.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/19.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "aqluma/20.jpg": {
+    "width": 1080,
+    "height": 1350
+  },
+  "maalem/01.webp": {
+    "width": 648,
+    "height": 810
+  },
+  "maalem/02.webp": {
+    "width": 648,
+    "height": 810
+  },
+  "maalem/03.webp": {
+    "width": 648,
+    "height": 810
+  },
+  "maalem/04.webp": {
+    "width": 648,
+    "height": 810
+  },
+  "maalem/05.webp": {
+    "width": 648,
+    "height": 810
+  },
+  "maalem/06.webp": {
+    "width": 648,
+    "height": 810
+  },
+  "maalem/07.webp": {
+    "width": 648,
+    "height": 810
+  },
+  "maalem/08.webp": {
+    "width": 648,
+    "height": 810
+  },
+  "maalem/09.webp": {
+    "width": 648,
+    "height": 810
+  },
+  "maalem/10.png": {
+    "width": 648,
+    "height": 810
+  },
+  "maalem/11.webp": {
+    "width": 648,
+    "height": 810
+  },
+  "maalem/12.webp": {
+    "width": 1600,
+    "height": 2000
+  },
+  "maalem/13.webp": {
+    "width": 648,
+    "height": 810
   }
 }

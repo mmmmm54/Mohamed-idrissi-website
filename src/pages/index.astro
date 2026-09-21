@@ -10,8 +10,23 @@ import projectCovers from '../data/project-covers.json';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
 const coverPicks = projectCovers as Record<string, string[]>;
+/* Local business listing for Google. Service area only: no street address is published. */
+const business = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  name: 'Mohamed Idrissi — Graphic Designer & Creative Director',
+  url: new URL('/', Astro.site).href,
+  image: new URL('/og-image.png', Astro.site).href,
+  logo: new URL('/apple-touch-icon.png', Astro.site).href,
+  telephone: '+212691865970',
+  email: 'mohamedidrissi205@gmail.com',
+  address: { '@type': 'PostalAddress', addressLocality: 'Tétouan', addressRegion: 'Tanger-Tétouan-Al Hoceïma', addressCountry: 'MA' },
+  areaServed: [{ '@type': 'City', name: 'Tétouan' }, { '@type': 'Country', name: 'Morocco' }],
+  founder: { '@type': 'Person', name: 'Mohamed Idrissi' },
+  knowsAbout: ['Brand identity', 'Graphic design', 'Art direction', 'Social media design', 'Video editing'],
+  sameAs: ['https://www.behance.net/Mohamed_Idrissi'],
+};
 const email = 'mohamedidrissi205@gmail.com';
-const projectMarks: Record<string, string> = { mat: 'mat.png', exploremorocco: 'exploremorocco.png', justfit: 'justfit.png', maalem: 'maalem.jpg', vanysis: 'vanysis.png' };
 // Supplied brand assets. Originals are preserved; sizing is handled in CSS.
 const collaborators = [
   { name: 'ExploreMorocco', file: 'exploremorocco.png', style: 'wide' },
@@ -30,7 +45,7 @@ const collaborators = [
 ];
 ---
 
-<BaseLayout>
+<BaseLayout schema={[business]}>
   <!-- Blue ink mapping: black → #2a37dd, white → white (for the JPEG logo). -->
   <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute"><defs><filter id="brand-blue-ink" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.835294 0 0 0 0.164706 0 0.784314 0 0 0.215686 0 0 0.133333 0 0.866667 0 0 0 1 0" /></filter></defs></svg>
   <nav class="portfolio-nav page-width" aria-label="Main navigation"><a href="/" aria-label="Mohamed Idrissi home"><img src="/images/brand-icon.svg" width="64" height="44" alt="" /></a><div><a href="#work">Work</a><a href="#services">Services</a><a href="#contact">Let’s talk ↗</a></div></nav>
@@ -59,7 +74,7 @@ const collaborators = [
                 <a class="case-link" href={`/work/${slug}/`}>View project <SketchArrow /></a>
               </div>
               <a class:list={['mosaic-visual', { 'mosaic-visual--posts': hasPostCover }]} href={`/work/${slug}/`} aria-label={`View ${project.data.title}`} tabindex="-1">
-                {hasPostCover ? <ProjectCover slug={slug} /> : video ? (
+                {hasPostCover ? <ProjectCover slug={slug} title={project.data.title} /> : video ? (
                   <video src={video} poster={coverOf(slug)} autoplay muted loop playsinline aria-hidden="true"></video>
                 ) : (
                   <img src={coverOf(slug)} alt="" loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />
@@ -78,7 +93,7 @@ const collaborators = [
       <div class="collaborations-heading"><h2 id="collaborations-title">Good brands.<br /><span class="brands-title-ink">Shared stories.<svg viewBox="0 0 350 20" fill="none" aria-hidden="true"><path d="M3 10c85-13 194 9 341-4M45 17c85-9 169 1 264-3" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" /></svg></span></h2><p>A few of the brands I’ve worked with.</p></div>
       <div class="brand-marquee"><div class="brand-track">
         {[0, 1].map((copy) => <ul class="brand-strip" aria-hidden={copy === 1 ? 'true' : undefined}>
-          {collaborators.map((brand) => <li><span class={`client-logo client-logo--${brand.style}`}><img src={`/images/clients/${brand.file}`} alt={copy === 0 ? brand.name : ''} loading="lazy" decoding="async" /></span></li>)}
+          {collaborators.map((brand) => <li><span class={`client-logo client-logo--${brand.style}`}><img src={`/images/clients/${brand.file}`} alt={brand.name} loading="lazy" decoding="async" /></span></li>)}
         </ul>)}
       </div></div>
       <button class="motion-toggle" type="button" aria-label="Pause moving logos" aria-pressed="false" title="Pause moving logos"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" fill="currentColor"><g class="pause-symbol"><rect x="7" y="5" width="3" height="14" /><rect x="14" y="5" width="3" height="14" /></g><path class="play-symbol" d="m8 5 11 7-11 7Z" /></svg></button>

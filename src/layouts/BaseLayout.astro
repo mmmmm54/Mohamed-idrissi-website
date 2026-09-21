@@ -6,15 +6,21 @@ interface Props {
   description?: string;
   /* Share image, relative to the site root. Defaults to the site-wide card. */
   image?: string;
+  /* Extra structured data for this page (breadcrumbs, project, business). */
+  schema?: object[];
+  /* Keep a page out of Google, e.g. the 404 page. */
+  noindex?: boolean;
 }
 
 const {
   title = 'Mohamed Idrissi | Graphic Designer & Creative Director in Morocco',
   description = 'Graphic designer and creative director in Tétouan, Morocco. Brand identity, social media campaigns and video for sports, fitness and lifestyle brands.',
   image = '/og-image.png',
+  schema = [],
+  noindex = false,
 } = Astro.props;
 
-const site = Astro.site ?? new URL('https://mohamed-portfolio.vercel.app');
+const site = Astro.site ?? new URL('https://mohamedidrissi.site');
 const canonical = new URL(Astro.url.pathname, site).href;
 const imageUrl = new URL(image, site).href;
 
@@ -40,7 +46,7 @@ const person = {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     <meta name="author" content="Mohamed Idrissi" />
     <meta name="theme-color" content="#ffffff" />
 
@@ -62,7 +68,7 @@ const person = {
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" href="/sitemap.xml" />
-    <script is:inline type="application/ld+json" set:html={JSON.stringify(person)} />
+    {[person, ...schema].map((item) => <script is:inline type="application/ld+json" set:html={JSON.stringify(item)} />)}
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

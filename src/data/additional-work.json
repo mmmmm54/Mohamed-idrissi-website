@@ -87,5 +87,62 @@
         ]
       }
     ]
+  },
+  "aqluma": {
+    "name": "AQLUMA",
+    "direct": true,
+    "groups": [
+      {
+        "title": "Posts for parents and teens.",
+        "note": "Social posts across the three content pillars, Musée, Studio and Briefing, in warm travertine and terracotta.",
+        "files": [
+          "01.webp",
+          "02.jpg",
+          "03.jpg",
+          "04.webp",
+          "05.jpg",
+          "06.jpg",
+          "07.webp",
+          "08.webp",
+          "09.jpg",
+          "10.jpg",
+          "11.jpg",
+          "12.webp",
+          "13.jpg",
+          "14.jpg",
+          "15.webp",
+          "16.jpg",
+          "17.jpg",
+          "18.jpg",
+          "19.jpg",
+          "20.jpg"
+        ]
+      }
+    ]
+  },
+  "maalem": {
+    "name": "MAALEM",
+    "direct": true,
+    "groups": [
+      {
+        "title": "From floor plan to film.",
+        "note": "Two Arabic carousels for property developers: three costly mistakes, then five steps from the plan to the finished film.",
+        "files": [
+          "01.webp",
+          "02.webp",
+          "03.webp",
+          "04.webp",
+          "05.webp",
+          "06.webp",
+          "07.webp",
+          "08.webp",
+          "09.webp",
+          "10.png",
+          "11.webp",
+          "12.webp",
+          "13.webp"
+        ]
+      }
+    ]
   }
 }

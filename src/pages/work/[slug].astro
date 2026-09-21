@@ -34,7 +34,7 @@ const slug = slugOf(project.id);
 /* Share the first real poster, never an illustrative placeholder cover. */
 const shareImage = postersOf(slug, (projectCovers as Record<string, string[]>)[slug] || [])[0] ?? '/og-image.png';
 const curatedSlug = slug === 'exploremorocco' || slug === 'dr-majed-mikhail' ? slug : undefined;
-const additionalSlug = slug === 'is-nutrition' || slug === 'e-botola' || slug === 'morocco-travel' ? slug : undefined;
+const additionalSlug = slug === 'is-nutrition' || slug === 'e-botola' || slug === 'morocco-travel' || slug === 'aqluma' || slug === 'maalem' ? slug : undefined;
 const nextSlug = slugOf(next.id);
 const gallery = galleryOf(slug);
 const collections = [
@@ -46,13 +46,40 @@ const hasArtwork = !!additionalSlug || !!curatedSlug || ['justfit','mat','vanysi
 const availableFilms = data.films.filter(film => film.embed);
 const nextMark = nextSlug === 'exploremorocco' ? '/images/clients/exploremorocco.png' : nextSlug === 'mat' ? '/images/clients/mat.png' : nextSlug === 'dr-majed-mikhail' ? '/images/clients/dr-majed-mikhail.svg' : ['is-nutrition','e-botola','morocco-travel'].includes(nextSlug) ? `/images/clients/${nextSlug}.png` : next.data.notebook?.image;
 const services = data.services.join(', ');
+const pageUrl = new URL(`/work/${slug}/`, Astro.site).href;
+/* Breadcrumbs and project facts for Google. Only fields that are already on the page. */
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', Astro.site).href },
+      { '@type': 'ListItem', position: 2, name: 'Work', item: new URL('/#work', Astro.site).href },
+      { '@type': 'ListItem', position: 3, name: data.title, item: pageUrl },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: data.title,
+    description: data.summary,
+    url: pageUrl,
+    image: new URL(shareImage, Astro.site).href,
+    genre: data.services,
+    creator: { '@type': 'Person', name: 'Mohamed Idrissi', url: new URL('/', Astro.site).href },
+  },
+];
 ---
 
-<BaseLayout title={`${data.title} | Mohamed Idrissi, Graphic Designer`} description={data.summary} image={shareImage}>
+<BaseLayout title={`${data.title} | Mohamed Idrissi, Graphic Designer`} description={`${data.summary} By Mohamed Idrissi, graphic designer in Tétouan, Morocco.`} image={shareImage} schema={schema}>
   <header class="case-nav page-width">
     <a class="nav-back" href="/#work"><SketchArrow /> All work</a>
     <a class="nav-mark" href="/" aria-label="Mohamed Idrissi, home"><img src="/images/brand-icon.svg" alt="" /></a>
   </header>
+
+  <nav class="breadcrumbs page-width" aria-label="Breadcrumb">
+    <ol><li><a href="/">Home</a></li><li><a href="/#work">Work</a></li><li aria-current="page">{data.title}</li></ol>
+  </nav>
 
   <main>
     <article>
@@ -67,10 +94,10 @@ const services = data.services.join(', ');
             <dt>Role</dt>
             <dd>{isTodo(data.role) ? <span class="todo">{data.role}</span> : data.role}</dd>
           </div>
-          <div>
+          {!isTodo(data.year) && <div>
             <dt>Year</dt>
-            <dd>{isTodo(data.year) ? 'To be confirmed' : data.year}</dd>
-          </div>
+            <dd>{data.year}</dd>
+          </div>}
           <div>
             <dt>Services</dt>
             <dd>{isTodo(services) ? <span class="todo">{services}</span> : services}</dd>
@@ -93,7 +120,7 @@ const services = data.services.join(', ');
             {slug === 'mat' ? <figure class="crest-detail"><div><img src="/images/clients/mat.png" alt="Close-up of the architecture and palm tree in the supplied crest" width="976" height="1170" loading="lazy" /></div><figcaption>02 / A closer look <span>Detail from the same crest</span></figcaption></figure> : data.notebook.image && <figure class="notebook-mark"><div><img src={data.notebook.image} alt={data.notebook.imageLabel || `${data.title} supplied logo`} loading="lazy" decoding="async" /></div><figcaption>Supplied brand asset <span>{data.notebook.imageLabel}</span></figcaption></figure>}
             <div class="notebook-notes">{data.notebook.notes.map((note) => <article><span class="notebook-number" aria-hidden="true"><svg viewBox="0 0 30 30" fill="none"><path d="M14 2c1 9 5 12 13 13-9 1-12 5-13 12-1-8-4-11-12-12 8-1 11-5 12-13Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" /></svg></span><h3>{note.title}</h3><p>{note.text}</p></article>)}</div>
           </div>
-          <p class="notebook-signoff">{slug === 'mat' ? 'From Tétouan, with a designer’s eye.' : 'Working direction — to be refined with the final applications.'}</p>
+          {slug === 'mat' && <p class="notebook-signoff">From Tétouan, with a designer’s eye.</p>}
         </section>}
         <section class="case-section" aria-labelledby="challenge-label">
           <h2 class="section-label" id="challenge-label">The brief.</h2>

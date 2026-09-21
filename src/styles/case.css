@@ -18,6 +18,13 @@
 .case-nav .nav-back { display: inline-flex; gap: .45rem; align-items: center; color: var(--ink-soft); }
 .case-nav .nav-mark img { width: clamp(2.6rem, 4vw, 3.4rem); height: auto; }
 
+/* Home / Work / Project, in the small mono label voice. */
+.breadcrumbs ol { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0; padding: 0; list-style: none; font-family: var(--font-mono); font-size: var(--size-label); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.breadcrumbs li + li::before { content: "/"; margin-right: .5rem; color: var(--line); }
+.breadcrumbs a { color: inherit; text-decoration: none; }
+.breadcrumbs a:hover { color: var(--blue); }
+.breadcrumbs [aria-current="page"] { color: var(--ink); }
+
 /* --- Hero ---------------------------------------------------- */
 /* MAT editorial notebook tokens. The red is a presentation colour,
    not a claim about the club's approved palette. */

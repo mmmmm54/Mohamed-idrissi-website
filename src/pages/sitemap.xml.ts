@@ -4,7 +4,7 @@ import { slugOf } from '../lib/projects';
 
 /* Every public page, rebuilt on each deploy. Submit /sitemap.xml in Google Search Console. */
 export const GET: APIRoute = async ({ site }) => {
-  const base = site ?? new URL('https://mohamed-portfolio.vercel.app');
+  const base = site ?? new URL('https://mohamedidrissi.site');
   const projects = await getCollection('projects');
   const paths = ['/', ...projects.map((project) => `/work/${slugOf(project.id)}/`)];
   const today = new Date().toISOString().slice(0, 10);
