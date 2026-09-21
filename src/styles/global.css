@@ -70,7 +70,7 @@
   --motion-ease: cubic-bezier(.22, 1, .36, 1);
   /* Project card poster cycle: how long one poster holds, how long it fades.
      Each card shifts its own hold a little around this value. */
-  --poster-hold: 6000ms;
+  --poster-hold: 4000ms;
   --poster-fade: 1400ms;
 }
 

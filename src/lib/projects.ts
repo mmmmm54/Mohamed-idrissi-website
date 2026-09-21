@@ -57,7 +57,7 @@ export function postersOf(slug: string, curated: string[] = []): string[] {
 /* Each card runs at its own pace so the cards never flip together. */
 export function posterHoldOf(slug: string): number {
   const spread = [...slug].reduce((sum, char, i) => sum + char.charCodeAt(0) * (i + 3), 0);
-  return 6000 + (spread % 9) * 350;
+  return 4000 + (spread % 5) * 200;
 }
 
 /* Full-width, then two side by side, repeating. */

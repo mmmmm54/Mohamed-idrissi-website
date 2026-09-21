@@ -265,6 +265,9 @@
   .site-footer .footer-top { margin-left:auto; }
 }
 @media(min-width:40rem) { .work-mosaic { grid-template-columns:repeat(2, 1fr); } }
+@media(min-width:64rem) { .work-mosaic { grid-template-columns:repeat(3, 1fr); }
+  /* A card left alone on the last row sits in the middle, not off to one side. */
+  .work-mosaic .mosaic-project:last-child:nth-child(3n + 1) { grid-column:2; } }
 @media(hover:hover) and (prefers-reduced-motion:no-preference) {
   .mosaic-visual > img { transition:transform var(--motion-slow) var(--motion-ease); }
   .mosaic-visual:hover > img { transform:scale(1.035); }
