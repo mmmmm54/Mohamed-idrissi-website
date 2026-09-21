@@ -68,6 +68,9 @@
   --motion-slow: 1.15s;
   --motion-hover: .65s;
   --motion-ease: cubic-bezier(.22, 1, .36, 1);
+  /* Project card poster cycle: how long one poster holds, how long it fades. */
+  --poster-hold: 4000ms;
+  --poster-fade: 1400ms;
 }
 
 * { box-sizing: border-box; }

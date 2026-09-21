@@ -226,7 +226,7 @@
 .mosaic-project[data-project="maalem"] .mosaic-visual > img { width:95%; max-height:none; }
 .mosaic-project[data-project="vanysis"] .mosaic-visual { background:var(--vanysis-fg); aspect-ratio:4 / 3; }
 .mosaic-project[data-project="aqluma"] .mosaic-visual { aspect-ratio:4 / 5; }
-.mosaic-project .mosaic-visual--posts { border-radius:18px; }
+.mosaic-project[data-project] .mosaic-visual--posts { border-radius:18px; aspect-ratio:4 / 5; }
 .mosaic-project[data-project="maalem"] .mosaic-visual > img { width:100%; height:100%; object-fit:cover; }
 #work .mosaic-project .card-copy { display:flex; gap:.5rem; padding:.9rem .1rem 0; }
 #work .mosaic-project .card-copy h3 { font-size:clamp(1.1rem,1.7vw,1.5rem); line-height:1.15; }

@@ -1,14 +1,37 @@
 ---
 import covers from '../data/project-covers.json';
+import { postersOf } from '../lib/projects';
 interface Props {slug:string}
 const {slug}=Astro.props;
-const files=(covers as Record<string,string[]>)[slug]||[];
+const shots=postersOf(slug,(covers as Record<string,string[]>)[slug]||[]);
 ---
-<div class:list={['post-cover',`cover-${slug}`,{'post-cover--pair':files.length===2}]} aria-hidden="true">
- <span class="cover-orbit"></span>
- <div class="cover-posts">{files.map(file=><img src={`/projects/${slug}/selected/web/${file.split('/').map(encodeURIComponent).join('/')}.webp`} alt="" width="600" height="750" loading="lazy" decoding="async" />)}</div>
+<div class:list={['post-cover',`cover-${slug}`]} aria-hidden="true">
+ <div class="cover-stack" data-count={shots.length}>{shots.map((src,i)=><img class:list={{'is-on':i===0}} src={i<2?src:undefined} data-src={i<2?undefined:src} alt="" width="900" height="1125" loading={i===0?'eager':'lazy'} decoding="async" />)}</div>
 </div>
 <style>
- .post-cover{position:absolute;inset:0;display:grid;place-items:center;background:#edf1f8;overflow:hidden}.cover-mat{background:#f4e9e9}.cover-exploremorocco{background:#eaf1eb}.cover-justfit{background:#eeeef1}.cover-vanysis{background:#e4f1f1}.cover-dr-majed-mikhail{background:#f3efeb}.cover-is-nutrition{background:#f2eee3}.cover-e-botola{background:#e8f1f8}.cover-morocco-travel{background:#eaf2f7}.cover-orbit{position:absolute;width:80%;height:75%;border:1px solid #2a37dd25;border-radius:50%;transform:rotate(-20deg)}.cover-posts{width:88%;display:flex;align-items:center;justify-content:center;isolation:isolate}.cover-posts img{display:block;width:40%;height:auto;max-width:none;flex:none;border:4px solid white;border-radius:12px;box-shadow:0 12px 25px #14213d25;transform:rotate(-9deg) translateY(8%)}.cover-posts img+img{margin-left:-9%}.cover-posts img:nth-child(2){z-index:2;transform:translateY(-7%) rotate(1deg)}.cover-posts img:nth-child(3){transform:rotate(10deg) translateY(8%)}.post-cover--pair .cover-posts img{width:49%}.post-cover--pair .cover-posts img:nth-child(2){transform:rotate(8deg) translateY(-3%)}
- @media(hover:hover) and (prefers-reduced-motion:no-preference){.cover-posts{transition:transform .6s ease}.post-cover:hover .cover-posts{transform:translateY(-3px) scale(1.025)}}
+ .post-cover{position:absolute;inset:0;overflow:hidden;background:#edf1f8}.cover-mat{background:#f4e9e9}.cover-exploremorocco{background:#eaf1eb}.cover-justfit{background:#eeeef1}.cover-vanysis{background:#e4f1f1}.cover-dr-majed-mikhail{background:#f3efeb}.cover-is-nutrition{background:#f2eee3}.cover-e-botola{background:#e8f1f8}.cover-morocco-travel{background:#eaf2f7}
+ .cover-stack{position:absolute;inset:0}
+ .cover-stack img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
+ .cover-stack img.is-on{opacity:1}
+ @media(prefers-reduced-motion:no-preference){.cover-stack img{transition:opacity var(--poster-fade) ease-in-out}}
 </style>
+<script>
+ const reduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+ document.querySelectorAll<HTMLElement>('.cover-stack').forEach((stack)=>{
+  const shots=Array.from(stack.querySelectorAll('img'));
+  if(shots.length<2)return;
+  const hold=parseFloat(getComputedStyle(stack).getPropertyValue('--poster-hold'))||4000;
+  let index=0,timer=0;
+  const load=(n:number)=>{const el=shots[n];const src=el?.dataset.src;if(el&&src){el.src=src;delete el.dataset.src;}};
+  const step=()=>{
+   index=(index+1)%shots.length;
+   shots.forEach((el,i)=>el.classList.toggle('is-on',i===index));
+   load((index+1)%shots.length);
+  };
+  let onScreen=false;
+  const start=()=>{if(!timer&&onScreen&&!document.hidden&&!reduce.matches)timer=window.setInterval(step,hold);};
+  const stop=()=>{if(timer){clearInterval(timer);timer=0;}};
+  new IntersectionObserver((entries)=>{entries.forEach((entry)=>{onScreen=entry.isIntersecting;onScreen?start():stop();});},{rootMargin:'120px',threshold:0}).observe(stack);
+  document.addEventListener('visibilitychange',()=>document.hidden?stop():start());
+ });
+</script>
