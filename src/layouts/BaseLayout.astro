@@ -20,7 +20,7 @@ const {
   noindex = false,
 } = Astro.props;
 
-const site = Astro.site ?? new URL('https://mohamedidrissi.site');
+const site = Astro.site ?? new URL('https://www.mohamedidrissi.site');
 const canonical = new URL(Astro.url.pathname, site).href;
 const imageUrl = new URL(image, site).href;
 

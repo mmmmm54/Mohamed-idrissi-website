@@ -4,7 +4,7 @@ import { slugOf } from '../lib/projects';
 
 /* A plain-text summary for AI assistants and answer engines (llmstxt.org). Facts from the site only. */
 export const GET: APIRoute = async ({ site }) => {
-  const base = site ?? new URL('https://mohamedidrissi.site');
+  const base = site ?? new URL('https://www.mohamedidrissi.site');
   const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
   const work = projects
     .map((project) => `- [${project.data.title}](${new URL(`/work/${slugOf(project.id)}/`, base).href}): ${project.data.summary}`)
