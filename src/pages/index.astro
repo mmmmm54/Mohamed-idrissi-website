@@ -116,7 +116,7 @@ const collaborators = [
 
       <div class="about-copy reveal">
         <p class="about-lead">I think in systems.<br />I care about the details.</p>
-        <p>I’m a graphic designer and creative director from Tétouan, with 6 years of experience in sports, fitness and lifestyle branding. I design brand identities, social campaigns and videos, from the first idea to the final files.</p>
+        <p>I’m a graphic designer and creative director from Tétouan, with 4 years of experience in sports, fitness and lifestyle branding. I design brand identities, social campaigns and videos, from the first idea to the final files.</p>
         <p>Today I pair brand strategy with AI-assisted production to deliver identities, campaigns and films faster, without losing the craft.</p>
         <div class="secondary-links" aria-label="Professional profiles">
           <a href="https://www.behance.net/Mohamed_Idrissi" target="_blank" rel="noreferrer">Behance <span aria-hidden="true">↗</span></a>
@@ -146,7 +146,22 @@ const collaborators = [
     <a class="footer-top" href="#top">Back to top <SketchArrow /></a>
   </footer>
 
+  <!-- Phones and tablets: WhatsApp one tap away. Shown after the hero, hidden again at the contact section. -->
+  <a class="whatsapp-float" href="https://wa.me/212691865970" target="_blank" rel="noreferrer" aria-label="Message Mohamed on WhatsApp"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true" focusable="false" fill="currentColor"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3Zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4a10.4 10.4 0 0 1-1.7-5.7C5.1 10 10 5.3 16 5.3s10.9 4.7 10.9 10.5S22 26.4 16 26.4Zm6-7.8c-.3-.2-1.9-.9-2.2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1a8.7 8.7 0 0 1-4.4-3.8c-.3-.6.3-.5.9-1.7.1-.2 0-.4 0-.5l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5 1.9.8 2.6.9 3.6.7.6-.1 1.9-.8 2.1-1.5.3-.7.3-1.3.2-1.5-.1-.1-.3-.2-.6-.3Z"/></svg></a>
+
   <script>
+    /* Floating WhatsApp: visible between the hero and the contact section. */
+    const whatsappFloat = document.querySelector<HTMLElement>('.whatsapp-float');
+    const heroSection = document.querySelector('.hero');
+    const contactSection = document.querySelector('#contact');
+    if (whatsappFloat && heroSection && contactSection && 'IntersectionObserver' in window) {
+      let pastHero = false;
+      let atContact = false;
+      const sync = () => whatsappFloat.classList.toggle('is-visible', pastHero && !atContact);
+      new IntersectionObserver(([entry]) => { pastHero = !entry.isIntersecting && entry.boundingClientRect.top < 0; sync(); }).observe(heroSection);
+      new IntersectionObserver(([entry]) => { atContact = entry.isIntersecting; sync(); }).observe(contactSection);
+    }
+
     import '../scripts/smooth-wheel';
     const emailLink = document.querySelector('[data-copy-email]');
     const status = document.querySelector('.copy-status');

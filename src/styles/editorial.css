@@ -282,3 +282,36 @@
 
 /* Comfortable tap targets on phones: at least 44px tall. */
 .portfolio-nav div a, .secondary-links a { display:inline-flex; align-items:center; min-height:44px; }
+
+/* ---------------------------------------------------------------
+   PHONES (under 40rem): shorter work section, tidier logo ribbon
+--------------------------------------------------------------- */
+@media(max-width:39.99rem) {
+  /* Two posters per row: half the scrolling to reach services and contact. */
+  .work-mosaic { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:var(--stack-m) var(--stack-s); }
+  .mosaic-project .mosaic-visual, .mosaic-project[data-project] .mosaic-visual--posts { border-radius:var(--radius-card); }
+  #work .mosaic-project .card-copy { gap:.2rem; padding-top:.6rem; }
+  #work .mosaic-project .card-copy h3 { font-size:1rem; letter-spacing:-.02em; }
+  #work .mosaic-project .card-description { display:none; }
+  #work .mosaic-project .case-link { min-height:36px; padding:.35rem 0; margin-top:0; border:0; border-radius:0; font-size:var(--size-label); gap:.4rem; }
+  #work .mosaic-project .case-link .sketch-arrow { width:1.4rem; height:1rem; }
+
+  /* Logo ribbon: smaller slots so four logos share the screen, pause button beside the title. */
+  .collaborations { position:relative; }
+  .collaborations .collaborations-heading { padding-right:3rem; }
+  .collaborations-heading p { text-align:left; max-width:none; }
+  .collaborations .brand-strip { gap:var(--stack-s); padding:var(--stack-s); }
+  .collaborations { margin-bottom:var(--stack-m); }
+  .collaborations .client-logo { width:88px; height:52px; }
+  .collaborations .client-logo img { transform:translate(calc(-50% + var(--logo-x,0px)),calc(-50% + var(--logo-y,0px))) scale(.66); }
+  .collaborations .motion-toggle { position:absolute; top:var(--stack-m); right:0; margin:0; }
+}
+
+/* Floating WhatsApp button, phones and tablets only. */
+.whatsapp-float { display:none; }
+@media(max-width:63.99rem) {
+  .whatsapp-float { position:fixed; right:var(--gutter); bottom:calc(var(--gutter) + env(safe-area-inset-bottom, 0px)); z-index:20; display:grid; place-items:center; width:3.5rem; height:3.5rem; border-radius:50%; background:var(--whatsapp); color:var(--white); box-shadow:0 10px 24px var(--whatsapp-shadow); opacity:0; transform:translateY(1rem) scale(.9); pointer-events:none; transition:opacity .35s ease, transform .35s var(--motion-ease); }
+  .whatsapp-float.is-visible { opacity:1; transform:none; pointer-events:auto; }
+  .whatsapp-float:focus-visible { outline:3px solid var(--blue); outline-offset:3px; }
+}
+@media(prefers-reduced-motion:reduce) { .whatsapp-float { transition:none; } }

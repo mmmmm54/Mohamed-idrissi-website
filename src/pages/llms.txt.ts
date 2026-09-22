@@ -11,7 +11,7 @@ export const GET: APIRoute = async ({ site }) => {
     .join('\n');
   const body = `# Mohamed Idrissi
 
-> Graphic designer and creative director in Tétouan, Morocco, with 6 years of experience in sports, fitness and lifestyle branding. Brand identity, social media campaigns and video.
+> Graphic designer and creative director in Tétouan, Morocco, with 4 years of experience in sports, fitness and lifestyle branding. Brand identity, social media campaigns and video.
 
 ## Services
 

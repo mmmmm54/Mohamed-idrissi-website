@@ -38,6 +38,10 @@
   --vanysis-fg: #131f3d;
   --vanysis-accent: #131f3d;
 
+  /* WhatsApp's own green, used only on the floating chat button. */
+  --whatsapp: #25d366;
+  --whatsapp-shadow: rgba(20, 33, 61, 0.22);
+
   /* Fonts */
   --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
   --font-body: 'Bricolage Grotesque', system-ui, sans-serif;
