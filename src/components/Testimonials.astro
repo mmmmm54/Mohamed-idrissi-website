@@ -1,0 +1,57 @@
+---
+/*
+  Client words, straight from src/data/testimonials.json.
+  Only real quotes, sent by the client, with their permission. Never write one.
+  The section does not render at all while the list is empty.
+
+  One entry:
+    {
+      "quote": "What the client said, in their own words.",
+      "name": "Client name",
+      "role": "Role, Company",
+      "project": "mat",        optional: slug of the related project page
+      "lang": "fr"             optional: language of the quote if not English
+    }
+*/
+import testimonials from '../data/testimonials.json';
+import { getCollection } from 'astro:content';
+import { slugOf } from '../lib/projects';
+
+interface Testimonial { quote: string; name: string; role: string; project?: string; lang?: string }
+const items = testimonials as Testimonial[];
+const titles = Object.fromEntries((await getCollection('projects')).map((project) => [slugOf(project.id), project.data.title]));
+---
+
+{items.length > 0 && (
+  <section class="testimonials page-width reveal" id="clients" aria-labelledby="testimonials-title">
+    <div class="section-heading"><h2 id="testimonials-title">In their words</h2><p>From the people I’ve made work with.</p></div>
+    <div class="testimonial-list">
+      {items.map((item) => (
+        <figure class="testimonial">
+          <svg class="testimonial-mark" viewBox="0 0 48 36" aria-hidden="true" focusable="false"><path d="M0 36V21C0 9 6 2 18 0l2 5c-7 2-10 6-10 12h8v19H0Zm28 0V21C28 9 34 2 46 0l2 5c-7 2-10 6-10 12h8v19H28Z" fill="currentColor" /></svg>
+          <blockquote lang={item.lang}><p>{item.quote}</p></blockquote>
+          <figcaption>
+            <strong>{item.name}</strong>
+            <span>{item.role}</span>
+            {item.project && titles[item.project] && <a href={`/work/${item.project}/`}>See {titles[item.project]} ↗</a>}
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </section>
+)}
+
+<style>
+  .testimonials { padding-top: var(--section-space); }
+  .testimonial-list { display: grid; gap: var(--card-gap); }
+  .testimonial { display: flex; flex-direction: column; gap: var(--stack-m); margin: 0; padding: var(--card-pad); border-radius: var(--radius-card); background: var(--soft-surface); }
+  .testimonial-mark { width: 2.2rem; height: auto; color: var(--blue); }
+  .testimonial blockquote { margin: 0; flex: 1; }
+  .testimonial blockquote p { margin: 0; font-family: var(--font-display); font-size: clamp(1.1rem, 1.6vw, 1.35rem); font-weight: 500; line-height: 1.4; letter-spacing: -.02em; color: var(--ink); }
+  .testimonial figcaption { display: grid; gap: .2rem; padding-top: var(--stack-s); border-top: 1px solid var(--line); }
+  .testimonial figcaption strong { font-weight: 700; color: var(--ink); }
+  .testimonial figcaption span { font-family: var(--font-mono); font-size: var(--size-label); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+  .testimonial figcaption a { justify-self: start; margin-top: .4rem; min-height: 44px; display: inline-flex; align-items: center; font-size: var(--size-ui); color: var(--blue); text-decoration: none; }
+  .testimonial figcaption a:hover { text-decoration: underline; }
+  @media (min-width: 48rem) { .testimonial-list { grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); } }
+</style>

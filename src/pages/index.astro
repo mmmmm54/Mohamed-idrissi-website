@@ -6,6 +6,7 @@ import '../styles/editorial.css';
 import ServiceIcon from '../components/ServiceIcon.astro';
 import SketchArrow from '../components/SketchArrow.astro';
 import ProjectCover from '../components/ProjectCover.astro';
+import Testimonials from '../components/Testimonials.astro';
 import projectCovers from '../data/project-covers.json';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
@@ -98,6 +99,8 @@ const collaborators = [
       </div></div>
       <button class="motion-toggle" type="button" aria-label="Pause moving logos" aria-pressed="false" title="Pause moving logos"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" fill="currentColor"><g class="pause-symbol"><rect x="7" y="5" width="3" height="14" /><rect x="14" y="5" width="3" height="14" /></g><path class="play-symbol" d="m8 5 11 7-11 7Z" /></svg></button>
     </section>
+
+    <Testimonials />
 
     <section class="services page-width" id="services" aria-labelledby="services-title">
       <div class="section-heading"><h2 id="services-title">What I do</h2><p>From the first idea to the final files.</p></div>
