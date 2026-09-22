@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import coverSkip from '../data/cover-skip.json';
 
 /*
   Asset helpers.
@@ -34,8 +35,9 @@ export function galleryOf(slug: string, category?: 'identity' | 'social' | 'camp
 
 /*
   Posters shown on the homepage card, cycled one after another.
-  Every file in selected/web/ is used. src/data/project-covers.json only sets
-  which ones come first; the rest follow in file order. Posters load one at a
+  Every file in selected/web/ is used. src/data/project-covers.json sets which
+  ones come first; the rest follow in file order. src/data/cover-skip.json
+  leaves chosen files off the card. Posters load one at a
   time, just before each is shown, so the visitor never downloads the whole set
   at once.
 */
@@ -53,7 +55,10 @@ export function postersOf(slug: string, curated: string[] = []): string[] {
     .sort();
   /* Cards are portrait: a wide photo or banner would be cropped to a blur, so it
      stays on the project page and is skipped here. */
-  return [...picked, ...rest].filter((file) => !isLandscape(path.join(dir, file))).map(url);
+  const skip = new Set(((coverSkip as Record<string, string[]>)[slug] || []).map((file) => `${file}.webp`));
+  return [...picked, ...rest]
+    .filter((file) => !skip.has(file) && !isLandscape(path.join(dir, file)))
+    .map(url);
 }
 
 /* Width and height straight from the file header (WebP, PNG, JPEG). No image library needed. */
