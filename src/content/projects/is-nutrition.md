@@ -6,7 +6,7 @@ order: 8
 metric: "SELECTED SOCIAL DESIGN"
 summary: Product composition, sports artwork and illustrated social content.
 role: Social design and image composition
-year: "Selected work"
+year: "2024"
 services: [Art direction, Social design, Image composition]
 challenge:
   - "Product composition, sports artwork and illustrated social content."

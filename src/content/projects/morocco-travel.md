@@ -6,7 +6,7 @@ order: 10
 metric: "SELECTED SOCIAL DESIGN"
 summary: Destination imagery and coordinated Arabic campaign layouts.
 role: Travel campaign design
-year: "Selected work"
+year: "2024"
 services: [Art direction, Social design, Image composition]
 challenge:
   - "Destination imagery and coordinated Arabic campaign layouts."

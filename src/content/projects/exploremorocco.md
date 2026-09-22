@@ -2,11 +2,11 @@
 title: ExploreMorocco
 description: Editorial art direction for northern Morocco, made to be explored slowly.
 kind: featured
-order: 2
+order: 5
 metric: "TRAVEL STORIES · SOCIAL ART DIRECTION"
 summary: A travel journal in nine frames. The streets, hands and landscapes of northern Morocco.
 role: Art direction and social design
-year: "Selected work"
+year: "2025"
 services:
   - Editorial art direction
   - Social content design

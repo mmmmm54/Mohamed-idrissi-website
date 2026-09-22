@@ -3,11 +3,11 @@ title: Dr. Majed Mikhail
 shortTitle: Dr. Mikhail
 description: A three-colour social series balancing precision, warmth and emotion.
 kind: featured
-order: 7
+order: 3
 metric: "HEALTHCARE COMMUNICATION · SOCIAL DESIGN"
 summary: Precision. Presence. Empathy. Nine designs, three complementary visual voices.
 role: Art direction and social design
-year: "Selected work"
+year: "2025"
 services:
   - Social art direction
   - Arabic–French layouts

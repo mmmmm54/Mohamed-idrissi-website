@@ -2,12 +2,12 @@
 title: MAALEM
 description: Cinematic AI films for real estate developers in Morocco and the Gulf.
 kind: featured
-order: 4
+order: 9
 metric: "3 DEVELOPER FILMS · MOROCCO & GULF"
 
 summary: We film what hasn't been built yet.
 role: Co-founder and creative direction
-year: "TODO — year / still running?"
+year: "2026"
 services:
   - Creative direction
   - AI film production

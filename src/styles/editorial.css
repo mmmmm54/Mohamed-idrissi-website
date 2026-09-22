@@ -273,3 +273,12 @@
   .mosaic-visual:hover > img { transform:scale(1.035); }
   #work .mosaic-project:hover .project-preview-detail { opacity:1; width:100%; height:100%; max-height:none; }
 }
+
+/* Hero call to action: the one solid blue button on the page. */
+.hero .round-link { gap:.6rem; padding:.85rem 1.35rem; border:0; border-radius:var(--radius-pill); background:var(--blue); color:var(--white); font-size:.95rem; font-weight:600; }
+.hero .round-link:hover { background:var(--ink); color:var(--white); }
+.hero .round-link span { display:inline-block; transition:transform var(--motion-hover) var(--motion-ease); }
+.hero .round-link:hover span { transform:translateY(3px); }
+
+/* Comfortable tap targets on phones: at least 44px tall. */
+.portfolio-nav div a, .secondary-links a { display:inline-flex; align-items:center; min-height:44px; }

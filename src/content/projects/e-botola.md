@@ -2,11 +2,11 @@
 title: E-Botola
 description: Player portraits built around club colours and the energy of Moroccan esports.
 kind: featured
-order: 9
+order: 2
 metric: "SELECTED SOCIAL DESIGN"
 summary: Layered player portraits, club colours and city references.
 role: Sports art direction
-year: "Selected work"
+year: "2024"
 services: [Art direction, Social design, Image composition]
 challenge:
   - "Layered player portraits, club colours and city references."

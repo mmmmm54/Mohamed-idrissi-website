@@ -74,7 +74,7 @@ const collaborators = [
                 <a class="case-link" href={`/work/${slug}/`}>View project <SketchArrow /></a>
               </div>
               <a class:list={['mosaic-visual', { 'mosaic-visual--posts': hasPostCover }]} href={`/work/${slug}/`} aria-label={`View ${project.data.title}`} tabindex="-1">
-                {hasPostCover ? <ProjectCover slug={slug} title={project.data.title} /> : video ? (
+                {hasPostCover ? <ProjectCover slug={slug} title={project.data.title} priority={index < 3} /> : video ? (
                   <video src={video} poster={coverOf(slug)} autoplay muted loop playsinline aria-hidden="true"></video>
                 ) : (
                   <img src={coverOf(slug)} alt="" loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />
