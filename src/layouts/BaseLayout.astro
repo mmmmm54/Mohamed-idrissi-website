@@ -76,6 +76,16 @@ const person = {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
     <script is:inline>document.documentElement.classList.add('js');</script>
+    <!-- Vercel Web Analytics: visitor counts, no cookies. Loads only on the live domain, never on a local preview. -->
+    <script is:inline>
+      if (/(^|\.)mohamedidrissi\.site$/.test(location.hostname)) {
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+        var insights = document.createElement('script');
+        insights.defer = true;
+        insights.src = '/_vercel/insights/script.js';
+        document.head.appendChild(insights);
+      }
+    </script>
   </head>
   <body>
     <slot />
