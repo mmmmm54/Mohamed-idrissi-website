@@ -321,7 +321,7 @@ def glazing(ax, plane, n, o):
         pbox("frame", ax, plane, n, u0, u1, 0.08, 0.16, z0 + 2.40, z0 + 2.40 + fw)
     pbox("glass", ax, plane, n, u0 + fw / 2, u1 - fw / 2, 0.11, 0.13, z0 + fw / 2, z1 - fw / 2)
     if kind == "win":   # projecting stone sill
-        pbox("white", ax, plane, n, u0 - 0.05, u1 + 0.05, -0.05, 0.10, z0 - 0.05, z0)
+        pbox("white", ax, plane, n, u0 - 0.05, u1 + 0.05, -0.05, 0.10, z0 - 0.05, z0 + 0.02)
 
 
 def _subtract(a, b, cuts):
@@ -415,12 +415,12 @@ def teal_at(level):
     return any(abs(level - L) < 1e-6 for L in TEAL_LEVELS)
 
 
-def balcony_slab(x0, x1, y0, y1, f, teal_zone):
+def balcony_slab(x0, x1, y0, y1, f, teal_zone, lift=0.0):
     L = FL[f - 1]
     if teal_zone and teal_at(L):
         return          # the teal band is the slab here
     th = 0.40 if f == 1 else SLAB
-    box("white", x0, x1, y0, y1, L - th, L)
+    box("white", x0, x1, y0, y1, L - th, L + lift)
 
 
 def soffit_z(f, teal_zone):
@@ -439,15 +439,15 @@ def build_rdc():
              O(4.00, 6.20, 0, 5.00, "entrance"),         # building entrance
              O(7.25, 10.15, 0, lo, "shutter"), O(7.25, 10.15, g0, g1, "shop"),
              O(11.10, 15.10, 0, lo, "shutter"), O(11.10, 15.10, g0, g1, "shop")]
-    wall("marble", "Y", 0.0, -1, 0.0, RDC_W, 0.0, H_RDC, front, t=0.30)
+    zt = H_RDC - 0.20
+    wall("marble", "Y", 0.0, -1, 0.0, RDC_W, 0.0, zt, front, t=0.30)
     side = []
     for a, b in [(0.66, 5.57), (6.29, 10.73), (13.60, 16.97), (17.80, 21.76)]:
         side += [O(a, b, 0, lo, "shutter"), O(a, b, g0, g1, "shop")]
-    wall("marble", "X", RDC_W, +1, 0.0, RDC_D, 0.0, H_RDC, side, t=0.30)
-    wall("party", "X", 0.0, -1, 0.0, RDC_D, 0.0, H_RDC)
-    wall("party", "Y", RDC_D, +1, 0.0, RDC_W, 0.0, H_RDC)
-    box("white", 0.0, RDC_W, 0.0, RDC_D, H_RDC - 0.20, H_RDC)       # RDC roof slab
-    box("roof", 0.25, 5.58, 16.60, RDC_D - 0.25, H_RDC, H_RDC + 0.02)  # court floor (1er étage)
+    wall("marble", "X", RDC_W, +1, 0.30, RDC_D, 0.0, zt, side, t=0.30)
+    wall("party", "X", 0.0, -1, 0.30, RDC_D - T, 0.0, zt)
+    wall("party", "Y", RDC_D, +1, 0.0, RDC_W - 0.30, 0.0, zt)
+    box("white", 0.0, RDC_W, 0.0, RDC_D, zt, H_RDC)                   # RDC roof slab
     # door leaf inside the entrance and floor mat of the lobby
     pbox("door", "Y", 0.0, -1, 4.55, 5.65, 0.12, 0.14, 0.0, 2.35)
     # downlights under the overhangs
@@ -462,13 +462,15 @@ def build_rdc():
 # ---------------------------------------------------------------------------
 def build_floor(f):
     z0, z1 = FL[f - 1], FL[f]
+    if f == 6:
+        z1 = ROOF - 0.40          # the roof slab caps the walls
 
     # --- MAIN STREET (outer face Y = -1.50, main line Y = 0) -----------------
     # a. pier by the left party wall + b. loggia (balcon 1.90)
     box(mat_c(f), 0.0, 0.90, 0.0, 1.60, z0, z1)
     wall("white", "Y", 1.60, -1, 0.90, 2.02, z0, z1, [door(1.05, 1.87, f)])
     wall("white", "X", 2.02, -1, 0.0, 1.60, z0, z1)
-    balcony_slab(0.90, 2.02, -0.05, 1.60, f, False)
+    balcony_slab(0.90, 2.02, -0.05, 1.60, f, False, lift=0.02 if f == 1 else 0.0)
     railing("Y", 0.0, -1, 0.90, 2.02, z0)
 
     # c. bedroom in encorbellement, X 2.02-6.33 (window 2.50)
@@ -510,9 +512,9 @@ def build_floor(f):
     balcony_slab(RDC_W, X_OUT + 0.05, 16.26, 21.50, f, False)
     railing("X", X_OUT, +1, 16.26, 21.50, z0)
 
-    # --- COURTYARD (cour au 1er étage, vide sur cour 2-6) ---------------------
-    wall("white", "X", 5.58, -1, 16.60, RDC_D - T, z0, z1, [win(17.30, 18.80, f), win(19.80, 21.30, f)])
-    wall("white", "Y", 16.60, +1, T, 5.58 + T, z0, z1, [win(1.00, 2.60, f)])
+    # --- BACK AND LEFT: blind walls, full block (the courtyard is filled in) ---
+    wall("party", "X", 0.0, -1, 1.60, RDC_D - T, z0, z1)
+    wall("party", "Y", RDC_D, +1, 0.0, RDC_W, z0, z1)
 
     # --- plants and downlights on the balconies -----------------------------
     zt = soffit_z(f, True)
@@ -561,12 +563,12 @@ def fins(ax, plane, n, u0, count, z0, z1):
     """White vertical fins (brise-soleil) standing on the outer face line."""
     for i in range(count):
         u = u0 + i * 0.16
-        pbox("white", ax, plane, n, u, u + 0.08, -0.05, 0.25, z0, z1)
+        pbox("white", ax, plane, n, u, u + 0.08, -0.07, 0.25, z0, z1)
 
 
 def build_fins():
     zf0, zf1 = FL[2], FL[4] - TEAL_SLAB          # F3-F4 between the teal bands
-    fins("Y", Y_OUT, -1, 9.95, 4, zf0, zf1)
+    fins("Y", Y_OUT, -1, 9.90, 4, zf0, zf1)
     fins("X", X_OUT, +1, 7.10, 4, zf0, zf1)
     zg0, zg1 = FL[4], FL[5] - TEAL_SLAB          # inside the F5 frame
     fins("Y", Y_OUT, -1, 6.40, 4, zg0, zg1)
@@ -576,19 +578,17 @@ def build_fins():
 def build_roof():
     e = 0.05
     rects = [(2.02, X_OUT + e, Y_OUT - e, 0.0),
-             (0.0, X_OUT + e, 0.0, 16.60),
-             (5.58, X_OUT + e, 16.60, RDC_D)]
+             (0.0, RDC_W, 0.0, RDC_D),
+             (RDC_W, X_OUT + e, 0.0, 21.50)]      # stops at the teal back band
     for x0, x1, y0, y1 in rects:
         box("white", x0, x1, y0, y1, ROOF - 0.40, ROOF)
         box("roof", x0 + 0.1, x1 - 0.3, y0 + 0.1, y1 - 0.1, ROOF, ROOF + 0.02)
     top = ROOF + PARAPET
     box("white", 2.02, X_OUT - 0.40, Y_OUT - e, Y_OUT + 0.20, ROOF, top)
-    box("white", 2.02, 2.22, Y_OUT, 0.0, ROOF, top)
+    box("white", 2.02, 2.22, Y_OUT + 0.20, 0.0, ROOF, top)
     box("white", 0.0, 2.02, 0.0, 0.20, ROOF, top)
-    box("white", 0.0, 0.20, 0.0, 16.60, ROOF, top)
-    box("white", 0.0, 5.58, 16.60, 16.80, ROOF, top)
-    box("white", 5.58, 5.78, 16.60, RDC_D, ROOF, top)
-    box("white", 5.58, RDC_W, RDC_D - 0.20, RDC_D, ROOF, top)
+    box("white", 0.0, 0.20, 0.20, RDC_D, ROOF, top)
+    box("white", 0.20, RDC_W, RDC_D - 0.20, RDC_D, ROOF, top)
     # stair house (cage d'escalier) — plan X 3.60-6.80, Y 11.20-16.60
     box("white", 3.60, 6.80, 11.20, 16.60, ROOF, ROOF + 2.60)
     box("white", 3.50, 6.90, 11.10, 16.70, ROOF + 2.60, ROOF + 2.75)
@@ -607,8 +607,6 @@ def build_site():
     box("asphalt", -30.0, 50.0, -16.0, -4.0, -0.30, -0.15)
     box("asphalt", X_OUT + 4.5, 32.0, -4.0, 45.0, -0.30, -0.15)
     box("asphalt", -150.0, 150.0, -150.0, 150.0, -0.40, -0.31)
-    box("party", -14.0, 0.0, 0.0, RDC_D, 0.0, 19.5)          # neighbours (render context)
-    box("party", -2.0, RDC_W, RDC_D, RDC_D + 12.0, 0.0, 23.0)
     SITE[0] = False
 
 
@@ -693,13 +691,26 @@ def look_at(ob, target):
     ob.rotation_euler = d.to_track_quat("-Z", "Y").to_euler()
 
 
-def setup_render():
+def setup_scene():
+    """World, sun and final render settings for an After Effects image sequence."""
     sc = bpy.context.scene
     sc.render.engine = "CYCLES"
-    sc.cycles.device = "CPU"
-    sc.cycles.samples = 48
+    sc.cycles.device = "GPU"            # falls back to CPU when no GPU is set up
+    sc.cycles.samples = 256
     sc.cycles.use_denoising = True
     sc.render.film_transparent = False
+    sc.render.resolution_x, sc.render.resolution_y = 1920, 1080
+    sc.render.resolution_percentage = 100
+    sc.render.fps = 25
+    sc.frame_start, sc.frame_end = 1, 250
+    sc.render.use_motion_blur = False
+    st = sc.render.image_settings
+    st.file_format = "PNG"
+    st.color_mode = "RGBA"
+    st.color_depth = "16"
+    st.compression = 15
+    sc.render.filepath = "//render_AE/imara_"
+    sc.render.use_file_extension = True
     sc.view_settings.view_transform = "AgX"
     sc.view_settings.look = "AgX - Medium High Contrast"
     world = bpy.data.worlds.new("Sky")
@@ -721,7 +732,7 @@ def setup_render():
     sc.collection.objects.link(so)
 
 
-def render_view(name, loc, target, lens=None, ortho=None, res=(1100, 1300)):
+def add_camera(name, loc, target, lens=None, ortho=None):
     sc = bpy.context.scene
     cam = bpy.data.cameras.new("Cam_" + name)
     ob = bpy.data.objects.new("Cam_" + name, cam)
@@ -735,12 +746,56 @@ def render_view(name, loc, target, lens=None, ortho=None, res=(1100, 1300)):
         cam.lens = lens
         cam.sensor_width = 36
     cam.clip_end = 500
-    sc.camera = ob
+    return ob
+
+
+def add_drone_orbit():
+    """Animated drone camera for After Effects: 10 s at 25 fps, orbits the corner."""
+    sc = bpy.context.scene
+    pivot = bpy.data.objects.new("Drone_Pivot", None)
+    sc.collection.objects.link(pivot)
+    pivot.location = (8.6, 11.0, 12.0)
+    cam = bpy.data.cameras.new("Cam_Drone_Orbit")
+    cam.lens = 28
+    cam.sensor_width = 36
+    cam.clip_end = 1000
+    ob = bpy.data.objects.new("Cam_Drone_Orbit", cam)
+    sc.collection.objects.link(ob)
+    ob.parent = pivot
+    ob.location = (0.0, -52.0, 14.0)
+    aim = ob.constraints.new("TRACK_TO")
+    aim.target = pivot
+    aim.track_axis = "TRACK_NEGATIVE_Z"
+    aim.up_axis = "UP_Y"
+    for frame, angle, height in ((1, -10.0, 16.0), (250, 110.0, 8.0)):
+        pivot.rotation_euler = (0.0, 0.0, math.radians(angle))
+        pivot.keyframe_insert("rotation_euler", index=2, frame=frame)
+        ob.location.z = height
+        ob.keyframe_insert("location", index=2, frame=frame)
+    for anim_ob in (pivot, ob):
+        for fc in anim_ob.animation_data.action.fcurves:
+            for kp in fc.keyframe_points:
+                kp.interpolation = "BEZIER"
+                kp.easing = "EASE_IN_OUT"
+    return ob
+
+
+def render_still(cam_ob, name, res):
+    sc = bpy.context.scene
+    keep = (sc.camera, sc.cycles.device, sc.cycles.samples, sc.render.filepath,
+            sc.render.resolution_x, sc.render.resolution_y, sc.render.image_settings.file_format,
+            sc.render.image_settings.color_depth)
+    sc.camera = cam_ob
+    sc.cycles.device, sc.cycles.samples = "CPU", 48
     sc.render.resolution_x, sc.render.resolution_y = res
     sc.render.image_settings.file_format = "JPEG"
     sc.render.image_settings.quality = 90
     sc.render.filepath = os.path.join(OUT, "previews", name + ".jpg")
     bpy.ops.render.render(write_still=True)
+    (sc.camera, sc.cycles.device, sc.cycles.samples, sc.render.filepath,
+     sc.render.resolution_x, sc.render.resolution_y, sc.render.image_settings.file_format,
+     depth) = keep
+    sc.render.image_settings.color_depth = depth
 
 
 def main():
@@ -766,15 +821,25 @@ def main():
                               export_image_format="JPEG", export_jpeg_quality=88,
                               export_yup=True, export_apply=True)
 
+    setup_scene()
+    cams = [
+        (add_camera("corner_view", (31.0, -22.0, 1.7), (11.0, 4.0, 14.0), lens=22), (1100, 1300)),
+        (add_camera("side_street_view", (40.0, -6.0, 1.7), (15.5, 10.5, 14.0), lens=22), (1100, 1300)),
+        (add_camera("aerial_back_view", (-22.0, 48.0, 44.0), (9.0, 10.0, 12.0), lens=30), (1300, 1100)),
+        (add_camera("elevation_principale", (8.625, -60.0, 13.1), (8.625, 0.0, 13.1), ortho=30.0),
+         (1000, 1100)),
+        (add_camera("elevation_laterale_droite", (70.0, 11.25, 13.1), (0.0, 11.25, 13.1), ortho=30.0),
+         (1100, 1100)),
+    ]
+    drone = add_drone_orbit()
     if RENDER:
         os.makedirs(os.path.join(OUT, "previews"), exist_ok=True)
-        setup_render()
-        render_view("corner_view", (31.0, -22.0, 1.7), (11.0, 4.0, 14.0), lens=22)
-        render_view("side_street_view", (40.0, -6.0, 1.7), (15.5, 10.5, 14.0), lens=22)
-        render_view("elevation_principale", (8.625, -60.0, 13.1), (8.625, 0.0, 13.1),
-                    ortho=30.0, res=(1000, 1100))
-        render_view("elevation_laterale_droite", (70.0, 11.25, 13.1), (0.0, 11.25, 13.1),
-                    ortho=30.0, res=(1100, 1100))
+        for cam_ob, res in cams:
+            render_still(cam_ob, cam_ob.name[4:], res)
+        bpy.context.scene.frame_set(125)
+        render_still(drone, "drone_orbit_frame125", (1280, 720))
+        bpy.context.scene.frame_set(1)
+    bpy.context.scene.camera = drone
     bpy.ops.wm.save_as_mainfile(filepath=blend_path, compress=True)
     if os.path.exists(blend_path + "1"):
         os.remove(blend_path + "1")
