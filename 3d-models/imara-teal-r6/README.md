@@ -6,9 +6,11 @@ from the floor plan *PLAN 1er, 2eme, 3eme et 4eme ETAGES*, the two elevations
 
 | File | What it is |
 |---|---|
-| `Imara_Teal_R6.glb` | The model, textures embedded. Opens in any glTF viewer, Blender, SketchUp, Twinmotion, three.js. |
-| `Imara_Teal_R6.blend` | Blender project: same model + street, sun, sky, 5 still cameras and an animated drone camera, set up for an After Effects render. |
-| `build_imara.py` | Script that generates everything. Change a number, re-run, get a new model. |
+| `Imara_Teal_R6_HQ.glb` | **For After Effects**: lighting and shadows baked into the textures, looks like the previews in any viewer. |
+| `Imara_Teal_R6.glb` | Plain PBR model with tiled textures, for engines with their own lighting (Twinmotion, Lumion, Unreal, Blender). |
+| `Imara_Teal_R6.blend` | Blender project: model + street, sun, sky and the preview cameras. |
+| `build_imara.py` | Script that generates the model. Change a number, re-run, get a new model. |
+| `bake_hq.py` | Bakes the lighting into textures and exports `Imara_Teal_R6_HQ.glb`. |
 | `textures/` | The procedural textures (panels, stone, wood, black marble, shutters…). |
 | `previews/` | Renders, plus drawing vs model comparisons. |
 
@@ -62,26 +64,26 @@ corner at the left party wall. The GLB is Y-up as glTF requires.
 - Floor heights (5.50 / 3.20) are scaled off the elevations, not written on the plan. If the permit
   drawings give exact levels, change `H_RDC` and `H_FL` at the top of `build_imara.py` and re-run.
 
-## Render for After Effects
+## After Effects: use `Imara_Teal_R6_HQ.glb`
 
-The `.blend` is already set up: Cycles, 1920 × 1080, 25 fps, frames 1–250 (10 s),
-256 samples + denoise, output **PNG 16-bit RGBA sequence** to `render_AE/` next to the `.blend`.
-The active camera is `Cam_Drone_Orbit`, a drone shot that circles the corner.
+`Imara_Teal_R6_HQ.glb` is the version made for After Effects and other real-time viewers.
+The Cycles lighting (sun, sky, soft shadows, bounce light, downlights) is **baked into the
+textures** and the materials are unlit (`KHR_materials_unlit`), so the building looks the same
+as the previews whatever lights the viewer has. Glass and glass railings stay as real
+reflective / transparent materials. Hidden faces (wall insides) are removed.
+`previews/hq_glb_*.jpg` show the GLB in a plain viewer with no lights of its own.
 
-1. Open `Imara_Teal_R6.blend` in Blender 4.2+.
-2. Edit ▸ Preferences ▸ System ▸ Cycles Render Devices: pick your GPU (CUDA / OptiX / HIP / Metal).
-3. Render ▸ Render Animation (Ctrl F12). Frames land in `render_AE/imara_0001.png` …
-4. After Effects: File ▸ Import ▸ File, select `imara_0001.png`, tick **PNG Sequence**, Import.
-   Right-click the footage ▸ Interpret Footage ▸ Main ▸ Assume this frame rate: **25**.
-5. New composition from the footage (1920 × 1080, 25 fps). Set the project to 16 bpc
-   (click "8 bpc" at the bottom of the Project panel) so the 16-bit PNGs keep their detail.
-6. Export with Composition ▸ Add to Adobe Media Encoder Queue: H.264 "Match Source – High bitrate"
-   (or 20–40 Mbps, 2-pass) for social media, ProRes 422 HQ for a master.
+1. File ▸ Import ▸ File ▸ `Imara_Teal_R6_HQ.glb`, drag it into a composition.
+2. Composition Settings ▸ 3D Renderer ▸ **Advanced 3D**.
+3. Lights: an **Environment** light only (Layer ▸ New ▸ Light ▸ Environment). It lights the glass.
+   No directional or spot light with shadows: the shadows are already in the textures.
+4. Preview at Full resolution with Draft 3D off; render with Quality **Best**.
 
-For 4K set Output Properties ▸ Resolution to 3840 × 2160. To use a different move, select
-another camera and press Ctrl 0 before rendering. For a white background you can mask in After Effects,
-tick Render Properties ▸ Film ▸ Transparent (the PNGs keep the alpha channel).
+The sun direction is fixed by the bake. For a different time of day or new materials,
+change `setup_scene()` / `MAT_DEF` in `build_imara.py`, re-run it, then run
+`python bake_hq.py . 48 72` (samples, texels per metre; about 80 min on 4 CPU cores).
+It also writes the 16-bit baked textures to `baked/` and `Imara_Teal_R6_HQ.blend`,
+which are too big for git and are ignored.
 
-The GLB can also go straight into After Effects 2024+ (File ▸ Import, then the Advanced 3D
-renderer), but that is a real-time preview. The Cycles image sequence is what keeps
-every detail: reflections, shadows, textures and the glass.
+`Imara_Teal_R6.glb` is the plain PBR version (tiled textures, no baked light) for
+engines that do their own lighting (Twinmotion, Lumion, Unreal, Blender).
