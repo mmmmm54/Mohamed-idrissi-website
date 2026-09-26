@@ -2,7 +2,7 @@
 title: VANYSIS
 description: An AI creative operating system for a skin performance brand.
 kind: small
-order: 4
+order: 5
 metric: "3 VISUAL WORLDS · ONE NODE SYSTEM"
 
 summary: Science, technology and human stories — one visual language across 35 artworks and carousel boards.

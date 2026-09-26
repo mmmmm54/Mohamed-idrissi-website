@@ -107,6 +107,9 @@
 .client-logo img[src$="e-botola.png"] { --logo-w:55.51px; --logo-h:54px; }
 .client-logo img[src$="norvale.png"] { --logo-w:140.31px; --logo-h:59.69px; --logo-x:.62px; --logo-y:1.38px; }
 .client-logo img[src$="dr-majed-mikhail.svg"] { --logo-w:64px; --logo-h:64px; }
+.client-logo img[src$="sarasota-paradise.png"] { --logo-w:78px; --logo-h:78px; }
+/* Dark round crest: inverted first, so the lettering reads as ink instead of a solid disc. */
+.client-logo--paradise img { filter:grayscale(1) invert(1) brightness(.85) contrast(4) url(#brand-blue-ink); mix-blend-mode:multiply; }
 .collaborations .collaborations-heading { align-items:flex-end; padding-inline:0; margin-bottom:1.5rem; gap:1.5rem; flex-wrap:wrap; }
 .collaborations .collaborations-heading h2 { font-family:var(--font-ui); font-size:clamp(2rem,4vw,3.4rem); line-height:1.08; text-transform:none; letter-spacing:-.045em; color:var(--ink); font-weight:600; }
 .brands-title-ink { position:relative; display:inline-block; color:var(--blue); padding-bottom:.2em; }

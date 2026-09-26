@@ -2,7 +2,7 @@
 title: Morocco Travel
 description: Destination collages and connected travel campaigns, from blue skies to architectural detail.
 kind: featured
-order: 10
+order: 11
 metric: "SELECTED SOCIAL DESIGN"
 summary: Destination imagery and coordinated Arabic campaign layouts.
 role: Travel campaign design

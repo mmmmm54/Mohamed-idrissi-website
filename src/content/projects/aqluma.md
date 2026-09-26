@@ -2,7 +2,7 @@
 title: AQLUMA
 description: AI literacy made approachable for Moroccan teens and their parents.
 kind: small
-order: 6
+order: 7
 metric: "3 PILLARS · MUSÉE / STUDIO / BRIEFING"
 
 summary: AI literacy for Moroccan teens and parents, built as a brand instead of a lecture.

@@ -2,7 +2,7 @@
 title: JustFit
 description: Social campaigns, bold offers and everyday energy for a Tétouan gym.
 kind: featured
-order: 7
+order: 8
 metric: "SOCIAL DESIGN · CAMPAIGN ART DIRECTION"
 summary: Social posts, seasonal campaigns and promotional artwork for JustFit in Tétouan.
 role: Graphic design and campaign art direction

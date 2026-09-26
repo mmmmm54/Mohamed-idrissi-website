@@ -2,7 +2,7 @@
 title: Sarasota Paradise
 description: Matchday graphics for a Florida football club, in teal, coral and sunset light.
 kind: featured
-order: 11
+order: 3
 metric: "SELECTED MATCHDAY DESIGN"
 summary: "A matchday set for Sarasota Paradise: match announcement, starting eleven and full time."
 role: Sports art direction

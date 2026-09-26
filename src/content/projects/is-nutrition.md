@@ -2,7 +2,7 @@
 title: IS Nutrition
 description: Bold product visuals, sports celebrations and a playful Moroccan voice.
 kind: featured
-order: 8
+order: 9
 metric: "SELECTED SOCIAL DESIGN"
 summary: Product composition, sports artwork and illustrated social content.
 role: Social design and image composition
