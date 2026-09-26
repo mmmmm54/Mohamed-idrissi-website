@@ -228,7 +228,7 @@ img, video { display: block; max-width: 100%; }
 .brand-track { display:flex; width:max-content; animation:brand-scroll 42s linear infinite; }
 .brand-strip { display:flex; flex-shrink:0; align-items:center; justify-content:space-around; gap:var(--card-pad); min-width:var(--page-max); margin:0; padding:var(--stack-m) var(--card-pad); list-style:none; }
 .brand-strip li { color:var(--ink-soft); font-size:clamp(1.2rem,2vw,1.6rem); font-weight:700; letter-spacing:-.035em; white-space:nowrap; }
-.brand-track.is-paused, .brand-marquee:hover .brand-track { animation-play-state:paused; }
+.brand-track.is-paused, .brand-marquee:not(.is-draggable):hover .brand-track { animation-play-state:paused; }
 .motion-toggle { display:block; margin:var(--stack-s) auto 0; padding:var(--stack-s); border:0; background:none; color:var(--ink-soft); font:inherit; font-size:var(--size-label); cursor:pointer; text-decoration:underline; text-underline-offset:.25em; }
 @keyframes brand-scroll { to { transform:translateX(-50%); } }
 @media(prefers-reduced-motion:reduce) {
@@ -270,3 +270,11 @@ img, video { display: block; max-width: 100%; }
 .contact-copy { max-width:34rem; margin-top:var(--stack-m); line-height:1.6; }
 @media(min-width:60rem) { .service-grid, .deliverable-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } .featured-card { aspect-ratio:2 / 1; } }
 @media(max-width:30rem) { .portfolio-nav div { gap:var(--stack-s); font-size:var(--size-ui); } .hero h1 { font-size:clamp(2rem, 10vw, 3rem); } }
+
+/* Drag mode: the ribbon becomes a real scroller, so it can be pulled left or right.
+   Added by script, so without JavaScript the CSS animation above still plays. */
+.brand-marquee.is-draggable { overflow-x: auto; scrollbar-width: none; scroll-behavior: auto; cursor: grab; overscroll-behavior-x: contain; }
+.brand-marquee.is-draggable::-webkit-scrollbar { display: none; }
+.brand-marquee.is-draggable .brand-track { animation: none; }
+.brand-marquee.is-dragging { cursor: grabbing; user-select: none; }
+.brand-marquee.is-draggable img { -webkit-user-drag: none; user-drag: none; }

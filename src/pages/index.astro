@@ -175,6 +175,67 @@ const collaborators = [
     });
     const revealItems = document.querySelectorAll('.reveal');
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    /* Logo ribbon: drifts on its own, and can be dragged or swiped left and right.
+       The strip is rendered twice, so scrolling wraps at half the width and never shows an edge. */
+    const marquee = document.querySelector<HTMLElement>('.brand-marquee');
+    const track = document.querySelector<HTMLElement>('.brand-track');
+    if (marquee && track && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      marquee.classList.add('is-draggable');
+      /* Speed comes from the CSS loop time: one full strip every --brand-loop-time seconds. */
+      const loopSeconds = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--brand-loop-time')) || 56;
+      let dragging = false;
+      let startX = 0;
+      let startScroll = 0;
+      let last = 0;
+      /* scrollLeft only takes whole pixels, so the sub-pixel drift is kept here. */
+      let position = marquee.scrollLeft;
+      const half = () => track.scrollWidth / 2;
+      const wrap = () => {
+        const width = half();
+        if (width <= 0) return;
+        if (position >= width) position -= width;
+        else if (position < 0) position += width;
+        if (Math.abs(marquee.scrollLeft - position) >= 1) marquee.scrollLeft = position;
+      };
+      const drift = (now: number) => {
+        const elapsed = last ? Math.min((now - last) / 1000, 0.1) : 0;
+        last = now;
+        if (!dragging && !track.classList.contains('is-paused')) {
+          position += (half() / loopSeconds) * elapsed;
+          wrap();
+        }
+        requestAnimationFrame(drift);
+      };
+      requestAnimationFrame(drift);
+      marquee.addEventListener('pointerdown', (event) => {
+        /* Phones and tablets keep the browser's own swipe, which also scrolls the page vertically. */
+        if (event.pointerType === 'touch') return;
+        if (event.pointerType === 'mouse' && event.button !== 0) return;
+        dragging = true;
+        startX = event.clientX;
+        startScroll = marquee.scrollLeft;
+        marquee.classList.add('is-dragging');
+        marquee.setPointerCapture(event.pointerId);
+      });
+      marquee.addEventListener('pointermove', (event) => {
+        if (!dragging) return;
+        event.preventDefault();
+        position = startScroll - (event.clientX - startX);
+        wrap();
+        marquee.scrollLeft = position;
+      });
+      const endDrag = (event: PointerEvent) => {
+        if (!dragging) return;
+        dragging = false;
+        marquee.classList.remove('is-dragging');
+        if (marquee.hasPointerCapture(event.pointerId)) marquee.releasePointerCapture(event.pointerId);
+      };
+      marquee.addEventListener('pointerup', endDrag);
+      marquee.addEventListener('pointercancel', endDrag);
+      /* A swipe or a wheel moves the scroller itself: follow it. */
+      marquee.addEventListener('scroll', () => { if (!dragging && Math.abs(marquee.scrollLeft - position) >= 2) position = marquee.scrollLeft; }, { passive: true });
+    }
+
     const motionToggle = document.querySelector<HTMLButtonElement>('.motion-toggle');
     motionToggle?.addEventListener('click', () => {
       const paused = motionToggle.getAttribute('aria-pressed') !== 'true';
