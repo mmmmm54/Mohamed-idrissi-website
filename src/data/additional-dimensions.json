@@ -222,5 +222,17 @@
   "maalem/13.webp": {
     "width": 648,
     "height": 810
+  },
+  "sarasota-paradise/01.jpg": {
+    "width": 1600,
+    "height": 2000
+  },
+  "sarasota-paradise/02.jpg": {
+    "width": 1600,
+    "height": 2000
+  },
+  "sarasota-paradise/03.jpg": {
+    "width": 1600,
+    "height": 2000
   }
 }

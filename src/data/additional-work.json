@@ -144,5 +144,20 @@
         ]
       }
     ]
+  },
+  "sarasota-paradise": {
+    "name": "Sarasota Paradise",
+    "direct": true,
+    "groups": [
+      {
+        "title": "One week, three posts.",
+        "note": "Match announcement, starting eleven and full time, sharing a palette of club teal and coral over navy.",
+        "files": [
+          "01.jpg",
+          "02.jpg",
+          "03.jpg"
+        ]
+      }
+    ]
   }
 }

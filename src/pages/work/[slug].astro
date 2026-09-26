@@ -34,7 +34,7 @@ const slug = slugOf(project.id);
 /* Share the first real poster, never an illustrative placeholder cover. */
 const shareImage = postersOf(slug, (projectCovers as Record<string, string[]>)[slug] || [])[0] ?? '/og-image.png';
 const curatedSlug = slug === 'exploremorocco' || slug === 'dr-majed-mikhail' ? slug : undefined;
-const additionalSlug = slug === 'is-nutrition' || slug === 'e-botola' || slug === 'morocco-travel' || slug === 'aqluma' || slug === 'maalem' ? slug : undefined;
+const additionalSlug = slug === 'is-nutrition' || slug === 'e-botola' || slug === 'morocco-travel' || slug === 'aqluma' || slug === 'maalem' || slug === 'sarasota-paradise' ? slug : undefined;
 const nextSlug = slugOf(next.id);
 const gallery = galleryOf(slug);
 const collections = [
