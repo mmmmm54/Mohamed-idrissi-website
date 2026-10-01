@@ -247,6 +247,7 @@ def duplex_unit(k, s):
     sy = Y(W - 2.6, W)
     k.box("render", sx0, sx1, sy[0], sy[1], z2, z2 + 2.55)
     k.box("render", sx0 - CORNICE, sx1 + CORNICE, sy[0] - CORNICE, sy[1] + CORNICE, z2 + 2.55, z2 + 2.65)
+    stair_merlons(k, sx0, sx1, sy[0], sy[1], z2 + 2.65)
     k.fbox("bronze", "x", sx0, +1, sy[0] + 0.7, sy[1] - 0.8, -0.02, 0.05, z2 + 0.05, z2 + 2.2)
     k.jacuzzi(ux0 + 1.6, s * (W - 1.6), z2 + 0.04)
 
@@ -287,6 +288,7 @@ def villa_r1(k, Wd=11.0, Dp=8.6, SB=3.4):
     k.box("roof", ux0 + 0.25, x1 - 0.25, y0 + 0.25, y1 - 0.25, z2, z2 + 0.04)
     k.box("render", x1 - 3.0, x1, y1 - 2.6, y1, z2, z2 + 2.55)
     k.box("render", x1 - 3.0 - CORNICE, x1 + CORNICE, y1 - 2.6 - CORNICE, y1 + CORNICE, z2 + 2.55, z2 + 2.65)
+    stair_merlons(k, x1 - 3.0, x1, y1 - 2.6, y1, z2 + 2.65)
     k.jacuzzi(ux0 + 1.5, y0 + 1.5, z2 + 0.04)
 
 
@@ -313,6 +315,7 @@ def villa_rdc(k, Wd, Dp, pergola_w):
     k.pergola(x0 + 0.3, x0 + 4.0, y0 + 0.3, y0 + 0.3 + pergola_w, z1 + 0.04, z1 + 2.7)
     k.box("render", x1 - 2.8, x1, y1 - 2.6, y1, z1, z1 + 2.55)
     k.box("render", x1 - 2.8 - CORNICE, x1 + CORNICE, y1 - 2.6 - CORNICE, y1 + CORNICE, z1 + 2.55, z1 + 2.65)
+    stair_merlons(k, x1 - 2.8, x1, y1 - 2.6, y1, z1 + 2.65)
 
 
 # ---------------------------------------------------------------------------
@@ -378,6 +381,20 @@ def lot_dressing(kd, lot_poly_local, house_local, pool_local, mats_used):
     """Hedges on the lot edges, stone wall on the street edge, terrace paving and the pool.
     All coordinates in plan-local metres (u, v); kd collects world-space boxes later."""
     pass
+
+
+def stair_merlons(k, x0, x1, y0, y1, z):
+    """Stepped corner merlons on rooftop stair houses (as-built site photo, 2026-10-01)."""
+    steps = ((0.55, 0.30), (0.38, 0.28), (0.20, 0.25))
+    for cx, cy in ((x0, y0), (x0, y1), (x1, y0), (x1, y1)):
+        sx = 1 if cx == x0 else -1
+        sy = 1 if cy == y0 else -1
+        zb = z
+        for w, h in steps:
+            ax, bx = sorted((cx, cx + sx * w))
+            ay, by = sorted((cy, cy + sy * w))
+            k.box("render", ax, bx, ay, by, zb, zb + h)
+            zb += h
 
 
 def type_collection(name):

@@ -12,6 +12,7 @@ Discovery date: 2026-10-01. Every file received so far is listed. Authority: 1 =
 | F06 | `input/photos/IMG_13_render_villa_garden.jpg` | Render: R+1 villa garden side, pergolas, timber screens, wall niches (same image as catalogue p7) | User upload | 3 |
 | F07 | `input/photos/IMG_14_photo_built_villa.jpg` | Real site photo: built R+1 villa, timber pergola, wall niches, stone garden wall, sliding doors | User upload | **2** (as-built) |
 | F08 | `input/photos/IMG_17_google_earth_measure_top.webp`, `IMG_18_google_earth_3d_view.webp` | Google Earth: the client's polygon over the satellite image (area 78 412 m², perimeter 1 435 m, elevation 18.72 / 51.28 / 64.99 m, view centre 29°33'17"N 10°03'27.5"W, 400 m scale bar) + an oblique 3D view with the plan overlaid | User upload 2026-10-01 | **2** (real geography) |
+| F09 | (pasted in chat 2026-10-01, not saved as a file) | Real site photo from an upper floor: built R+1 villas with stepped-merlon stair houses, set-back upper floors, pergolas, small square windows, **coursed rubble-stone garden walls (about 1.2 m) with square stone piers**, lawns, young palms, ocean and cliff behind | User upload | **2** (as-built) |
 | — | `12e6f1f8-PLAN_MASSE…pdf` (2nd upload) | Byte-identical to F01 (md5 39cf4118…) | User upload | duplicate |
 
 ## F01 — Plan de masse, phase des travaux, plan modificatif

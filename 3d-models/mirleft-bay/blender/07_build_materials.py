@@ -144,21 +144,21 @@ def stone_wall(name):
     """M04 warm local rubble stone, stones 0.15-0.40 m, recessed joints."""
     m, b = new_mat(name)
     vo = b.n("ShaderNodeTexVoronoi", feature="F1")
-    vo.inputs["Scale"].default_value = 4.0
-    vo.inputs["Randomness"].default_value = 0.9
+    vo.inputs["Scale"].default_value = 5.0
+    vo.inputs["Randomness"].default_value = 0.75
     mp = b.n("ShaderNodeMapping")
-    mp.inputs["Scale"].default_value = (1.0, 1.0, 1.7)
+    mp.inputs["Scale"].default_value = (1.0, 1.0, 2.6)              # flat coursed stones
     b.link(b.obj, mp, "Vector")
     b.link(mp.outputs["Vector"], vo, "Vector")
     edge = b.n("ShaderNodeTexVoronoi", feature="DISTANCE_TO_EDGE")
-    edge.inputs["Scale"].default_value = 4.0
-    edge.inputs["Randomness"].default_value = 0.9
+    edge.inputs["Scale"].default_value = 5.0
+    edge.inputs["Randomness"].default_value = 0.75
     b.link(mp.outputs["Vector"], edge, "Vector")
-    cell = b.ramp(vo.outputs["Color"], [(0.0, srgb("#9C5E3F")), (0.5, srgb("#C08860")), (1.0, srgb("#D3A97D"))])
+    cell = b.ramp(vo.outputs["Color"], [(0.0, srgb("#9A7046")), (0.5, srgb("#BC9461")), (1.0, srgb("#D2B07C"))])
     joint = b.ramp(edge.outputs["Distance"], [(0.02, (0, 0, 0, 1)), (0.07, (1, 1, 1, 1))])
     grit = b.noise(25.0, 6, 0.65)
     c1 = b.mix(0.25, cell.outputs["Color"], grit.outputs["Color"], "OVERLAY")
-    base = b.mix(joint.outputs["Color"], srgb("#5C4636"), c1.outputs[2])
+    base = b.mix(joint.outputs["Color"], srgb("#7A6550"), c1.outputs[2])
     b.set(base=base.outputs[2], rough=0.85)
     h = b.mix(0.3, joint.outputs["Color"], grit.outputs["Color"], "ADD")
     b.bump(h.outputs[2], 0.6, 0.03)

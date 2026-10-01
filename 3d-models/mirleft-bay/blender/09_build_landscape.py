@@ -266,24 +266,36 @@ def build(materials):
     hedge = C.MeshBuilder()
     C.GRASS_BLOCKERS = [C.LAKE_POLY.buffer(1.5)] + [p.buffer(4.2) for p in C.CLUB_POOLS]
 
-    def hedge_line(p0, p1, h=1.05, t=0.6):
+    def prism(mat, a, b, half_w, z0, zt):
+        dvec = (b - a) / (np.linalg.norm(b - a) + 1e-9)
+        nvec = np.array([-dvec[1], dvec[0]]) * half_w
+        quad = [a - nvec, b - nvec, b + nvec, a + nvec]
+        for j in range(4):
+            q0, q1 = quad[j], quad[(j + 1) % 4]
+            hedge.poly(mat, [(q0[0], q0[1], z0), (q1[0], q1[1], z0), (q1[0], q1[1], zt), (q0[0], q0[1], zt)])
+        hedge.poly(mat, [(q[0], q[1], zt) for q in quad])
+
+    def hedge_line(p0, p1, h=1.15, t=0.35):
+        """Garden boundary: coursed rubble-stone wall with square stone piers and a render cap
+        (as-built site photo of the villas, 2026-10-01). Name kept for continuity."""
         p0, p1 = np.array(p0), np.array(p1)
         L = np.linalg.norm(p1 - p0)
         if L < 0.5:
             return
         dvec = (p1 - p0) / L
-        nvec = np.array([-dvec[1], dvec[0]]) * t / 2
         k = max(1, int(L / 3.0))
         for i in range(k):
             a = p0 + dvec * L * i / k
             b = p0 + dvec * L * (i + 1) / k
-            z0 = float(G(np.array([(a + b) / 2]))[0]) + 0.15
-            quad = [a - nvec, b - nvec, b + nvec, a + nvec]
-            zt = z0 + h + RNG.uniform(-0.05, 0.05)
-            for j in range(4):
-                q0, q1 = quad[j], quad[(j + 1) % 4]
-                hedge.poly("hedge", [(q0[0], q0[1], z0), (q1[0], q1[1], z0), (q1[0], q1[1], zt), (q0[0], q0[1], zt)])
-            hedge.poly("hedge", [(q[0], q[1], zt) for q in quad])
+            z0 = float(G(np.array([(a + b) / 2]))[0]) + 0.10
+            prism("stone", a, b, t / 2, z0 - 0.4, z0 + h)
+            prism("render", a, b, t / 2 + 0.03, z0 + h, z0 + h + 0.06)
+        npier = max(1, int(L / 4.0))
+        for i in range(npier + 1):
+            c = p0 + dvec * L * i / npier
+            z0 = float(G(np.array([c]))[0]) + 0.10
+            prism("stone", c - dvec * 0.24, c + dvec * 0.24, 0.24, z0 - 0.4, z0 + h + 0.25)
+            prism("render", c - dvec * 0.28, c + dvec * 0.28, 0.28, z0 + h + 0.25, z0 + h + 0.33)
         n["hedge_m"] += L
 
     # villa lots: hedges, pool + coping, terrace, palms
@@ -297,8 +309,8 @@ def build(materials):
         # street (east) side: gap for the gate in the middle
         mid1 = c2[1] + (c2[2] - c2[1]) * 0.42
         mid2 = c2[1] + (c2[2] - c2[1]) * 0.58
-        hedge_line(c2[1], mid1, 1.0)
-        hedge_line(mid2, c2[2], 1.0)
+        hedge_line(c2[1], mid1)
+        hedge_line(mid2, c2[2])
         pw, pl = {"B": (4.0, 9.0), "C": (3.6, 7.0), "A": (3.4, 15.0)}[ty]
         px0 = x0 + 1.4 / m
         cy = (y0 + y1) / 2
@@ -336,9 +348,9 @@ def build(materials):
             gx0 = gx1 - 6.0 / m
             for ya, yb in ((cyp - 7.7 / m, cyp), (cyp, cyp + 7.7 / m)):
                 q = C.plan_to_world([(gx0, ya), (gx1, ya), (gx1, yb), (gx0, yb)])
-                hedge_line(q[0], q[3], 1.1)
-                hedge_line(q[0], q[1], 1.1)
-                hedge_line(q[3], q[2], 1.1)
+                hedge_line(q[0], q[3])
+                hedge_line(q[0], q[1])
+                hedge_line(q[3], q[2])
                 terr = Polygon(C.plan_to_world([(gx1 - 3.0 / m, ya + 0.3 / m), (gx1, ya + 0.3 / m), (gx1, yb - 0.3 / m), (gx1 - 3.0 / m, yb - 0.3 / m)]))
                 C.GRASS_BLOCKERS.append(terr.buffer(0.1))
                 draped(f"DUP_{tr}_{x0}_{ya:.0f}_Terrace", terr, gardens, M["terrace"], 0.22, M["kerb"], 0.17, step=1.5)
@@ -410,7 +422,7 @@ def build(materials):
         instance(src["argan" if RNG.random() < 0.7 else "grass"], nm, p, z - 0.05, RNG.uniform(0, 6.28), RNG.uniform(0.5, 1.3), trees)
         k += 1
     n["scrub"] = k
-    hedge.build("HEDGES", gardens, M)
+    hedge.build("GARDEN_WALLS", gardens, M)
     return n
 
 

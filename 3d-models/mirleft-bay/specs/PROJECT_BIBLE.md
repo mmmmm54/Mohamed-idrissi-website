@@ -45,10 +45,10 @@ Plot and road widths [CONFIRMED F01]: main public road 12 m; internal roads 14, 
 Catalogue villa (type uncertain, §43 C2) [CONFIRMED F02 p8]: RDC living/dining 31 m², kitchen 8.5 m², bedroom 1 with bathroom 18 m², guest WC 4 m², private garden (L-shaped, up to 100 m²). First floor: bedrooms 2 and 3 (14 m² each), bathroom 6 m², terrace 24 m² under a pergola. Roof terrace 47 m² with jacuzzi. Other types [MISSING].
 
 ## 13_WALLS
-Thick rendered masonry, sand-coloured [CONFIRMED F04, F07]. Thickness [MISSING]; ASSUMED 0.30 m exterior. Decorative square wall niches ≈ 0.15–0.20 m in a row at mid-height [CONFIRMED F07]. Kasbah: tapered towers, stepped crenellations, chevron relief motifs [CONFIRMED F04].
+Thick rendered masonry, sand-coloured [CONFIRMED F04, F07]. Thickness [MISSING]; ASSUMED 0.30 m exterior. Decorative square wall niches ≈ 0.15–0.20 m in a row at mid-height [CONFIRMED F07]. Garden boundaries: coursed rubble-stone walls about 1.2 m high with square stone piers about 0.5 m and render caps [CONFIRMED F09 as-built]; modelled on every lot and duplex garden (replaces the earlier hedge assumption). Kasbah: tapered towers, stepped crenellations, chevron relief motifs [CONFIRMED F04].
 
 ## 14_SLABS
-Flat roofs with parapets and roof terraces [CONFIRMED F02, F07]. Thicknesses [MISSING]; ASSUMED 0.25 m.
+Flat roofs with parapets and roof terraces [CONFIRMED F02, F07]. Rooftop stair houses carry stepped corner merlons [CONFIRMED F09]. Thicknesses [MISSING]; ASSUMED 0.25 m.
 
 ## 15_WINDOWS
 Large sliding glass doors with deep projecting frame surrounds (≈ 0.15 m darker render or stone band) [CONFIRMED F06, F07]. Narrow vertical windows in recessed bays on the kasbah [CONFIRMED F04]. Dark bronze / brown aluminium frames [CONFIRMED F07]. Exact sizes [MISSING].
