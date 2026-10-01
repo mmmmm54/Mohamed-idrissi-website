@@ -1,0 +1,29 @@
+# PRODUCTION STATUS — Mirleft Bay
+
+Updated 2026-10-01.
+
+| Stage | Status | Note |
+|---|---|---|
+| DISCOVERY | COMPLETE | 2 PDFs + 5 images inspected |
+| INPUT AUDIT | COMPLETE | `PROJECT_INVENTORY.md` |
+| PROJECT BIBLE | IN PROGRESS | v0.1, waiting for answers |
+| BLOCKING QUESTIONS | BLOCKED | B1–B5 in `MISSING_INFORMATION.md` |
+| ASSET RESEARCH | IN PROGRESS | `ASSET_REQUIREMENTS.md` drafted |
+| ASSET PROCUREMENT | BLOCKED | Network policy denies polyhaven.com / ambientcg.com (403) |
+| GRAYBOX | NOT STARTED | Waiting for B1, B2 |
+| ARCHITECTURE | NOT STARTED | Waiting for B3, B4 |
+| OPENINGS | NOT STARTED | |
+| DETAILS | NOT STARTED | |
+| MATERIALS | NOT STARTED | |
+| TEXTURES | NOT STARTED | |
+| LANDSCAPE | NOT STARTED | |
+| FURNITURE | NOT STARTED | |
+| LIGHTING | NOT STARTED | Waiting for I1 (north) |
+| CAMERAS | NOT STARTED | Shot list proposed only |
+| VALIDATION | NOT STARTED | |
+| D5 | NOT STARTED | Waiting for B5 |
+| RENDER | NOT STARTED | |
+| HERO FRAMES | NOT STARTED | |
+| HIGGSFIELD | NOT STARTED | |
+| EDIT | NOT STARTED | |
+| FINAL | NOT STARTED | |
