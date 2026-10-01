@@ -22,8 +22,8 @@ Updated 2026-10-01 (after blocking answers).
 | CAMERAS | COMPLETE | 11 cameras, 9:16 |
 | VALIDATION | COMPLETE | `output/validation/VALIDATION_REPORT.md` |
 | D5 | NOT REQUIRED | MODE B selected |
-| RENDER | IN PROGRESS | Hero frames 1080x1920, 48 samples |
-| HERO FRAMES | IN PROGRESS | `output/higgsfield/03_HERO_FRAMES/` |
+| RENDER | COMPLETE | Known issue: thin brown band at the horizon in SH01 |
+| HERO FRAMES | COMPLETE | 11 frames 1080x1920, Cycles 48 samples |
 | HIGGSFIELD | READY | Package written; generation waits for hero-frame approval + credits |
 | EDIT | READY | `09_EDIT_STRUCTURE/FINAL_FILM_STRUCTURE.md` |
 | FINAL | NOT STARTED | |
