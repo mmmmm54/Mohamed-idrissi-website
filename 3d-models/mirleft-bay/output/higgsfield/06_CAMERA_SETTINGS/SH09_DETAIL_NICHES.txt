@@ -1,0 +1,7 @@
+Shot: SH09_DETAIL_NICHES
+Blender camera: SH09_DETAIL_NICHES (blender/15_build_cameras.py)
+Lens: 50 mm, sensor 36 mm vertical fit, 9:16 1080x1920
+Aperture: f/8 equivalent (no DOF) ; detail f/2.8 look
+Move: micro push-in, 5 percent
+Duration: 4 s
+Time of day: golden hour, sun az 257 deg / el 10 deg (LIGHTING_03_GOLDEN_HOUR)

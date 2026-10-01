@@ -1,0 +1,7 @@
+Shot: SH01_ESTABLISHING_AERIAL
+Blender camera: SH01_ESTABLISHING_AERIAL (blender/15_build_cameras.py)
+Lens: 28 mm, sensor 36 mm vertical fit, 9:16 1080x1920
+Aperture: f/8 equivalent (no DOF)
+Move: slow forward aerial drift towards the ocean, losing 10 m of altitude
+Duration: 6 s
+Time of day: golden hour, sun az 257 deg / el 10 deg (LIGHTING_03_GOLDEN_HOUR)

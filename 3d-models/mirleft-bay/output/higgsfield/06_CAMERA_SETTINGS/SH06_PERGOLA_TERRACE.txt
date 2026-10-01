@@ -1,0 +1,7 @@
+Shot: SH06_PERGOLA_TERRACE
+Blender camera: SH06_PERGOLA_TERRACE (blender/15_build_cameras.py)
+Lens: 22 mm, sensor 36 mm vertical fit, 9:16 1080x1920
+Aperture: f/8 equivalent (no DOF)
+Move: slow push-in towards the terrace edge
+Duration: 6 s
+Time of day: golden hour, sun az 257 deg / el 10 deg (LIGHTING_03_GOLDEN_HOUR)

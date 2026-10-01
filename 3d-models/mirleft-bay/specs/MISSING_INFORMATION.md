@@ -2,15 +2,15 @@
 
 Each question was checked against F01–F08 first (see `PROJECT_INVENTORY.md`). Answered questions move to `ANSWERED_QUESTIONS.md`.
 
-## BLOCKING (production cannot start accurately)
+## BLOCKING (production cannot start accurately): all answered 2026-10-01
 
 | ID | Question | Why it blocks |
 |---|---|---|
-| B1 | **Scope**: what gets modelled? (a) one hero villa, (b) Phase 1 / Tranche 1 cluster (24 duplex + club house + pools + entrance buildings), (c) whole 8.2 ha masterplan at massing level + one detailed hero villa, (d) other. | Changes the work by a factor of 10–50, and the asset list, cameras and render plan. |
-| B2 | **Which masterplan is the truth**: the permit plan A000-023 (2013, approved Nov 2016) or the 2026 catalogue masterplan (spa, beach club, Pavillon, market…)? | The building list and positions differ (conflict C1). |
+| ~~B1~~ | **ANSWERED**: whole site at massing level + hero duplex. |
+| ~~B2~~ | **ANSWERED**: catalogue 2026 programme, permit plan geometry. |
 | ~~B3~~ | **ANSWERED 2026-10-01**: no dimensioned drawings exist → the villa is reconstructed from the catalogue plans + photos + permit areas and labelled INFERRED (± 0.3 m). | — |
-| B4 | **Which unit is the catalogue villa** (p7–p8, built photo F07): Tranche 1 *Duplex* (124 m², twin houses) or *Villa type B* (164 m², detached)? | Conflict C2: decides the footprint and whether it is a semi-detached pair. |
-| B5 | **Render workflow**: MODE A (Blender → D5 on your PC → Higgsfield) or MODE B (Blender → Higgsfield)? | D5 cannot run in this cloud session; it changes the deliverables. |
+| ~~B4~~ | **ANSWERED**: Tranche 1 Duplex. |
+| ~~B5~~ | **ANSWERED**: MODE B, Blender → Higgsfield. |
 
 ## IMPORTANT (production can continue, quality is affected)
 

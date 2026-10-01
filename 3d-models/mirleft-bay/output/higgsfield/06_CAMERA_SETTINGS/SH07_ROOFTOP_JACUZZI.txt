@@ -1,0 +1,7 @@
+Shot: SH07_ROOFTOP_JACUZZI
+Blender camera: SH07_ROOFTOP_JACUZZI (blender/15_build_cameras.py)
+Lens: 20 mm, sensor 36 mm vertical fit, 9:16 1080x1920
+Aperture: f/8 equivalent (no DOF)
+Move: slow arc to the left around the jacuzzi
+Duration: 6 s
+Time of day: golden hour, sun az 257 deg / el 10 deg (LIGHTING_03_GOLDEN_HOUR)

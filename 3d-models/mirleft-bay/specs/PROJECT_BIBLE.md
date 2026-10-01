@@ -1,7 +1,7 @@
 # PROJECT BIBLE — Mirleft Bay (Playa Village Mirleft)
 
 Status tags: **[CONFIRMED]** stated in a source · **[INFERRED]** derived from sources with reasoning · **[ASSUMED]** my default, no source · **[MISSING]** not available · **[CONFLICTING]** sources disagree.
-Source IDs (F01…F07) refer to `PROJECT_INVENTORY.md`. Version 0.2 (2026-10-01, after the client's first answers), discovery only: nothing has been modelled.
+Source IDs (F01…F07) refer to `PROJECT_INVENTORY.md`. Version 0.3 (2026-10-01): blocking answers received, model built (see PRODUCTION_STATUS).
 
 CLIENT STATEMENT (2026-10-01): "this is what I have on informations": no dimensioned plans, elevations, sections or DWG exist beyond F01–F08. Villa geometry is therefore **INFERRED** (catalogue plans + photos + permit areas), never presented as surveyed.
 INTERIOR_DOCUMENTATION: **PARTIAL** (catalogue room layouts and areas for one villa type, no dimensions)
@@ -20,10 +20,10 @@ Lieu-dit Atblkoukte, Commune rurale de Mirleft. TF 11512/31 [CONFIRMED F01]. Loc
 Plot polygon drawn on F01, contenance 82 070 m² [CONFIRMED]. Digitised extent ≈ 650 × 100–220 m [INFERRED, scale verified to −2 %]. Client's Google Earth hand trace: 78 412 m², perimeter 1 435 m, length ≈ 695 m [CONFIRMED F08, hand trace, −4.5 % vs title]. The **plan raster stays the geometry source**; Google Earth gives the orientation and the terrain context. Exact boundary coordinates (survey points B1–B16 are visible) [MISSING as numbers → digitise from the raster, ± 0.3 m].
 
 ## 05_ORIENTATION
-No north arrow on F01, but the client's Google Earth trace (F08) fixes it: the long axis runs at a bearing of **≈ 120°** (beach end WNW at 300°, road end ESE at 120°) [CONFIRMED F08, measured ± 3°]. On the plan, the ocean is on the left → **plan +X (towards the road) = bearing 120°, plan up = N30°E** [INFERRED from F08 ± 3°]. The beach end gets the sunset light: the golden-hour sun sets at about 250–295° depending on the season.
+No north arrow on F01, but the client's Google Earth trace (F08) fixes it: the long axis runs at a bearing of **122.5°** (beach end WNW at 302.5°, road end ESE at 122.5°) [CONFIRMED F08: plan boundary fitted to the client polygon at fixed 1/500 scale, IoU 0.82, ± 1°]. On the plan, the ocean is on the left → **plan +X (towards the road) = bearing 122.5°, plan up = N32.5°E** [INFERRED from F08 ± 1°]. The beach end gets the sunset light: the golden-hour sun sets at about 250–295° depending on the season.
 
 ## 06_COORDINATE_SYSTEM
-Blender: metres, Z up, **+Y = true north**, +X = east. The plan raster is placed rotated so that its long axis lies at bearing 120°. Origin at the site entrance on R104 (east end) [ASSUMED]. Geographic anchor 29.553° N, 10.060° W (for the sun position) [INFERRED F08]. No Lambert Maroc coordinates on the plan [MISSING, not needed for visualisation].
+Blender: metres, Z up, **+Y = true north**, +X = east. The plan raster is placed rotated so that its long axis lies at bearing 122.5°. Origin = site centroid (matches the Google Earth polygon centroid) [INFERRED]. Geographic anchor 29.553° N, 10.060° W (for the sun position) [INFERRED F08]. No Lambert Maroc coordinates on the plan [MISSING, not needed for visualisation].
 
 ## 07_TERRAIN
 Slopes down from ≈ 62 m (road) to ≈ 8–18 m (beach edge) over ≈ 650 m, i.e. about 6–8 % average, with ravines north and south [CONFIRMED spot heights F01]. Google Earth elevations over the traced polygon: min 18.72 m, median 51.28 m, max 64.99 m [CONFIRMED F08], consistent with F01. Inside the plot the levels are hidden under the colour tint [MISSING] → interpolate from the boundary spot heights and contours [INFERRED]. Platforms / terracing per villa [MISSING].
@@ -32,6 +32,7 @@ Slopes down from ≈ 62 m (road) to ≈ 8–18 m (beach edge) over ≈ 650 m, i.
 Contours every ≈ 5 m with spot heights (e.g. 60.97, 61.70, 57.45, 59.39, 45.21, 40.00, 33.15, 28.92, 18.46, 15.00, 12.93) [CONFIRMED F01]. A DWG/topographic survey would replace digitising [MISSING].
 
 ## 09_BUILDING_MASSING
+**Scope (client, 2026-10-01): the whole site at massing level + one detailed hero villa (Tranche 1 duplex).**
 Footprints readable on F01 for every building at 1/500 (≈ 0.13 m/px) [CONFIRMED]. Heights: RDC = 1 storey, RDC+1 = 2 storeys [CONFIRMED]. Storey heights, parapets, roof terraces [MISSING]. Kasbah towers taller than the main body [CONFIRMED F04].
 
 ## 10_FLOOR_LEVELS
@@ -86,7 +87,7 @@ Washingtonia fan palms (as-built, F04/F07) [CONFIRMED]. Date / Canary palms, oli
 See `ASSET_REQUIREMENTS.md`. Core palette [CONFIRMED F04/F07]: sand-ochre lime render, darker ochre recessed panels, timber pergolas, warm rubble stone walls, bronze aluminium, clear glass, beige concrete pavers, asphalt, lawn, ochre soil.
 
 ## 27_TEXTURES
-External PBR libraries (Poly Haven, ambientCG) are **blocked by this environment's network policy** (HTTP 403 on CONNECT, re-tested 2026-10-01 after the client sent the Poly Haven API docs) [CONFIRMED]. The client wants Poly Haven used (API docs supplied) → the environment's network settings must allow `api.polyhaven.com`, `dl.polyhaven.org`, `cdn.polyhaven.com`. Until access is opened: procedural / generated textures, labelled APPROXIMATED.
+External PBR libraries (Poly Haven, ambientCG) are **blocked by this environment's network policy** (HTTP 403 on CONNECT, re-tested 2026-10-01 after the client sent the Poly Haven API docs) [CONFIRMED]. The client wants Poly Haven used (API docs supplied) → the environment's network settings must allow `api.polyhaven.com`, `dl.polyhaven.org`, `cdn.polyhaven.com`. Until access is opened: procedural / generated textures, labelled APPROXIMATED (in use, see assets/TEXTURE_MANIFEST.csv).
 
 ## 28_FURNITURE
 Exterior: loungers, round dining table + chairs, stone fire pit, outdoor sofas on the roof [CONFIRMED F06, F02 p8]. Interior: warm wood, bouclé sofas, linen [CONFIRMED F02 p8–9].
@@ -124,7 +125,7 @@ Proposed (to be validated after scope): 24–35 mm aerials and establishing shot
 Machine available here: 4 CPU cores, no GPU, 15 GB RAM [CONFIRMED]. Cycles stills are feasible (≈ 1–5 min per 1080p frame at moderate samples). Long Cycles animations are not realistic here → video motion via Higgsfield, or rendering on the user's own PC [INFERRED].
 
 ## 39_D5_STRATEGY
-D5 Render runs on Windows with a GPU, so it cannot run in this cloud session [CONFIRMED tool limits]. If MODE A: deliver a clean FBX/GLB + D5 guides, the user renders in D5. Selection [MISSING → BLOCKING Q].
+D5 Render runs on Windows with a GPU, so it cannot run in this cloud session [CONFIRMED tool limits]. If MODE A: deliver a clean FBX/GLB + D5 guides, the user renders in D5. **Not used: MODE B selected by the client (2026-10-01).** D5 guides are not produced.
 
 ## 40_HIGGSFIELD_STRATEGY
 The Higgsfield connector is available in this session (image-to-video generation, credits apply) [CONFIRMED]. Use it only on Blender hero frames, for motion: palms, water, people, light. Exact-architecture shots stay as Blender stills or camera moves [INFERRED].
@@ -136,8 +137,8 @@ A1 storey height 3.10 m · A2 exterior walls 0.30 m · A3 slab 0.25 m · A4 para
 See `MISSING_INFORMATION.md`.
 
 ## 43_CONFLICTS
-- **C1** Program (still open): the permit (2013, approved 2016) lists club house, supérette, administration, hotel 3★, lake. The catalogue (2026) shows Restaurant Pavillon, market, two spas, beach club, conference room, sports ground, chiringuito, "La Plage" boutique hotel ~30 suites, 4 cliff villas. → Which version is the truth for modelling? **BLOCKING**.
-- **C2** Unit type and area: the catalogue's "24 villas, 150 m² habitable, R+1 + rooftop" matches the permit's 24 duplex (RDC+1) of 124 m² covered each? Or villa type B (164 m²)? → **BLOCKING** for the hero villa.
+- **C1** Program: **RESOLVED 2026-10-01**: the catalogue 2026 is the truth for the programme and names; geometry and positions come from the scaled permit plan. Was: the permit (2013, approved 2016) lists club house, supérette, administration, hotel 3★, lake. The catalogue (2026) shows Restaurant Pavillon, market, two spas, beach club, conference room, sports ground, chiringuito, "La Plage" boutique hotel ~30 suites, 4 cliff villas. 
+- **C2** Unit type and area: the catalogue's "24 villas, 150 m² habitable, R+1 + rooftop" matches the permit's 24 duplex (RDC+1) of 124 m² covered each? Or villa type B (164 m²)? **RESOLVED 2026-10-01: Tranche 1 Duplex** (paired R+1 houses with rooftop, 124 m² covered each; the catalogue's 150 m² is read as habitable area including terraces [INFERRED]).
 - **C3** The F04 kasbah building and the F05 portal building are not identified on the plan.
 - **C4** The Pavillon render (p10) shows a mountain backdrop and terraced stone retaining walls (AI-style render) that the plan does not confirm.
 - **C5** Paving: beige concrete pavers (as-built F04) vs red brick pavers (render F05).

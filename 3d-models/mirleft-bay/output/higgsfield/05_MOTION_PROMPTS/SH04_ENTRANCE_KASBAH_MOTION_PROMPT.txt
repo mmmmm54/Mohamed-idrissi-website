@@ -1,0 +1,11 @@
+PRIMARY REFERENCE: 03_HERO_FRAMES/SH04_ENTRANCE_KASBAH.jpg (Blender hero frame, architectural truth)
+SUBJECT: Mirleft Bay resort, reception towers, low angle, warm side light, contemporary southern-Moroccan architecture in sand render with timber pergolas, Atlantic coast, golden hour.
+CAMERA: vertical 9:16, 20 mm, stabilised.
+CAMERA MOVEMENT: slow upward tilt from the entrance to the tower crenellations.
+SPEED: very slow, constant, cinematic; 5 seconds.
+MOTION: palm leaf shadows flicker softly on the sunlit wall; a light curtain moves behind the glazing.
+LIGHT CHANGE: none; the low warm sun from the left-rear stays fixed, shadows locked.
+ATMOSPHERE: soft warm haze in the far distance only.
+OPTICAL CHARACTER: clean lens, natural contrast, no heavy grain, no chromatic aberration.
+REALISM: photoreal architectural film; motion only, no design changes.
+CONTINUITY: Preserve exact architecture. Preserve exact facade geometry. Preserve all windows. Preserve all doors. Preserve all terraces and pergolas. Preserve roof geometry and parapets. Preserve pool and lake geometry. Preserve building proportions and positions. Preserve materials and colours. Preserve the golden-hour sun direction and shadows.

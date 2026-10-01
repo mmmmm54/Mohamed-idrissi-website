@@ -1,0 +1,4 @@
+output/checkpoints/
+output/**/*.blend
+output/**/*.blend1
+__pycache__/

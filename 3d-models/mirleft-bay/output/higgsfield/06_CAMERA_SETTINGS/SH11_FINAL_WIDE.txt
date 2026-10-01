@@ -1,0 +1,7 @@
+Shot: SH11_FINAL_WIDE
+Blender camera: SH11_FINAL_WIDE (blender/15_build_cameras.py)
+Lens: 32 mm, sensor 36 mm vertical fit, 9:16 1080x1920
+Aperture: f/8 equivalent (no DOF)
+Move: slow pull-back and rise over the beach
+Duration: 7 s
+Time of day: golden hour, sun az 257 deg / el 10 deg (LIGHTING_03_GOLDEN_HOUR)

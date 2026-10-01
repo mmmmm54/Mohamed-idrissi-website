@@ -1,0 +1,15 @@
+MATERIAL_ID,TEXTURE_NAME,MAP_TYPE,RESOLUTION,FORMAT,SOURCE,LICENSE,REAL_SCALE,UV_METHOD,BLENDER_PATH,MATERIAL_SLOT,D5_MAPPING,NOTES
+M01,M01_Render_Sand,procedural colour + bump,procedural,-,07_build_materials.py,project-owned,mottling 3 m / grain 7 mm,Object coords (m),-,render,n/a (MODE B),colour from photos F04/F07; APPROXIMATED
+M02,M02_Render_Ochre,procedural colour + bump,procedural,-,07_build_materials.py,project-owned,as M01,Object coords,-,render_dark,n/a,window surrounds + plinths + niches
+M03,M03_Timber_Pergola,procedural grain + bump,procedural,-,07_build_materials.py,project-owned,grain streaks along beam X,Object coords,-,timber,n/a,pergolas + lattice screens
+M04,M04_Stone_Rubble,procedural voronoi stones,procedural,-,07_build_materials.py,project-owned,stones 0.15-0.40 m,Object coords,-,stone,n/a,site retaining walls + lake coping sides
+M05,M05_Aluminium_Bronze,flat PBR,-,-,07_build_materials.py,project-owned,-,-,-,bronze,n/a,window frames (photo F07)
+M06,M06_Glass,PBR transmission IOR 1.52,-,-,07_build_materials.py,project-owned,-,-,-,glass,n/a,
+M07,M07_Pavers_Beige,brick texture,procedural,-,07_build_materials.py,project-owned,0.20 x 0.10 m,Object coords,-,pavers,n/a,roads + sidewalks (as built F04)
+M09,M09_Terrace_Stone,brick texture,procedural,-,07_build_materials.py,project-owned,0.60 x 0.40 m,Object coords,-,terrace,n/a,terraces + pool decks + roof terraces
+M10,M10_Pool_Mosaic / M10_Pool_Water / M10_Lake_Water,brick 25 mm + transmission water,procedural,-,07_build_materials.py,project-owned,25 mm tiles,Object coords,-,pool_tile / pool_water / lake_water,n/a,
+T01,T01_Terrain_Soil_Sand_Rock,procedural mixed by 'mask' colour attribute,procedural,-,07_build_materials.py,project-owned,macro 80 m / pebbles 0.1 m,Object coords + vertex mask,-,terrain,n/a,sand / rock masks from coast distance and slope
+T03,T03_Lawn + T03_Grass_Blade,procedural + geometry tufts,procedural,-,07/09,project-owned,blades 7-14 cm,Object coords,-,lawn / grass_blade,n/a,
+V01,V01_Palm_Fan,image,1024x552,PNG RGBA,TEX_WASHINGTONIA_FAN_GEN_1K.png,project-owned,fan 1.0-1.35 m,UV (fan mesh),assets/textures/generated,palm_fan,n/a,GENERATED
+V03,V03_Olive_Foliage,image,1024,PNG RGBA,TEX_OLIVE_LEAFCARD_GEN_1K.png,project-owned,card 0.6-0.9 m,UV (cards),assets/textures/generated,olive_leaf,n/a,GENERATED
+V05,V05_Hedge,image box-projected,1024,JPG,TEX_HEDGE_LEAVES_GEN_1K.jpg,project-owned,0.5 m tile,Box projection (Object),assets/textures/generated,hedge,n/a,GENERATED

@@ -1,29 +1,29 @@
 # PRODUCTION STATUS — Mirleft Bay
 
-Updated 2026-10-01.
+Updated 2026-10-01 (after blocking answers).
 
 | Stage | Status | Note |
 |---|---|---|
 | DISCOVERY | COMPLETE | 2 PDFs + 5 images inspected |
 | INPUT AUDIT | COMPLETE | `PROJECT_INVENTORY.md` |
-| PROJECT BIBLE | IN PROGRESS | v0.1, waiting for answers |
-| BLOCKING QUESTIONS | BLOCKED | B1–B5 in `MISSING_INFORMATION.md` |
-| ASSET RESEARCH | IN PROGRESS | `ASSET_REQUIREMENTS.md` drafted |
-| ASSET PROCUREMENT | BLOCKED | Network policy denies polyhaven.com / ambientcg.com (403) |
-| GRAYBOX | NOT STARTED | Waiting for B1, B2 |
-| ARCHITECTURE | NOT STARTED | Waiting for B3, B4 |
-| OPENINGS | NOT STARTED | |
-| DETAILS | NOT STARTED | |
-| MATERIALS | NOT STARTED | |
-| TEXTURES | NOT STARTED | |
-| LANDSCAPE | NOT STARTED | |
-| FURNITURE | NOT STARTED | |
-| LIGHTING | READY | North + golden hour confirmed |
-| CAMERAS | NOT STARTED | Shot list proposed only |
-| VALIDATION | NOT STARTED | |
-| D5 | NOT STARTED | Waiting for B5 |
-| RENDER | NOT STARTED | |
-| HERO FRAMES | NOT STARTED | |
-| HIGGSFIELD | NOT STARTED | |
-| EDIT | NOT STARTED | |
+| PROJECT BIBLE | COMPLETE | v0.3 |
+| BLOCKING QUESTIONS | COMPLETE | B1–B5 answered 2026-10-01 |
+| ASSET RESEARCH | COMPLETE | `ASSET_REQUIREMENTS.md`, `assets/SOURCES.md` |
+| ASSET PROCUREMENT | BLOCKED | Network policy denies polyhaven.com / ambientcg.com (403). Procedural + generated substitutes in use (APPROXIMATED). |
+| GRAYBOX | COMPLETE | checkpoint_02, validated against the plan |
+| ARCHITECTURE | COMPLETE | Hero duplex + villas A/B/C + kasbah buildings (INFERRED) |
+| OPENINGS | COMPLETE | Frames, glass, surrounds, interior proxies |
+| DETAILS | COMPLETE | Niches, pergolas, lattice, crenellations, jacuzzis |
+| MATERIALS | COMPLETE | 33 procedural / generated (APPROXIMATED) |
+| TEXTURES | READY | Generated foliage textures; CC0 scans blocked |
+| LANDSCAPE | COMPLETE | Palms, olives, scrub, hedges, lot pools, hero grass |
+| FURNITURE | READY | Jacuzzis only (architecture first) |
+| LIGHTING | COMPLETE | 6 presets, master golden hour |
+| CAMERAS | COMPLETE | 11 cameras, 9:16 |
+| VALIDATION | COMPLETE | `output/validation/VALIDATION_REPORT.md` |
+| D5 | NOT REQUIRED | MODE B selected |
+| RENDER | IN PROGRESS | Hero frames 1080x1920, 48 samples |
+| HERO FRAMES | IN PROGRESS | `output/higgsfield/03_HERO_FRAMES/` |
+| HIGGSFIELD | READY | Package written; generation waits for hero-frame approval + credits |
+| EDIT | READY | `09_EDIT_STRUCTURE/FINAL_FILM_STRUCTURE.md` |
 | FINAL | NOT STARTED | |

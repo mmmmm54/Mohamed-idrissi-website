@@ -1,0 +1,17 @@
+{
+ "bearing_deg": 122.47154942514999,
+ "tx": 0.0003492390134573429,
+ "ty": -0.0006958365884162114,
+ "iou": 0.8171895147276776,
+ "plan_centroid_px": [
+  3777.815942652629,
+  2407.2264677027097
+ ],
+ "ge_free_scale_fit": [
+  122.5118761702975,
+  -1.4009781966555779,
+  -5.1332289215383025,
+  1.128417056746332
+ ],
+ "method": "plan boundary at fixed 1/500 scale fitted to the client Google Earth polygon by maximising IoU. World = metres, origin = GE site centroid, +X east, +Y north."
+}

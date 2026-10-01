@@ -1,0 +1,7 @@
+Shot: SH04_ENTRANCE_KASBAH
+Blender camera: SH04_ENTRANCE_KASBAH (blender/15_build_cameras.py)
+Lens: 20 mm, sensor 36 mm vertical fit, 9:16 1080x1920
+Aperture: f/8 equivalent (no DOF)
+Move: slow upward tilt from the entrance to the tower crenellations
+Duration: 5 s
+Time of day: golden hour, sun az 257 deg / el 10 deg (LIGHTING_03_GOLDEN_HOUR)

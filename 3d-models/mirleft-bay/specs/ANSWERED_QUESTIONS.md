@@ -12,3 +12,7 @@ A record of every answer from the client, so that no question is asked twice. Fo
 | I7 | 2026-10-01 | Film aspect ratio? | 9:16 | BIBLE §37 |
 | I8 | 2026-10-01 | Golden hour as master look? | Yes | BIBLE §32 |
 | — | 2026-10-01 | Texture source? | Poly Haven (client pasted the API docs) | BIBLE §27; network still blocked |
+| B1 | 2026-10-01 | Scope? | Whole 8.2 ha site at massing level + one detailed hero villa | BIBLE §09, PRODUCTION_STATUS |
+| B2 | 2026-10-01 | Which masterplan is the truth? | Catalogue 2026 for the programme and names; positions follow the permit plan raster (the only scaled drawing) where they overlap | BIBLE §43 C1 resolved |
+| B4 | 2026-10-01 | Which unit is the catalogue villa? | Tranche 1 Duplex (24 units, 124 m² covered, paired houses) | BIBLE §43 C2 resolved, §12 |
+| B5 | 2026-10-01 | Render mode? | MODE B: Blender → Higgsfield (no D5) | BIBLE §39 |
