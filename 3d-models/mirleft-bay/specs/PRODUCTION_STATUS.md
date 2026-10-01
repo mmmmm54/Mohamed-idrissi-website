@@ -18,7 +18,7 @@ Updated 2026-10-01.
 | TEXTURES | NOT STARTED | |
 | LANDSCAPE | NOT STARTED | |
 | FURNITURE | NOT STARTED | |
-| LIGHTING | NOT STARTED | Waiting for I1 (north) |
+| LIGHTING | READY | North + golden hour confirmed |
 | CAMERAS | NOT STARTED | Shot list proposed only |
 | VALIDATION | NOT STARTED | |
 | D5 | NOT STARTED | Waiting for B5 |

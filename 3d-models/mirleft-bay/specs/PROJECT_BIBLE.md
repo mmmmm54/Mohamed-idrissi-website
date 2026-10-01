@@ -1,8 +1,9 @@
 # PROJECT BIBLE — Mirleft Bay (Playa Village Mirleft)
 
 Status tags: **[CONFIRMED]** stated in a source · **[INFERRED]** derived from sources with reasoning · **[ASSUMED]** my default, no source · **[MISSING]** not available · **[CONFLICTING]** sources disagree.
-Source IDs (F01…F07) refer to `PROJECT_INVENTORY.md`. Version 0.1, discovery only: nothing has been modelled.
+Source IDs (F01…F07) refer to `PROJECT_INVENTORY.md`. Version 0.2 (2026-10-01, after the client's first answers), discovery only: nothing has been modelled.
 
+CLIENT STATEMENT (2026-10-01): "this is what I have on informations": no dimensioned plans, elevations, sections or DWG exist beyond F01–F08. Villa geometry is therefore **INFERRED** (catalogue plans + photos + permit areas), never presented as surveyed.
 INTERIOR_DOCUMENTATION: **PARTIAL** (catalogue room layouts and areas for one villa type, no dimensions)
 INTERIOR_ACCURACY: **APPROXIMATED** (cinematic approximation only, unless dimensioned plans arrive)
 
@@ -13,19 +14,19 @@ Tourist residential resort (RIPT) with a 3-star hotel, on an 8.2 ha coastal plot
 Gated resort: duplex houses, detached villas (types A/B/C), hotel, club house / restaurant, supérette, administration, pools, artificial lake, shared landscape [CONFIRMED F01]. Marketing adds spa, beach club, market, conference room, sports ground, chiringuito, slow working [CONFIRMED F02] → see §43 C1.
 
 ## 03_SITE
-Lieu-dit Atblkoukte, Commune rurale de Mirleft. TF 11512/31 [CONFIRMED F01]. Elongated plot from the beach (west) to the provincial road (east), between two ravines [CONFIRMED F01]. Bare ochre semi-desert, low scrub, Atlantic cliffs and beach [CONFIRMED F03].
+Lieu-dit Atblkoukte, Commune rurale de Mirleft. TF 11512/31 [CONFIRMED F01]. Location ≈ **29.553° N, 10.060° W**, west of road R104, south-east of Playa de Tamajarusch / Tamahroucht beach, near Kasbah Tabelkoukt [CONFIRMED F08 Google Earth; centroid ± 100 m INFERRED from the screenshot]. Elongated plot from the beach (west) to the provincial road (east), between two ravines [CONFIRMED F01]. Bare ochre semi-desert, low scrub, Atlantic cliffs and beach [CONFIRMED F03].
 
 ## 04_SITE_BOUNDARY
-Plot polygon drawn on F01, contenance 82 070 m² [CONFIRMED]. Digitised extent ≈ 650 × 100–220 m [INFERRED, scale verified to −2 %]. Exact boundary coordinates (survey points B1–B16 are visible) [MISSING as numbers → digitise from the raster, ± 0.3 m].
+Plot polygon drawn on F01, contenance 82 070 m² [CONFIRMED]. Digitised extent ≈ 650 × 100–220 m [INFERRED, scale verified to −2 %]. Client's Google Earth hand trace: 78 412 m², perimeter 1 435 m, length ≈ 695 m [CONFIRMED F08, hand trace, −4.5 % vs title]. The **plan raster stays the geometry source**; Google Earth gives the orientation and the terrain context. Exact boundary coordinates (survey points B1–B16 are visible) [MISSING as numbers → digitise from the raster, ± 0.3 m].
 
 ## 05_ORIENTATION
-No north arrow found on F01 [MISSING]. The ocean is on the left of the plan; the Mirleft coast faces the Atlantic to the W/NW → plan left ≈ west, plan up ≈ north [INFERRED from F03 + geography]. Sun studies depend on this → IMPORTANT question.
+No north arrow on F01, but the client's Google Earth trace (F08) fixes it: the long axis runs at a bearing of **≈ 120°** (beach end WNW at 300°, road end ESE at 120°) [CONFIRMED F08, measured ± 3°]. On the plan, the ocean is on the left → **plan +X (towards the road) = bearing 120°, plan up = N30°E** [INFERRED from F08 ± 3°]. The beach end gets the sunset light: the golden-hour sun sets at about 250–295° depending on the season.
 
 ## 06_COORDINATE_SYSTEM
-Proposed [ASSUMED]: metres, origin at the site entrance on the provincial road (east end), +X towards the ocean along the main axis… final choice once north is confirmed. No geo-reference (Lambert Maroc zone) on the plan [MISSING].
+Blender: metres, Z up, **+Y = true north**, +X = east. The plan raster is placed rotated so that its long axis lies at bearing 120°. Origin at the site entrance on R104 (east end) [ASSUMED]. Geographic anchor 29.553° N, 10.060° W (for the sun position) [INFERRED F08]. No Lambert Maroc coordinates on the plan [MISSING, not needed for visualisation].
 
 ## 07_TERRAIN
-Slopes down from ≈ 62 m (road) to ≈ 8–18 m (beach edge) over ≈ 650 m, i.e. about 6–8 % average, with ravines north and south [CONFIRMED spot heights F01]. Inside the plot the levels are hidden under the colour tint [MISSING] → interpolate from the boundary spot heights and contours [INFERRED]. Platforms / terracing per villa [MISSING].
+Slopes down from ≈ 62 m (road) to ≈ 8–18 m (beach edge) over ≈ 650 m, i.e. about 6–8 % average, with ravines north and south [CONFIRMED spot heights F01]. Google Earth elevations over the traced polygon: min 18.72 m, median 51.28 m, max 64.99 m [CONFIRMED F08], consistent with F01. Inside the plot the levels are hidden under the colour tint [MISSING] → interpolate from the boundary spot heights and contours [INFERRED]. Platforms / terracing per villa [MISSING].
 
 ## 08_TOPOGRAPHY
 Contours every ≈ 5 m with spot heights (e.g. 60.97, 61.70, 57.45, 59.39, 45.21, 40.00, 33.15, 28.92, 18.46, 15.00, 12.93) [CONFIRMED F01]. A DWG/topographic survey would replace digitising [MISSING].
@@ -85,7 +86,7 @@ Washingtonia fan palms (as-built, F04/F07) [CONFIRMED]. Date / Canary palms, oli
 See `ASSET_REQUIREMENTS.md`. Core palette [CONFIRMED F04/F07]: sand-ochre lime render, darker ochre recessed panels, timber pergolas, warm rubble stone walls, bronze aluminium, clear glass, beige concrete pavers, asphalt, lawn, ochre soil.
 
 ## 27_TEXTURES
-External PBR libraries (Poly Haven, ambientCG) are **blocked by this environment's network policy** (HTTP 403 on CONNECT, tested 2026-10-01) [CONFIRMED]. Until access is opened: procedural / generated textures, labelled APPROXIMATED.
+External PBR libraries (Poly Haven, ambientCG) are **blocked by this environment's network policy** (HTTP 403 on CONNECT, re-tested 2026-10-01 after the client sent the Poly Haven API docs) [CONFIRMED]. The client wants Poly Haven used (API docs supplied) → the environment's network settings must allow `api.polyhaven.com`, `dl.polyhaven.org`, `cdn.polyhaven.com`. Until access is opened: procedural / generated textures, labelled APPROXIMATED.
 
 ## 28_FURNITURE
 Exterior: loungers, round dining table + chairs, stone fire pit, outdoor sofas on the roof [CONFIRMED F06, F02 p8]. Interior: warm wood, bouclé sofas, linen [CONFIRMED F02 p8–9].
@@ -100,7 +101,7 @@ Lifestyle people in the catalogue (couples, surfers, diners) [CONFIRMED F02]. In
 Parked cars in F05 and the plan [CONFIRMED]. Optional, low priority [ASSUMED].
 
 ## 32_LIGHTING
-Brand mood = golden hour / warm sunset [CONFIRMED F02 p1, p7, p10, p13]. The as-built photos are midday, clear blue sky [CONFIRMED F04/F07]. Six lighting presets are required by the brief; their sun angles depend on north (§05) and the site latitude ≈ 29.6° N [INFERRED: Mirleft].
+Brand mood = golden hour / warm sunset [CONFIRMED F02 p1, p7, p10, p13]. The as-built photos are midday, clear blue sky [CONFIRMED F04/F07]. **Master look = golden hour** [CONFIRMED by the client 2026-10-01]. Sun from the WNW–W over the ocean, low (3–12° elevation), warm haze; computed for 29.553° N, 10.060° W. The other five presets (daylight, morning, sunset, blue hour, night) stay secondary.
 
 ## 33_COLOR_PALETTE
 Render sand #C9A77D (albedo, INFERRED from sunlit #D1B18B / shade #99824F), recessed ochre #B39175, timber #BC9E7B, stone #BA6F4B, bronze #433C37, pavers #C8AD94–#D6CABA, brick pavers #A05D48 (render only), ocean teal, sky blue.
@@ -115,6 +116,8 @@ Warm, soft, slightly hazy golden-hour photography; natural contrast; editorial l
 Slow, calm, contemplative ("Un moment de vie. Rien d'autre.") [CONFIRMED F02 p1]. Slow drone drifts, gentle push-ins, ocean as the constant backdrop [INFERRED].
 
 ## 37_CAMERA_LANGUAGE
+**Delivery format: vertical 9:16** [CONFIRMED by the client 2026-10-01], e.g. 1080 × 1920 (hero frames 2160 × 3840). Vertical framing favours tall subjects (palms, kasbah towers, pergola + sky), top-down drone reveals and slow vertical crane moves.
+
 Proposed (to be validated after scope): 24–35 mm aerials and establishing shots, 35–50 mm human-scale villa and pool shots, 50–75 mm details (niches, pergola shadows, stone). Vertical lines kept straight on architecture shots. Shot list in the discovery report; written to `output/higgsfield/02_SHOT_LIST.md` after scope is fixed.
 
 ## 38_RENDERING
@@ -133,7 +136,7 @@ A1 storey height 3.10 m · A2 exterior walls 0.30 m · A3 slab 0.25 m · A4 para
 See `MISSING_INFORMATION.md`.
 
 ## 43_CONFLICTS
-- **C1** Program: the permit (2013, approved 2016) lists club house, supérette, administration, hotel 3★, lake. The catalogue (2026) shows Restaurant Pavillon, market, two spas, beach club, conference room, sports ground, chiringuito, "La Plage" boutique hotel ~30 suites, 4 cliff villas. → Which version is the truth for modelling? **BLOCKING**.
+- **C1** Program (still open): the permit (2013, approved 2016) lists club house, supérette, administration, hotel 3★, lake. The catalogue (2026) shows Restaurant Pavillon, market, two spas, beach club, conference room, sports ground, chiringuito, "La Plage" boutique hotel ~30 suites, 4 cliff villas. → Which version is the truth for modelling? **BLOCKING**.
 - **C2** Unit type and area: the catalogue's "24 villas, 150 m² habitable, R+1 + rooftop" matches the permit's 24 duplex (RDC+1) of 124 m² covered each? Or villa type B (164 m²)? → **BLOCKING** for the hero villa.
 - **C3** The F04 kasbah building and the F05 portal building are not identified on the plan.
 - **C4** The Pavillon render (p10) shows a mountain backdrop and terraced stone retaining walls (AI-style render) that the plan does not confirm.

@@ -11,6 +11,8 @@ Discovery date: 2026-10-01. Every file received so far is listed. Authority: 1 =
 | F05 | `input/photos/IMG_12_render_entrance_plaza.jpg` | Render: entrance plaza, horseshoe-arch portal, tapered pylons, brick-paved parking (same image as catalogue p13) | User upload | 3 |
 | F06 | `input/photos/IMG_13_render_villa_garden.jpg` | Render: R+1 villa garden side, pergolas, timber screens, wall niches (same image as catalogue p7) | User upload | 3 |
 | F07 | `input/photos/IMG_14_photo_built_villa.jpg` | Real site photo: built R+1 villa, timber pergola, wall niches, stone garden wall, sliding doors | User upload | **2** (as-built) |
+| F08 | `input/photos/IMG_17_google_earth_measure_top.webp`, `IMG_18_google_earth_3d_view.webp` | Google Earth: the client's polygon over the satellite image (area 78 412 m², perimeter 1 435 m, elevation 18.72 / 51.28 / 64.99 m, view centre 29°33'17"N 10°03'27.5"W, 400 m scale bar) + an oblique 3D view with the plan overlaid | User upload 2026-10-01 | **2** (real geography) |
+| — | `12e6f1f8-PLAN_MASSE…pdf` (2nd upload) | Byte-identical to F01 (md5 39cf4118…) | User upload | duplicate |
 
 ## F01 — Plan de masse, phase des travaux, plan modificatif
 
@@ -58,6 +60,12 @@ Discovery date: 2026-10-01. Every file received so far is listed. Authority: 1 =
 - **F05**: render of the arch portal and tapered pylons. Building identity unknown (administration or supérette/market?). Red brick pavers #A05D48.
 - **F06**: render matching F07 (pergola, timber lattice guardrails, square wall niches, deep window reveals, stone fire pit).
 - **F07**: the as-built villa. Render sunlit ≈ #F0D9A6 (over-exposed), shade #625646. Pergola timber #BC9E7B, warm rubble stone garden wall ≈ #BA6F4B, beige pavers #D6CABA, dark bronze aluminium frames #433C37.
+
+## F08 — Google Earth (client, 2026-10-01)
+
+- North-up satellite view. Measured long-axis bearing **120°** (WNW beach ↔ ESE road R104). Length ≈ 695 m at the 400 m scale bar (2.26 m/px).
+- Neighbours: Tamahroucht / Playa de Tamajarusch beach to the NW, Kasbah Tabelkoukt and housing to the north across a ravine, road R104 along the east end, bare ochre plateau, hills inland (3D view).
+- Elevations agree with the F01 spot heights.
 
 ## Cross-file conflicts (summary — details in PROJECT_BIBLE §43)
 
