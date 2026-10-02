@@ -5,7 +5,14 @@ Status: every material here is APPROXIMATED (procedural) because the CC0 librari
 (Poly Haven / ambientCG) are blocked by this environment's network policy. Colours come from
 the client's site photos (PROJECT_BIBLE §33). Physical scale: Object coordinates in metres.
 IDs match specs/ASSET_REQUIREMENTS.md (M01...).
+
+Poly Haven layer (client download, CC0): if a folder assets/textures/polyhaven/<slug>/ exists,
+the matching material is rebuilt from those image maps (colour, roughness, height) with box
+projection in Object space at true size (PH_MAP below). Missing folders keep the procedural
+material, so the scene always builds.
 """
+import os
+
 C = globals()["C"]
 
 
@@ -326,7 +333,128 @@ def interior(name):
     return m
 
 
+PH_DIR = None
+#   material                      Poly Haven slug          tile m  colour multiplier (keeps the site-photo hue)
+PH_MAP = {
+    "M01_Render_Sand":            ("white_plaster_rough_01", 2.0, "#D9BB93"),
+    "M02_Render_Ochre":           ("white_plaster_rough_01", 2.0, "#BF9B78"),
+    "M03_Timber_Pergola":         ("wood_planks",            2.0, None),
+    "M04_Stone_Rubble":           ("stacked_stone_wall",     2.0, "#F2DCC0"),
+    "M07_Pavers_Beige":           ("patterned_paving",       2.0, "#F4EADB"),
+    "M09_Terrace_Stone":          ("marble_tiles",           2.0, "#F6EEE2"),
+}
+PH_TERRAIN = {"soil": ("aerial_ground_rock", 8.0), "sand": ("aerial_beach_01", 10.0)}   # tile sizes INFERRED
+
+
+def ph_maps(slug):
+    """Colour / roughness / height maps in a Poly Haven folder (any resolution, any nesting).
+    A *.blend.zip download unzipped keeps its maps in textures/; those are found too."""
+    import os
+    d = os.path.join(PH_DIR, slug)
+    if not os.path.isdir(d):
+        return None
+    files = []
+    for r, _, fs in os.walk(d):
+        files += [os.path.join(r, f) for f in sorted(fs) if f.lower().endswith((".jpg", ".jpeg", ".png", ".exr", ".tif", ".tiff"))]
+    def pick(*keys):
+        for k in keys:
+            for f in files:
+                if k in os.path.basename(f).lower():
+                    return f
+        return None
+    col = pick("_diff", "diffuse", "_col", "albedo", "basecolor")
+    if not col:
+        return None
+    return {"col": col, "rough": pick("_rough"), "arm": pick("_arm"), "disp": pick("_disp", "height"),
+            "nrm": pick("nor_gl", "normal_gl")}
+
+
+def ph_tex(b, path, vec, data=False):
+    import bpy
+    t = b.n("ShaderNodeTexImage")
+    t.image = bpy.data.images.load(path, check_existing=True)
+    if data:
+        t.image.colorspace_settings.name = "Non-Color"
+    t.projection = "BOX"
+    t.projection_blend = 0.2
+    b.link(vec, t, "Vector")
+    return t
+
+
+def ph_vector(b, tile):
+    mp = b.n("ShaderNodeMapping")
+    mp.inputs["Scale"].default_value = (1.0 / tile,) * 3
+    b.link(b.obj, mp, "Vector")
+    return mp.outputs["Vector"]
+
+
+def ph_surface(name, slug, tile, tint):
+    """Rebuild one material from Poly Haven maps. Returns the material or None if not downloaded."""
+    maps = ph_maps(slug)
+    if not maps:
+        return None
+    m, b = new_mat(name)
+    vec = ph_vector(b, tile)
+    col = ph_tex(b, maps["col"], vec).outputs["Color"]
+    if tint:
+        col = b.mix(1.0, col, srgb(tint), "MULTIPLY").outputs[2]
+    b.set(base=col, spec=0.4)
+    if maps["rough"]:
+        b.set(rough=ph_tex(b, maps["rough"], vec, True).outputs["Color"])
+    elif maps["arm"]:
+        sep = b.n("ShaderNodeSeparateColor")
+        b.link(ph_tex(b, maps["arm"], vec, True).outputs["Color"], sep, "Color")
+        b.set(rough=sep.outputs["Green"])
+    else:
+        b.set(rough=0.85)
+    h = ph_tex(b, maps["disp"], vec, True).outputs["Color"] if maps["disp"] else None
+    if h is None:
+        bw = b.n("ShaderNodeRGBToBW")
+        b.link(col, bw, "Color")
+        h = bw.outputs["Val"]
+    b.bump(h, 0.5, 0.02 * tile)
+    m["source"] = "POLY HAVEN CC0: " + slug + " (" + os.path.basename(maps["col"]) + "), tile %.1f m" % tile
+    return m
+
+
+def ph_terrain(name):
+    """Terrain from Poly Haven aerial maps: soil (aerial_ground_rock) + sand (aerial_beach_01),
+    blended with the procedural rock by the same 'mask' attribute. None if soil is missing."""
+    soil_maps = ph_maps(PH_TERRAIN["soil"][0])
+    if not soil_maps:
+        return None
+    sand_maps = ph_maps(PH_TERRAIN["sand"][0])
+    m, b = new_mat(name)
+    attr = b.n("ShaderNodeAttribute", attribute_name="mask")
+    sep = b.n("ShaderNodeSeparateColor")
+    b.link(attr.outputs["Color"], sep, "Color")
+    soil_t = ph_tex(b, soil_maps["col"], ph_vector(b, PH_TERRAIN["soil"][1]))
+    macro = b.noise(0.012, 5, 0.6)                       # large-scale variation so 8 m tiles do not repeat visibly
+    var = b.ramp(macro.outputs["Fac"], [(0.3, (0.85, 0.85, 0.85, 1)), (0.7, (1.1, 1.05, 1.0, 1))])
+    soil = b.mix(1.0, soil_t.outputs["Color"], var.outputs["Color"], "MULTIPLY")
+    soil = b.mix(1.0, soil.outputs[2], srgb("#F0D2B4"), "MULTIPLY")     # pull towards the ochre site soil
+    if sand_maps:
+        sand = ph_tex(b, sand_maps["col"], ph_vector(b, PH_TERRAIN["sand"][1])).outputs["Color"]
+    else:
+        sandn = b.noise(0.05, 4, 0.5)
+        sand = b.ramp(sandn.outputs["Fac"], [(0.3, srgb("#D7BE96")), (0.7, srgb("#E6D1AC"))]).outputs["Color"]
+    rockn = b.noise(0.4, 8, 0.7)
+    rock = b.ramp(rockn.outputs["Fac"], [(0.3, srgb("#4F3B2E")), (0.7, srgb("#8A6A50"))])
+    c1 = b.mix(sep.outputs["Green"], soil.outputs[2], rock.outputs["Color"])
+    c2 = b.mix(sep.outputs["Red"], c1.outputs[2], sand)
+    b.set(base=c2.outputs[2], rough=0.95, spec=0.3)
+    bw = b.n("ShaderNodeRGBToBW")
+    b.link(soil_t.outputs["Color"], bw, "Color")
+    h = b.mix(sep.outputs["Green"], bw.outputs["Val"], rockn.outputs["Fac"])
+    b.bump(h.outputs[2], 0.5, 0.15)
+    m["source"] = "POLY HAVEN CC0: " + ", ".join(s for s, _ in PH_TERRAIN.values() if ph_maps(s))
+    return m
+
+
 def build():
+    global PH_DIR
+    import os
+    PH_DIR = os.path.join(C.ROOT, "assets", "textures", "polyhaven")
     mats = {
         "render": render_plaster("M01_Render_Sand", "#D2B289", "#BE9C72"),
         "render_dark": render_plaster("M02_Render_Ochre", "#B79473", "#A3805F"),
@@ -368,4 +496,13 @@ def build():
     }
     for m in mats.values():
         m["status"] = "APPROXIMATED (procedural; CC0 textures blocked by network policy)"
+    used = []
+    for key, m in mats.items():
+        if m.name in PH_MAP and ph_surface(m.name, *PH_MAP[m.name]):
+            m["status"] = "SOURCED"
+            used.append(m.name)
+    if ph_terrain("T01_Terrain_Soil_Sand_Rock"):
+        mats["terrain"]["status"] = "SOURCED"
+        used.append("T01_Terrain_Soil_Sand_Rock")
+    print("[materials] Poly Haven maps used for:", used or "none (procedural only)", flush=True)
     return mats
