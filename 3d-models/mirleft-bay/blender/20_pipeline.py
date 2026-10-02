@@ -123,7 +123,9 @@ def main():
         rep = load("18_validate_scene.py", C).build(counts, plan, "graybox")
         log("validation", rep)
     if until >= 1:
-        log("landscape", load("09_build_landscape.py", C).build(mats))
+        land0 = load("09_build_landscape.py", C)
+        log("landscape", land0.build(mats))
+        log("parking", land0.build_parking(mats))
         save(C, "checkpoint_07_landscape.blend")
     if until >= 2:
         pass

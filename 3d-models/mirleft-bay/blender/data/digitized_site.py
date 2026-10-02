@@ -126,3 +126,27 @@ GE_SHORELINE = [(585, 126), (588, 180), (575, 240), (560, 282), (540, 318), (522
 GE_BEACH_BACK = [(640, 126), (643, 200), (640, 260), (630, 315), (612, 360), (598, 392), (585, 405),
                  (560, 412), (530, 418)]        # back edge of the sand (foot of the slope)
 GE_ROAD_R104 = [(912, 126), (895, 250), (882, 360), (868, 470), (845, 580), (820, 660), (790, 730), (758, 788)]
+
+
+# ---------------------------------------------------------------------------
+# Added 2026-10-02 after client review (catalogue p6 + plan F01): water features and parking
+# ---------------------------------------------------------------------------
+# Central avenue canal (blue strip on the plan): (x0, x1, y0, y1)
+CANALS = [(2860, 3862, 2412, 2424), (3912, 4560, 2428, 2440)]
+CANAL_STRIP = 12                 # px of stone coping on each side
+# Hotel garden: T-shaped water (cross branch at the "HOTEL" label) + wide basin
+HOTEL_WATER = [(2423, 2452, 2040, 2950), (2440, 2720, 2366, 2396), (2452, 2510, 2232, 2366), (2452, 2510, 2396, 2530)]
+# Entrance plaza (T1): long reflecting pool + half-moon basin
+PLAZA_POOL = (5798, 5934, 2212, 2244)
+PLAZA_HALFMOON = ((5752, 2292), 22)
+# Parking rows: (start px, end px, bay depth m, side +1 = left of the direction, -1 = right)
+PARKING_ROWS = [
+    ((2790, 2090), (2790, 2340), 5.0, -1),     # hotel public parking (north)
+    ((2790, 2560), (2790, 2910), 5.0, -1),     # hotel public parking (south)
+    ((4735, 1985), (5320, 1945), 5.0, +1),     # north road, T1
+    ((5770, 2075), (5770, 2195), 5.0, -1),     # entrance lot west row
+    ((5880, 2270), (6000, 2270), 5.0, +1),     # entrance lot south row
+    ((5900, 2120), (6030, 2120), 5.0, +1),     # entrance lot north row
+    ((3960, 3055), (4500, 3062), 5.0, +1),     # south road, T3
+    ((5440, 2600), (5660, 2585), 5.0, -1),     # club, south road
+]

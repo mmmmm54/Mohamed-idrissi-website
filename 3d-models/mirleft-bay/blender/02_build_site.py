@@ -111,8 +111,12 @@ def build(materials):
         lake.append(Polygon(C.plan_to_world(ring)))
     lake_poly = unary_union(lake)
     pools = [Polygon(C.plan_to_world(p)).buffer(0) for p in D.T1_POOLS]
-    ch = plan_rect_world(D.HOTEL_POOL_STRIP)
-    wet = unary_union([lake_poly.buffer(1.2)] + [p.buffer(4.0) for p in pools] + [ch.buffer(1.5)])
+    ch = unary_union([plan_rect_world(b) for b in D.HOTEL_WATER])
+    canals = [plan_rect_world(b) for b in D.CANALS]
+    plaza = plan_rect_world(D.PLAZA_POOL)
+    (hx, hy), hr = D.PLAZA_HALFMOON
+    half = Polygon(C.plan_to_world([(hx + hr * math.cos(t), hy + hr * math.sin(t)) for t in np.linspace(-math.pi / 2, math.pi / 2, 24)]))
+    wet = unary_union([lake_poly.buffer(1.2)] + [p.buffer(4.0) for p in pools] + [ch.buffer(1.5)] + [c.buffer(1.5) for c in canals] + [plaza.buffer(1.5), half.buffer(1.0)])
     # 2. kerbed blocks: sidewalk ring + lawn inset
     blocks = []
     for name, b in D.GREEN_BLOCKS:
@@ -146,8 +150,15 @@ def build(materials):
     C.CLUB_POOLS = pools
 
     # 5. hotel water channel + sports court
-    draped("SITE_Hotel_Channel_Deck", ch.buffer(1.5).difference(ch), col, M["terrace"], KERB_H + 0.08, M["kerb"], 0.0, step=2.0)
-    draped("SITE_Hotel_Channel_Water", ch, col, M["pool_water"], KERB_H + 0.02, M["pool_tile"], -1.2, step=2.0)
+    draped("SITE_Hotel_Water_Deck", ch.buffer(1.5).difference(ch), col, M["terrace"], KERB_H + 0.08, M["kerb"], 0.0, step=2.0)
+    draped("SITE_Hotel_Water", ch, col, M["pool_water"], KERB_H + 0.02, M["pool_tile"], -1.2, step=2.0)
+    for i, cpoly in enumerate(canals):
+        draped(f"SITE_Canal_{i}_Coping", cpoly.buffer(1.5, join_style=2).difference(cpoly), col, M["terrace"], KERB_H + 0.10, M["stone"], 0.0, step=2.0)
+        draped(f"SITE_Canal_{i}_Water", cpoly, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=2.0)
+    draped("SITE_Plaza_Pool_Coping", plaza.buffer(1.2, join_style=2).difference(plaza), col, M["terrace"], KERB_H + 0.10, M["kerb"], 0.0, step=2.0)
+    draped("SITE_Plaza_Pool_Water", plaza, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=2.0)
+    draped("SITE_Plaza_HalfMoon_Water", half, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=1.5)
+    C.WET = wet
     court = plan_rect_world(D.SPORTS_COURT)
     draped("SITE_Sports_Court", court.buffer(-1.0), col, M["kerb"], KERB_H, M["kerb"], 0.0, step=3.0)
     return dict(blocks=len(blocks))

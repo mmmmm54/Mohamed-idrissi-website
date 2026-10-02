@@ -19,7 +19,7 @@ HERO = "DUPLEX_PAIR_009"          # Tranche 1, column C, next to the club pools
 SHOTS = {
     "SH01_ESTABLISHING_AERIAL": ("world", (520, -260, 150), (-170, 90, 15), 28, "NO", "Backlit establishing: the spur from the road side, resort, beach and Atlantic horizon"),
     "SH02_AERIAL_TOPDOWN":      ("top", (3780, 2400, 820), None, 50, "NO", "Masterplan read top-down, axis vertical in the 9:16 frame"),
-    "SH03_APPROACH_AVENUE":     ("plan", (4470, 2437, 1.7), (3000, 2432, 4.0), 35, "YES", "Date-palm avenue towards the ocean and the low sun"),
+    "SH03_APPROACH_AVENUE":     ("plan", (4470, 2456, 1.7), (3000, 2445, 3.5), 35, "YES", "Date-palm avenue towards the ocean and the low sun"),
     "SH04_ENTRANCE_KASBAH":     ("plan", (5395, 2150, 1.4), (5545, 2105, 7.5), 20, "YES", "Reception towers, low angle, warm side light"),
     "SH05_GARDEN_REVEAL":       ("hero", (-11.0, -5.6, 1.6), (-5.0, -1.6, 3.3), 22, "YES", "Duplex garden facade, pergola, terrace, lawn"),
     "SH06_PERGOLA_TERRACE":     ("hero", (-2.2, -2.4, 4.95), (-30.0, -9.0, 3.2), 22, "YES", "Under the pergola looking out to the sunset"),

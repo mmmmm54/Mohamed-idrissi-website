@@ -248,6 +248,8 @@ def build(materials):
         "olive": make_source("OLIVE_A", blob_tree(6, 4.2, 3.6, "olive_leaf"), M, src_col),
         "argan": make_source("ARGAN_SCRUB_A", blob_tree(7, 2.4, 3.2, "olive_leaf", cards=60), M, src_col),
         "grass": make_source("GRASS_PENNISETUM_A", grass_clump(8), M, src_col),
+        "pink": make_source("PINK_BLOSSOM_TREE_A", blob_tree(9, 4.4, 3.0, "blossom", cards=110), M, src_col),
+        "pink_s": make_source("PINK_BLOSSOM_TREE_B", blob_tree(10, 3.2, 2.3, "blossom", cards=75), M, src_col),
     }
     for ob in src.values():
         ob.hide_render = True
@@ -355,7 +357,7 @@ def build(materials):
                 C.GRASS_BLOCKERS.append(terr.buffer(0.1))
                 draped(f"DUP_{tr}_{x0}_{ya:.0f}_Terrace", terr, gardens, M["terrace"], 0.22, M["kerb"], 0.17, step=1.5)
                 plant(RNG.choice(["wash_a", "wash_b"]), C.plan_to_world([(gx0 + 0.9 / m, ya + 1.0 / m)])[0], RNG.uniform(0.85, 1.1))
-                plant("olive", C.plan_to_world([(gx0 + 1.6 / m, yb - 1.8 / m)])[0], RNG.uniform(0.7, 0.9))
+                plant("olive" if RNG.random() < 0.5 else "pink_s", C.plan_to_world([(gx0 + 1.6 / m, yb - 1.8 / m)])[0], RNG.uniform(0.7, 0.95))
                 n["olives"] += 1
 
     # street palms along the outer ring road and the central east-west avenue
@@ -372,6 +374,10 @@ def build(materials):
             p = np.array(avenue.interpolate(d).coords[0]) + np.array([-math.sin(yaw), math.cos(yaw)]) * off
             plant("date_a" if RNG.random() < 0.5 else "date_b", p, RNG.uniform(0.9, 1.1), 0.17)
             n["palms"] += 1
+            if int(d / 11.0) % 2 == 0:          # pink flowering trees between the date palms
+                p2 = np.array(avenue.interpolate(d + 5.5).coords[0]) + np.array([-math.sin(yaw), math.cos(yaw)]) * off
+                plant("pink", p2, RNG.uniform(0.85, 1.05), 0.17)
+                n["pink"] = n.get("pink", 0) + 1
 
     # lake park: date palm clusters, olives, grasses (avoid water); island Washingtonia
     park = [b for nm, b in C.SITE_BLOCKS if nm == "T6_LAKE_PARK"]
@@ -388,7 +394,7 @@ def build(materials):
             pt = Point(p)
             if pp.contains(pt) and not wp.contains(pt) and all(np.hypot(*(p - q)) > 4.5 for q in occupied[-200:]):
                 k = RNG.random()
-                key = "date_a" if k < 0.3 else "date_b" if k < 0.5 else "olive" if k < 0.75 else "grass"
+                key = "date_a" if k < 0.25 else "date_b" if k < 0.42 else "olive" if k < 0.6 else "pink" if k < 0.75 else "grass"
                 plant(key, p, RNG.uniform(0.8, 1.2) if key != "olive" else RNG.uniform(0.7, 1.0))
                 placed += 1
         isl = C.LAKE_ISLAND
@@ -402,7 +408,7 @@ def build(materials):
     for pg in C.CLUB_POOLS:
         ringp = pg.buffer(5.0).exterior
         for d in np.arange(0, ringp.length, 9.0):
-            plant(RNG.choice(["date_a", "date_b"]), np.array(ringp.interpolate(d).coords[0]), RNG.uniform(0.9, 1.15))
+            plant(RNG.choice(["date_a", "date_b", "pink_s"]), np.array(ringp.interpolate(d).coords[0]), RNG.uniform(0.9, 1.15))
             n["palms"] += 1
 
     # native scrub around the plot (aerial context), sparser with distance
@@ -489,3 +495,76 @@ def build_grass(materials, zones):
         if V:
             C.mesh_object(f"GRASS_ZONE_{zi}", V, F, col, materials["grass_blade"])
     return total
+
+
+
+# ---------------------------------------------------------------------------
+# Parking: bay markings + parked cars (added 2026-10-02 after client review)
+# ---------------------------------------------------------------------------
+def car_mesh(seed):
+    """Simple saloon / SUV massing (4.6 x 1.85 m); D5 users replace them with library cars."""
+    r = random.Random(seed)
+    mb = C.MeshBuilder()
+    L, W = r.uniform(4.4, 4.9), r.uniform(1.8, 1.9)
+    suv = r.random() < 0.35
+    h1 = 0.75 if not suv else 0.95
+    mb.box("car", -L / 2, L / 2, -W / 2, W / 2, 0.32, h1)
+    mb.box("car", -L / 2 + 0.25, L / 2 - 0.15, -W / 2 + 0.05, W / 2 - 0.05, h1, h1 + 0.12)
+    cl0, cl1 = (-L / 2 + 0.9, L / 2 - 1.3) if not suv else (-L / 2 + 0.5, L / 2 - 1.0)
+    mb.box("car_glass", cl0, cl1, -W / 2 + 0.12, W / 2 - 0.12, h1 + 0.12, h1 + (0.55 if not suv else 0.75))
+    mb.box("car", cl0 + 0.1, cl1 - 0.1, -W / 2 + 0.16, W / 2 - 0.16, h1 + (0.55 if not suv else 0.75), h1 + (0.6 if not suv else 0.8))
+    for x in (-L / 2 + 0.8, L / 2 - 0.8):
+        for y in (-W / 2 + 0.05, W / 2 - 0.27):
+            mb.box("tyre", x - 0.33, x + 0.33, y, y + 0.22, 0.0, 0.66)
+    return mb
+
+
+def build_parking(materials):
+    import bpy
+    G = C.SITE_GRADED
+    M = materials
+    col = C.child_collection("11_VEHICLES", "PARKING")
+    src_col = C.child_collection("11_VEHICLES", "SRC_CARS")
+    paints = ["#E9E8E4", "#B9BDC1", "#1D1F22", "#5B1E22", "#2E3B4E", "#CFC4AE"]
+    srcs = []
+    for i, hexcol in enumerate(paints):
+        mat = M["car"].copy()
+        mat.name = f"A08_Car_Paint_{i}"
+        mat.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = C_srgb(hexcol)
+        mats = dict(M)
+        mats["car"] = mat
+        s = make_source(f"CAR_{i}", car_mesh(200 + i), mats, src_col)
+        s.hide_render = True
+        s.hide_viewport = True
+        srcs.append(s)
+    lines = C.MeshBuilder()
+    r = random.Random(77)
+    bays = cars = 0
+    for (p0, p1, depth, side) in D.PARKING_ROWS:
+        a, b = C.plan_to_world([p0])[0], C.plan_to_world([p1])[0]
+        L = np.linalg.norm(b - a)
+        t = (b - a) / L
+        nrm = np.array([-t[1], t[0]]) * side
+        n = int(L / 2.5)
+        for i in range(n + 1):
+            q = a + t * (i * 2.5)
+            z = float(G(np.array([q]))[0]) + 0.035
+            e = q + nrm * depth
+            w = np.array([-nrm[1], nrm[0]]) * 0.06
+            lines.poly("paint_line", [(q[0] - w[0], q[1] - w[1], z), (e[0] - w[0], e[1] - w[1], z), (e[0] + w[0], e[1] + w[1], z), (q[0] + w[0], q[1] + w[1], z)])
+            if i < n:
+                bays += 1
+                if r.random() < 0.72:
+                    c = q + t * 1.25 + nrm * depth / 2
+                    zc = float(G(np.array([c]))[0]) + 0.03
+                    ang = math.atan2(nrm[1], nrm[0]) + (math.pi if r.random() < 0.5 else 0)
+                    instance(r.choice(srcs), f"VEH_CAR_{cars:03d}", c, zc, ang, 1.0, col)
+                    cars += 1
+    lines.build("PARKING_LINES", col, M)
+    return {"bays": bays, "cars": cars}
+
+
+def C_srgb(h):
+    h = h.lstrip("#")
+    c = [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+    return tuple(((v + 0.055) / 1.055) ** 2.4 if v > 0.04045 else v / 12.92 for v in c) + (1.0,)
