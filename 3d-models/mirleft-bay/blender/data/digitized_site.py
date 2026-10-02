@@ -150,3 +150,38 @@ PARKING_ROWS = [
     ((3960, 3055), (4500, 3062), 5.0, +1),     # south road, T3
     ((5440, 2600), (5660, 2585), 5.0, -1),     # club, south road
 ]
+
+
+# ---------------------------------------------------------------------------
+# Added 2026-10-02 (client review of the catalogue masterplan, p6): street network and
+# entrance parking. Grey asphalt carriageways with white markings, as on the masterplan
+# (the as-built photo F04 shows beige pavers on one access: CONFLICTING, client asked for
+# the masterplan streets). Positions follow the gaps of the permit plan F01.
+# ---------------------------------------------------------------------------
+ROAD_PERIMETER_SIDEWALK = 4.5          # m of beige pavers along the plot edge (street palms)
+ROAD_ASPHALT_X_MIN = 2090              # west of this the plot is park / beach club paths
+# streets cut through the villa blocks (x0, x1, y0, y1)
+ROAD_CUTS = [
+    (2900, 3382, 2632, 2672),          # road 7 (villa C rows, T5)
+    (3382, 3860, 2615, 2655),          # road 7 (villa C rows, T4)
+    (3860, 3907, 2615, 2715),          # road 7 crossing the boulevard
+    (3907, 4525, 2650, 2715),          # road 7 (villa B rows, T3)
+    (4060, 4105, 1985, 2425),          # street 6.2 west (T3 north)
+    (4280, 4330, 1985, 2425),          # street 6.2 east (T3 north)
+]
+# pedestrian zones inside the street grid (stay beige pavers)
+ROAD_PEDESTRIAN = [
+    (2880, 3836, 2380, 2455),          # canal promenade, west of the boulevard
+    (3907, 4592, 2418, 2465),          # canal promenade, east of the boulevard
+    (4745, 5465, 1990, 2905),          # duplex quarter: beige paths (catalogue)
+]
+# dashed centre lines (plan px polylines)
+ROAD_CENTRELINES = [
+    [(3868, 1990), (3868, 2390), (3872, 2450), (3883, 3000)],     # boulevard 6
+    [(2900, 2652), (3382, 2652), (3382, 2635), (3860, 2635), (3883, 2665), (3907, 2682), (4525, 2682)],   # road 7
+    [(4557, 1990), (4557, 2990)],                                   # street 7 (T3 / T2)
+    [(2834, 2000), (2834, 2990)],                                   # hotel street 10 / 14
+]
+ROUNDABOUT = ((6020, 2330), 55, 26)    # centre px, outer radius px (7 m), planted island px (3.3 m)
+ENTRANCE_ACCESS = ((6020, 2330), (6320, 2330), 63)    # access road from R104: from, to, width px (8 m)
+ENTRANCE_PARKING_ZONE = (5790, 6320, 1840, 2620)       # plan box the parking fields are tiled in

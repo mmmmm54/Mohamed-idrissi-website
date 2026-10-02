@@ -28,6 +28,8 @@ SHOTS = {
     "SH09_DETAIL_NICHES":       ("hero", (-9.6, -4.3, 2.75), (-5.2, -4.1, 3.0), 50, "NO", "Wall niches, render grain, pergola shadow"),
     "SH10_SUNSET_LAKE":         ("plan", (2080, 2470, 1.6), (1250, 2330, 3.0), 30, "YES", "Lake park looking west, palms against the sun"),
     "SH11_FINAL_WIDE":          ("world", (-700, 520, 240), (0, -10, 30), 32, "NO", "Pull-back over the ocean, the resort on its spur"),
+    "SH12_RESIDENCE_STREETS":   ("plan", (3600, 2950, 70), (3700, 2500, 0), 24, "NO", "Low aerial over road 7 and the boulevard between the villas"),
+    "SH13_ENTRANCE_PARKING":    ("plan", (6250, 2700, 95), (5950, 2250, 0), 24, "NO", "Entrance: roundabout, parking fields, kasbah reception"),
 }
 
 # artistic depth of field on the ground-level shots: f-stop, focus on the shot's target point

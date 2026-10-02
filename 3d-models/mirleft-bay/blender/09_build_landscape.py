@@ -366,10 +366,10 @@ def build(materials):
 
     # street palms along the outer ring road and the central east-west avenue
     site = C.SITE_POLY
-    ring = site.buffer(-7.5).exterior
+    ring = site.buffer(-2.4).exterior                 # in the perimeter sidewalk, clear of the ring road
     for d in np.arange(0, ring.length, 13.0):
         p = np.array(ring.interpolate(d).coords[0])
-        if site.buffer(-3).contains(Point(p)) and all(np.hypot(*(p - q)) > 5 for q in occupied[-40:]):
+        if site.buffer(-1.5).contains(Point(p)) and all(np.hypot(*(p - q)) > 5 for q in occupied[-40:]):
             plant(RNG.choice(["wash_a", "wash_b", "wash_b"]), p, RNG.uniform(0.95, 1.2), 0.17)
             n["palms"] += 1
     avenue = LineString(C.plan_to_world([(2900, 2420), (4560, 2440)]))
@@ -553,7 +553,7 @@ def build_parking(materials):
         n = int(L / 2.5)
         for i in range(n + 1):
             q = a + t * (i * 2.5)
-            z = float(G(np.array([q]))[0]) + 0.035
+            z = float(G(np.array([q]))[0]) + 0.075          # on the asphalt (+0.06)
             e = q + nrm * depth
             w = np.array([-nrm[1], nrm[0]]) * 0.06
             lines.poly("paint_line", [(q[0] - w[0], q[1] - w[1], z), (e[0] - w[0], e[1] - w[1], z), (e[0] + w[0], e[1] + w[1], z), (q[0] + w[0], q[1] + w[1], z)])
@@ -561,10 +561,49 @@ def build_parking(materials):
                 bays += 1
                 if r.random() < 0.72:
                     c = q + t * 1.25 + nrm * depth / 2
-                    zc = float(G(np.array([c]))[0]) + 0.03
+                    zc = float(G(np.array([c]))[0]) + 0.06
                     ang = math.atan2(nrm[1], nrm[0]) + (math.pi if r.random() < 0.5 else 0)
                     instance(r.choice(srcs), f"VEH_CAR_{cars:03d}", c, zc, ang, 1.0, col)
                     cars += 1
+    # entrance parking fields (catalogue masterplan): back-to-back rows of 2.5 x 5 m bays with
+    # 6.5 m aisles, tiled in the free asphalt around the roundabout, market and sports court
+    from shapely.geometry import Polygon as _Poly, Point as _Pt
+    from shapely.ops import unary_union as _union
+    m = D.M_PER_PX
+    zb = D.ENTRANCE_PARKING_ZONE
+    zone = C.ROADS.intersection(_Poly(C.plan_to_world([(zb[0], zb[2]), (zb[1], zb[2]), (zb[1], zb[3]), (zb[0], zb[3])])))
+    (rx, ry), r_out, _ = D.ROUNDABOUT
+    (ax0, ay0), (ax1, ay1), aw = D.ENTRANCE_ACCESS
+    from shapely.geometry import LineString as _LS
+    lanes = _union([_Pt(C.plan_to_world([(rx, ry)])[0]).buffer(r_out * m + 6.5),
+                    _LS(C.plan_to_world([(ax0, ay0), (ax1, ay1)])).buffer(aw * m / 2 + 1.0, cap_style=2)])
+    zone = zone.difference(lanes).buffer(-0.3)
+    o = C.plan_to_world([(0, 0)])[0]
+    v = C.plan_to_world([(0, 1)])[0] - o
+    ang_v = math.atan2(v[1], v[0])
+    bw, bd, ai = 2.5 / m, 5.0 / m, 6.5 / m
+    y = zb[2]
+    while y + 2 * bd + ai <= zb[3]:
+        for y0, y1 in ((y, y + bd), (y + bd + ai, y + 2 * bd + ai)):
+            x = zb[0]
+            while x + bw <= zb[1]:
+                q = C.plan_to_world([(x, y0), (x + bw, y0), (x + bw, y1), (x, y1)])
+                if zone.contains(_Poly(q)):
+                    bays += 1
+                    for e in ((q[0], q[3]), (q[1], q[2])):          # bay side lines
+                        a_, b_ = np.array(e[0]), np.array(e[1])
+                        t = (b_ - a_) / np.linalg.norm(b_ - a_)
+                        w = np.array([-t[1], t[0]]) * 0.06
+                        za, zb_ = (float(h) + 0.075 for h in G(np.array([a_, b_])))
+                        lines.poly("paint_line", [(a_[0] - w[0], a_[1] - w[1], za), (b_[0] - w[0], b_[1] - w[1], zb_),
+                                                  (b_[0] + w[0], b_[1] + w[1], zb_), (a_[0] + w[0], a_[1] + w[1], za)])
+                    if r.random() < 0.62:
+                        c = np.mean(q, axis=0)
+                        zc = float(G(np.array([c]))[0]) + 0.06
+                        instance(r.choice(srcs), f"VEH_CAR_{cars:03d}", c, zc, ang_v + (math.pi if r.random() < 0.5 else 0), 1.0, col)
+                        cars += 1
+                x += bw
+        y += 2 * bd + ai
     lines.build("PARKING_LINES", col, M)
     return {"bays": bays, "cars": cars}
 
