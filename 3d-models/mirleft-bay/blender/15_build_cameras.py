@@ -76,7 +76,7 @@ def build():
         cam.sensor_fit = "VERTICAL"
         cam.sensor_height = 36.0
         cam.clip_start = 0.05
-        cam.clip_end = 20000
+        cam.clip_end = 150000          # horizon from 200 m is ~50 km away
         C.remove_object(name)
         ob = bpy.data.objects.new(name, cam)
         col.objects.link(ob)

@@ -252,7 +252,7 @@ def build(materials):
     fattr.data.foreach_set("color", np.column_stack([np.zeros(len(fp)), np.zeros(len(fp)), np.zeros(len(fp)), np.ones(len(fp))]).astype(np.float32).ravel())
 
     # ocean surface
-    s = 40000.0
+    s = 160000.0                                  # reaches past the horizon seen from the aerial cameras
     C.mesh_object("OCEAN", [(-s, -s, 0), (s, -s, 0), (s, s, 0), (-s, s, 0)], [(0, 1, 2, 3)], col,
                   materials["ocean"], [(-s / 20, -s / 20), (s / 20, -s / 20), (s / 20, s / 20), (-s / 20, s / 20)])
     return dict(profile=prof)

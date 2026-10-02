@@ -347,7 +347,7 @@ PH_MAP = {
     "M07_Pavers_Beige":           ("patterned_paving",       2.0, "#CDBDA6", 0.0, 0.8),
     "M09_Terrace_Stone":          ("marble_tiles",           2.4, "#DCD0BC", 0.0, 0.12),
 }
-PH_TERRAIN = {"soil": ("aerial_ground_rock", 8.0), "sand": ("aerial_beach_01", 10.0)}   # tile sizes INFERRED
+PH_TERRAIN = {"soil": ("aerial_ground_rock", 9.0), "sand": ("aerial_beach_01", 10.0)}   # tile sizes INFERRED
 
 
 def ph_maps(slug):
@@ -454,9 +454,25 @@ def ph_surface(name, slug, tile, target, keep, contrast=1.0):
     return m
 
 
+def ph_detail(b, path, tile, contrast, rot=0.0):
+    """Texture detail normalised around 1.0 (colour comes from elsewhere)."""
+    mp = b.n("ShaderNodeMapping")
+    mp.inputs["Scale"].default_value = (1.0 / tile,) * 3
+    mp.inputs["Rotation"].default_value = (0.0, 0.0, rot)
+    b.link(b.obj, mp, "Vector")
+    bw = b.n("ShaderNodeRGBToBW")
+    b.link(ph_tex(b, path, mp.outputs["Vector"]).outputs["Color"], bw, "Color")
+    con = b.n("ShaderNodeMath", operation="MULTIPLY_ADD")
+    b.link(bw.outputs["Val"], con, 0)
+    con.inputs[1].default_value = contrast / max(mean_lum(path), 1e-3)
+    con.inputs[2].default_value = 1.0 - contrast
+    return con.outputs[0]
+
+
 def ph_terrain(name):
-    """Terrain from Poly Haven aerial maps: soil (aerial_ground_rock) + sand (aerial_beach_01),
-    blended with the procedural rock by the same 'mask' attribute. None if soil is missing."""
+    """Terrain: the site's ochre soil / beach sand / rock palette (as before), with the detail of the
+    client's Poly Haven aerial maps at two scales (9 m and 47 m, rotated) so tiles do not repeat
+    from the air. None if aerial_ground_rock is missing."""
     soil_maps = ph_maps(PH_TERRAIN["soil"][0])
     if not soil_maps:
         return None
@@ -465,27 +481,34 @@ def ph_terrain(name):
     attr = b.n("ShaderNodeAttribute", attribute_name="mask")
     sep = b.n("ShaderNodeSeparateColor")
     b.link(attr.outputs["Color"], sep, "Color")
-    soil_t = ph_tex(b, soil_maps["col"], ph_vector(b, PH_TERRAIN["soil"][1]))
-    macro = b.noise(0.012, 5, 0.6)                       # large-scale variation so 8 m tiles do not repeat visibly
-    var = b.ramp(macro.outputs["Fac"], [(0.3, (0.85, 0.85, 0.85, 1)), (0.7, (1.1, 1.05, 1.0, 1))])
-    soil = b.mix(1.0, soil_t.outputs["Color"], var.outputs["Color"], "MULTIPLY")
-    soil = b.mix(1.0, soil.outputs[2], srgb("#F7DCC0"), "MULTIPLY")     # pull towards the ochre site soil
+    macro = b.noise(0.012, 5, 0.6)
+    soil = b.ramp(macro.outputs["Fac"], [(0.3, srgb("#9A6B45")), (0.5, srgb("#BC8F63")), (0.7, srgb("#A97A50")), (0.85, srgb("#8A6446"))])
+    scrub = b.noise(0.6, 4, 0.7)
+    scr = b.ramp(scrub.outputs["Fac"], [(0.56, (1, 1, 1, 1)), (0.66, srgb("#7E6A4A"))])
+    soil2 = b.mix(1.0, soil.outputs["Color"], scr.outputs["Color"], "MULTIPLY")
+    d1 = ph_detail(b, soil_maps["col"], PH_TERRAIN["soil"][1], 0.6)
+    d2 = ph_detail(b, soil_maps["col"], PH_TERRAIN["soil"][1] * 5.3, 0.45, 0.7)
+    dd = b.n("ShaderNodeMath", operation="MULTIPLY")
+    b.link(d1, dd, 0)
+    b.link(d2, dd, 1)
+    soil3 = b.n("ShaderNodeVectorMath", operation="SCALE")
+    b.link(soil2.outputs[2], soil3, 0)
+    b.link(dd.outputs[0], soil3, "Scale")
+    sandn = b.noise(0.05, 4, 0.5)
+    sand = b.ramp(sandn.outputs["Fac"], [(0.3, srgb("#D7BE96")), (0.7, srgb("#E6D1AC"))]).outputs["Color"]
     if sand_maps:
-        sand_t = ph_tex(b, sand_maps["col"], ph_vector(b, PH_TERRAIN["sand"][1])).outputs["Color"]
-        sand = b.mix(1.0, sand_t, srgb("#FFE2B8"), "MULTIPLY").outputs[2]     # golden Mirleft sand
-    else:
-        sandn = b.noise(0.05, 4, 0.5)
-        sand = b.ramp(sandn.outputs["Fac"], [(0.3, srgb("#D7BE96")), (0.7, srgb("#E6D1AC"))]).outputs["Color"]
+        sd = b.n("ShaderNodeVectorMath", operation="SCALE")
+        b.link(sand, sd, 0)
+        b.link(ph_detail(b, sand_maps["col"], PH_TERRAIN["sand"][1], 0.6), sd, "Scale")
+        sand = sd.outputs["Vector"]
     rockn = b.noise(0.4, 8, 0.7)
     rock = b.ramp(rockn.outputs["Fac"], [(0.3, srgb("#4F3B2E")), (0.7, srgb("#8A6A50"))])
-    c1 = b.mix(sep.outputs["Green"], soil.outputs[2], rock.outputs["Color"])
+    c1 = b.mix(sep.outputs["Green"], soil3.outputs["Vector"], rock.outputs["Color"])
     c2 = b.mix(sep.outputs["Red"], c1.outputs[2], sand)
     b.set(base=c2.outputs[2], rough=0.95, spec=0.3)
-    bw = b.n("ShaderNodeRGBToBW")
-    b.link(soil_t.outputs["Color"], bw, "Color")
-    h = b.mix(sep.outputs["Green"], bw.outputs["Val"], rockn.outputs["Fac"])
-    b.bump(h.outputs[2], 0.5, 0.15)
-    m["source"] = "POLY HAVEN CC0: " + ", ".join(s for s, _ in PH_TERRAIN.values() if ph_maps(s))
+    h = b.mix(sep.outputs["Green"], d1, rockn.outputs["Fac"])
+    b.bump(h.outputs[2], 0.35, 0.15)
+    m["source"] = "POLY HAVEN CC0 detail: " + ", ".join(s for s, _ in PH_TERRAIN.values() if ph_maps(s))
     return m
 
 
