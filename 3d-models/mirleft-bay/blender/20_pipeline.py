@@ -86,15 +86,15 @@ def setup_haze(sc):
     glare = nt.nodes.new("CompositorNodeGlare")
     glare.glare_type = "FOG_GLOW"
     glare.quality = "HIGH"
-    glare.threshold = 1.6
+    glare.threshold = 3.0
     glare.size = 8
-    glare.mix = -0.8
+    glare.mix = -0.88
     nt.links.new(mix.outputs[0], glare.inputs["Image"])
     grade = nt.nodes.new("CompositorNodeColorBalance")
     grade.correction_method = "LIFT_GAMMA_GAIN"
     grade.lift = (0.985, 0.995, 1.025)
     grade.gamma = (1.0, 0.995, 0.985)
-    grade.gain = (1.04, 1.01, 0.96)
+    grade.gain = (1.02, 1.0, 0.97)
     nt.links.new(glare.outputs["Image"], grade.inputs["Image"])
     ell = nt.nodes.new("CompositorNodeEllipseMask")
     ell.width, ell.height = 1.05, 0.95

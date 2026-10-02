@@ -85,7 +85,7 @@ def ph_maps(folder):
     files = []
     for root_, _, fs in os.walk(d):
         files += [os.path.join(root_, f) for f in fs if f.lower().endswith((".jpg", ".png", ".exr"))]
-    pick = lambda *keys: next((f for f in files if any(k in os.path.basename(f).lower() for k in keys)), None)
+    pick = lambda *keys: next((f for k in keys for f in files if k in os.path.basename(f).lower().replace(folder, "")), None)
     col = pick("diff", "col", "albedo")
     return {"col": col, "nrm": pick("nor_gl", "normal_gl", "nor"), "rough": pick("rough", "arm")} if col else None
 

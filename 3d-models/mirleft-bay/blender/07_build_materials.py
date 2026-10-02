@@ -338,13 +338,14 @@ PH_DIR = None
 # Each texture gives its DETAIL (grain, joints, cracks); the colour stays the one measured on the
 # site photos. keep = how much of the texture's own colour is kept (0 = pure site colour).
 PH_MAP = {
-    #                              slug                     tile m  site colour  keep
-    "M01_Render_Sand":            ("white_plaster_rough_01", 2.0, "#D2B289", 0.0),
-    "M02_Render_Ochre":           ("white_plaster_rough_01", 2.0, "#B79473", 0.0),
-    "M03_Timber_Pergola":         ("wood_planks",            1.2, "#C7A47E", 0.55),
-    "M04_Stone_Rubble":           ("stacked_stone_wall",     2.5, "#BC9461", 0.35),
-    "M07_Pavers_Beige":           ("patterned_paving",       2.0, "#CDBDA6", 0.0),
-    "M09_Terrace_Stone":          ("marble_tiles",           3.0, "#DCD0BC", 0.25),
+    # contrast = strength of the texture detail (1 = as photographed)
+    #                              slug                     tile m  site colour  keep  contrast
+    "M01_Render_Sand":            ("white_plaster_rough_01", 2.0, "#D2B289", 0.0, 1.0),
+    "M02_Render_Ochre":           ("white_plaster_rough_01", 2.0, "#B79473", 0.0, 1.0),
+    "M03_Timber_Pergola":         ("wood_planks",            1.2, "#C7A47E", 0.55, 1.0),
+    "M04_Stone_Rubble":           ("stacked_stone_wall",     2.5, "#BC9461", 0.35, 1.0),
+    "M07_Pavers_Beige":           ("patterned_paving",       2.0, "#CDBDA6", 0.0, 0.8),
+    "M09_Terrace_Stone":          ("marble_tiles",           2.4, "#DCD0BC", 0.0, 0.3),
 }
 PH_TERRAIN = {"soil": ("aerial_ground_rock", 8.0), "sand": ("aerial_beach_01", 10.0)}   # tile sizes INFERRED
 
@@ -361,8 +362,8 @@ def ph_maps(slug):
         files += [os.path.join(r, f) for f in sorted(fs) if f.lower().endswith((".jpg", ".jpeg", ".png", ".exr", ".tif", ".tiff"))]
     def pick(*keys):
         for k in keys:
-            for f in files:
-                if k in os.path.basename(f).lower():
+            for f in files:                      # match the map suffix only: the slug itself may
+                if k in os.path.basename(f).lower().replace(slug, ""):   # contain "rough" etc.
                     return f
         return None
     col = pick("_diff", "diffuse", "_col", "albedo", "basecolor")
@@ -408,7 +409,7 @@ def lum_of(hexcol):
     return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
 
 
-def ph_surface(name, slug, tile, target, keep):
+def ph_surface(name, slug, tile, target, keep, contrast=1.0):
     """Rebuild one material from Poly Haven maps. Returns the material or None if not downloaded."""
     maps = ph_maps(slug)
     if not maps:
@@ -422,6 +423,12 @@ def ph_surface(name, slug, tile, target, keep):
     norm = b.n("ShaderNodeMath", operation="MULTIPLY")             # texture detail around 1.0
     b.link(bw.outputs["Val"], norm, 0)
     norm.inputs[1].default_value = 1.0 / max(mu, 1e-3)
+    if contrast != 1.0:                                            # 1 + (detail - 1) * contrast
+        con = b.n("ShaderNodeMath", operation="MULTIPLY_ADD")
+        b.link(norm.outputs[0], con, 0)
+        con.inputs[1].default_value = contrast
+        con.inputs[2].default_value = 1.0 - contrast
+        norm = con
     detail = b.n("ShaderNodeVectorMath", operation="SCALE")        # site colour x detail
     detail.inputs[0].default_value = srgb(target)[:3]
     b.link(norm.outputs[0], detail, "Scale")
