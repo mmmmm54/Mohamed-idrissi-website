@@ -1,14 +1,15 @@
 """
 19_export_package — D5 Render package (MODE A on request of the client, 2026-10-02).
 
-    python 19_export_package.py [--keep-vegetation]
+    python 19_export_package.py [--light]
 
 Opens output/checkpoints/checkpoint_09_cameras.blend and writes output/d5/:
   * Mirleft_Bay_D5.fbx        architecture + site + terrain + water + cameras, every building
                               instance made real, material names kept (see D5_MATERIAL_MAPPING.md)
   * Mirleft_Bay_D5.blend      the same scene, for D5's Blender sync plugin if you use it
-Procedural Blender vegetation, cars and grass tufts are removed by default: D5's asset library
-replaces them with scanned palms, people and cars. UVs are in metres (1 UV unit = 1 m;
+Everything is kept (buildings, palms, pink trees, olives, scrub, cars, parking, water) so D5 only
+needs small fixes. Only the 300k close-up grass tufts are left out (about 4 million triangles; use
+D5 grass on the T03_Lawn faces). `--light` drops vegetation and cars for a lighter file. UVs are in metres (1 UV unit = 1 m;
 terrain 1 unit = 10 m), so D5 materials tile at true scale.
 """
 import os
@@ -21,7 +22,7 @@ ROOT = os.path.dirname(HERE)
 CK = os.path.join(ROOT, "output", "checkpoints", "checkpoint_09_cameras.blend")
 OUT = os.path.join(ROOT, "output", "d5")
 os.makedirs(OUT, exist_ok=True)
-KEEP_VEG = "--keep-vegetation" in sys.argv
+LIGHT = "--light" in sys.argv          # optional: drop vegetation + cars (old behaviour)
 
 bpy.ops.wm.open_mainfile(filepath=CK)
 sc = bpy.context.scene
@@ -31,8 +32,8 @@ vl = bpy.context.view_layer
 removed = 0
 for o in list(bpy.data.objects):
     n = o.name
-    if n.startswith("GRASS_ZONE") or n.startswith("VEH_") or n.startswith("SRC_") or n == "PARKING_LINES" and False \
-            or (not KEEP_VEG and n.startswith("VEG_")) or n.startswith("CAM_VAL"):
+    if n.startswith("GRASS_ZONE") or n.startswith("SRC_") or n.startswith("CAM_VAL") \
+            or (LIGHT and (n.startswith("VEG_") or n.startswith("VEH_"))):
         bpy.data.objects.remove(o, do_unlink=True)
         removed += 1
 
