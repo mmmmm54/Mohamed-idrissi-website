@@ -82,7 +82,37 @@ def setup_haze(sc):
     nt.links.new(mm.outputs[0], mul.inputs[0])
     nt.links.new(mul.outputs[0], mix.inputs[0])
     nt.links.new(rl.outputs["Image"], mix.inputs[1])
-    nt.links.new(mix.outputs[0], comp.inputs["Image"])
+    # artistic finish: soft bloom on the sun highlights, warm-gold / cool-shadow grade, gentle vignette
+    glare = nt.nodes.new("CompositorNodeGlare")
+    glare.glare_type = "FOG_GLOW"
+    glare.quality = "HIGH"
+    glare.threshold = 1.6
+    glare.size = 8
+    glare.mix = -0.8
+    nt.links.new(mix.outputs[0], glare.inputs["Image"])
+    grade = nt.nodes.new("CompositorNodeColorBalance")
+    grade.correction_method = "LIFT_GAMMA_GAIN"
+    grade.lift = (0.985, 0.995, 1.025)
+    grade.gamma = (1.0, 0.995, 0.985)
+    grade.gain = (1.04, 1.01, 0.96)
+    nt.links.new(glare.outputs["Image"], grade.inputs["Image"])
+    ell = nt.nodes.new("CompositorNodeEllipseMask")
+    ell.width, ell.height = 1.05, 0.95
+    blur = nt.nodes.new("CompositorNodeBlur")
+    blur.use_relative = True
+    blur.factor_x = blur.factor_y = 35.0
+    blur.filter_type = "FAST_GAUSS"
+    nt.links.new(ell.outputs["Mask"], blur.inputs["Image"])
+    rng = nt.nodes.new("CompositorNodeMapRange")
+    rng.inputs["To Min"].default_value = 0.78
+    rng.inputs["To Max"].default_value = 1.0
+    nt.links.new(blur.outputs["Image"], rng.inputs["Value"])
+    vig = nt.nodes.new("CompositorNodeMixRGB")
+    vig.blend_type = "MULTIPLY"
+    vig.inputs[0].default_value = 1.0
+    nt.links.new(grade.outputs["Image"], vig.inputs[1])
+    nt.links.new(rng.outputs["Value"], vig.inputs[2])
+    nt.links.new(vig.outputs["Image"], comp.inputs["Image"])
 
 
 def main():

@@ -250,6 +250,9 @@ def build(materials):
         "grass": make_source("GRASS_PENNISETUM_A", grass_clump(8), M, src_col),
         "pink": make_source("PINK_BLOSSOM_TREE_A", blob_tree(9, 4.4, 3.0, "blossom", cards=110), M, src_col),
         "pink_s": make_source("PINK_BLOSSOM_TREE_B", blob_tree(10, 3.2, 2.3, "blossom", cards=75), M, src_col),
+        # green shade trees (client 2026-10-02: not every flowering tree pink, some green)
+        "green": make_source("GREEN_SHADE_TREE_A", blob_tree(11, 4.8, 3.4, "green_leaf", cards=120), M, src_col),
+        "green_s": make_source("GREEN_SHADE_TREE_B", blob_tree(12, 3.4, 2.5, "green_leaf", cards=80), M, src_col),
     }
     for ob in src.values():
         ob.hide_render = True
@@ -357,7 +360,8 @@ def build(materials):
                 C.GRASS_BLOCKERS.append(terr.buffer(0.1))
                 draped(f"DUP_{tr}_{x0}_{ya:.0f}_Terrace", terr, gardens, M["terrace"], 0.22, M["kerb"], 0.17, step=1.5)
                 plant(RNG.choice(["wash_a", "wash_b"]), C.plan_to_world([(gx0 + 0.9 / m, ya + 1.0 / m)])[0], RNG.uniform(0.85, 1.1))
-                plant("olive" if RNG.random() < 0.5 else "pink_s", C.plan_to_world([(gx0 + 1.6 / m, yb - 1.8 / m)])[0], RNG.uniform(0.7, 0.95))
+                k = RNG.random()
+                plant("olive" if k < 0.4 else "green_s" if k < 0.75 else "pink_s", C.plan_to_world([(gx0 + 1.6 / m, yb - 1.8 / m)])[0], RNG.uniform(0.7, 0.95))
                 n["olives"] += 1
 
     # street palms along the outer ring road and the central east-west avenue
@@ -374,10 +378,11 @@ def build(materials):
             p = np.array(avenue.interpolate(d).coords[0]) + np.array([-math.sin(yaw), math.cos(yaw)]) * off
             plant("date_a" if RNG.random() < 0.5 else "date_b", p, RNG.uniform(0.9, 1.1), 0.17)
             n["palms"] += 1
-            if int(d / 11.0) % 2 == 0:          # pink flowering trees between the date palms
+            if int(d / 11.0) % 2 == 0:          # flowering / shade trees between the date palms: 1 pink in 3
                 p2 = np.array(avenue.interpolate(d + 5.5).coords[0]) + np.array([-math.sin(yaw), math.cos(yaw)]) * off
-                plant("pink", p2, RNG.uniform(0.85, 1.05), 0.17)
-                n["pink"] = n.get("pink", 0) + 1
+                key = "pink" if int(d / 22.0) % 3 == 0 else "green"
+                plant(key, p2, RNG.uniform(0.85, 1.05), 0.17)
+                n[key] = n.get(key, 0) + 1
 
     # lake park: date palm clusters, olives, grasses (avoid water); island Washingtonia
     park = [b for nm, b in C.SITE_BLOCKS if nm == "T6_LAKE_PARK"]
@@ -394,7 +399,7 @@ def build(materials):
             pt = Point(p)
             if pp.contains(pt) and not wp.contains(pt) and all(np.hypot(*(p - q)) > 4.5 for q in occupied[-200:]):
                 k = RNG.random()
-                key = "date_a" if k < 0.25 else "date_b" if k < 0.42 else "olive" if k < 0.6 else "pink" if k < 0.75 else "grass"
+                key = "date_a" if k < 0.25 else "date_b" if k < 0.42 else "olive" if k < 0.56 else "green" if k < 0.68 else "pink" if k < 0.76 else "grass"
                 plant(key, p, RNG.uniform(0.8, 1.2) if key != "olive" else RNG.uniform(0.7, 1.0))
                 placed += 1
         isl = C.LAKE_ISLAND
@@ -408,7 +413,7 @@ def build(materials):
     for pg in C.CLUB_POOLS:
         ringp = pg.buffer(5.0).exterior
         for d in np.arange(0, ringp.length, 9.0):
-            plant(RNG.choice(["date_a", "date_b", "pink_s"]), np.array(ringp.interpolate(d).coords[0]), RNG.uniform(0.9, 1.15))
+            plant(RNG.choice(["date_a", "date_b", "date_a", "green_s", "pink_s"]), np.array(ringp.interpolate(d).coords[0]), RNG.uniform(0.9, 1.15))
             n["palms"] += 1
 
     # native scrub around the plot (aerial context), sparser with distance

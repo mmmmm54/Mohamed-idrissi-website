@@ -335,13 +335,16 @@ def interior(name):
 
 PH_DIR = None
 #   material                      Poly Haven slug          tile m  colour multiplier (keeps the site-photo hue)
+# Each texture gives its DETAIL (grain, joints, cracks); the colour stays the one measured on the
+# site photos. keep = how much of the texture's own colour is kept (0 = pure site colour).
 PH_MAP = {
-    "M01_Render_Sand":            ("white_plaster_rough_01", 2.0, "#D9BB93"),
-    "M02_Render_Ochre":           ("white_plaster_rough_01", 2.0, "#BF9B78"),
-    "M03_Timber_Pergola":         ("wood_planks",            2.0, None),
-    "M04_Stone_Rubble":           ("stacked_stone_wall",     2.0, "#F2DCC0"),
-    "M07_Pavers_Beige":           ("patterned_paving",       2.0, "#F4EADB"),
-    "M09_Terrace_Stone":          ("marble_tiles",           2.0, "#F6EEE2"),
+    #                              slug                     tile m  site colour  keep
+    "M01_Render_Sand":            ("white_plaster_rough_01", 2.0, "#D2B289", 0.0),
+    "M02_Render_Ochre":           ("white_plaster_rough_01", 2.0, "#B79473", 0.0),
+    "M03_Timber_Pergola":         ("wood_planks",            1.2, "#C7A47E", 0.55),
+    "M04_Stone_Rubble":           ("stacked_stone_wall",     2.5, "#BC9461", 0.35),
+    "M07_Pavers_Beige":           ("patterned_paving",       2.0, "#CDBDA6", 0.0),
+    "M09_Terrace_Stone":          ("marble_tiles",           3.0, "#DCD0BC", 0.25),
 }
 PH_TERRAIN = {"soil": ("aerial_ground_rock", 8.0), "sand": ("aerial_beach_01", 10.0)}   # tile sizes INFERRED
 
@@ -388,16 +391,46 @@ def ph_vector(b, tile):
     return mp.outputs["Vector"]
 
 
-def ph_surface(name, slug, tile, tint):
+def mean_lum(path):
+    """Mean linear luminance of a texture (to normalise its detail around 1.0)."""
+    try:
+        from PIL import Image
+        import numpy as np
+        im = np.asarray(Image.open(path).convert("RGB").resize((64, 64)), dtype=float) / 255.0
+        lin = np.where(im > 0.04045, ((im + 0.055) / 1.055) ** 2.4, im / 12.92)
+        return float((lin @ [0.2126, 0.7152, 0.0722]).mean())
+    except Exception:
+        return 0.2
+
+
+def lum_of(hexcol):
+    c = srgb(hexcol)
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+
+
+def ph_surface(name, slug, tile, target, keep):
     """Rebuild one material from Poly Haven maps. Returns the material or None if not downloaded."""
     maps = ph_maps(slug)
     if not maps:
         return None
     m, b = new_mat(name)
     vec = ph_vector(b, tile)
-    col = ph_tex(b, maps["col"], vec).outputs["Color"]
-    if tint:
-        col = b.mix(1.0, col, srgb(tint), "MULTIPLY").outputs[2]
+    tex = ph_tex(b, maps["col"], vec).outputs["Color"]
+    mu = mean_lum(maps["col"])
+    bw = b.n("ShaderNodeRGBToBW")
+    b.link(tex, bw, "Color")
+    norm = b.n("ShaderNodeMath", operation="MULTIPLY")             # texture detail around 1.0
+    b.link(bw.outputs["Val"], norm, 0)
+    norm.inputs[1].default_value = 1.0 / max(mu, 1e-3)
+    detail = b.n("ShaderNodeVectorMath", operation="SCALE")        # site colour x detail
+    detail.inputs[0].default_value = srgb(target)[:3]
+    b.link(norm.outputs[0], detail, "Scale")
+    col = detail.outputs["Vector"]
+    if keep > 0:
+        own = b.n("ShaderNodeVectorMath", operation="SCALE")       # texture colour, brightness matched
+        b.link(tex, own, 0)
+        own.inputs["Scale"].default_value = lum_of(target) / max(mu, 1e-3)
+        col = b.mix(keep, col, own.outputs["Vector"]).outputs[2]
     b.set(base=col, spec=0.4)
     if maps["rough"]:
         b.set(rough=ph_tex(b, maps["rough"], vec, True).outputs["Color"])
@@ -406,13 +439,10 @@ def ph_surface(name, slug, tile, tint):
         b.link(ph_tex(b, maps["arm"], vec, True).outputs["Color"], sep, "Color")
         b.set(rough=sep.outputs["Green"])
     else:
-        b.set(rough=0.85)
-    h = ph_tex(b, maps["disp"], vec, True).outputs["Color"] if maps["disp"] else None
-    if h is None:
-        bw = b.n("ShaderNodeRGBToBW")
-        b.link(col, bw, "Color")
-        h = bw.outputs["Val"]
-    b.bump(h, 0.5, 0.02 * tile)
+        rr = b.ramp(bw.outputs["Val"], [(0.0, (0.95, 0.95, 0.95, 1)), (1.0, (0.7, 0.7, 0.7, 1))])
+        b.set(rough=rr.outputs["Color"])
+    h = ph_tex(b, maps["disp"], vec, True).outputs["Color"] if maps["disp"] else bw.outputs["Val"]
+    b.bump(h, 0.45, 0.015 * tile)
     m["source"] = "POLY HAVEN CC0: " + slug + " (" + os.path.basename(maps["col"]) + "), tile %.1f m" % tile
     return m
 
@@ -432,9 +462,10 @@ def ph_terrain(name):
     macro = b.noise(0.012, 5, 0.6)                       # large-scale variation so 8 m tiles do not repeat visibly
     var = b.ramp(macro.outputs["Fac"], [(0.3, (0.85, 0.85, 0.85, 1)), (0.7, (1.1, 1.05, 1.0, 1))])
     soil = b.mix(1.0, soil_t.outputs["Color"], var.outputs["Color"], "MULTIPLY")
-    soil = b.mix(1.0, soil.outputs[2], srgb("#F0D2B4"), "MULTIPLY")     # pull towards the ochre site soil
+    soil = b.mix(1.0, soil.outputs[2], srgb("#F7DCC0"), "MULTIPLY")     # pull towards the ochre site soil
     if sand_maps:
-        sand = ph_tex(b, sand_maps["col"], ph_vector(b, PH_TERRAIN["sand"][1])).outputs["Color"]
+        sand_t = ph_tex(b, sand_maps["col"], ph_vector(b, PH_TERRAIN["sand"][1])).outputs["Color"]
+        sand = b.mix(1.0, sand_t, srgb("#FFE2B8"), "MULTIPLY").outputs[2]     # golden Mirleft sand
     else:
         sandn = b.noise(0.05, 4, 0.5)
         sand = b.ramp(sandn.outputs["Fac"], [(0.3, srgb("#D7BE96")), (0.7, srgb("#E6D1AC"))]).outputs["Color"]
@@ -478,6 +509,7 @@ def build():
         "grass_blade": simple("T03_Grass_Blade", "#5F7A33", 0.7, 0.0, 2.0, 0.35),
         "olive_leaf": image_mat("V03_Olive_Foliage", "TEX_OLIVE_LEAFCARD_GEN_1K.png", alpha=True, rough=0.6, sss=0.1),
         "blossom": image_mat("V07_Pink_Blossom_Tree", "TEX_PINK_BLOSSOM_LEAFCARD_GEN_1K.png", alpha=True, rough=0.6, sss=0.12),
+        "green_leaf": image_mat("V08_Green_Shade_Tree", "TEX_GREEN_SHADE_LEAFCARD_GEN_1K.png", alpha=True, rough=0.6, sss=0.12),
         "paint_line": simple("Road_Paint_White", "#EDEBE6", 0.6),
         "car_glass": simple("A08_Car_Glass", "#151a1f", 0.08, 0.3),
         "tyre": simple("A08_Tyre", "#1A1A1A", 0.85),

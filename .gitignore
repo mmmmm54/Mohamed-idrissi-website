@@ -4,3 +4,6 @@ dist/
 .npm-cache/
 .vercel/
 
+
+# client-downloaded Poly Haven 4K maps live in the 3D-MODELS repo (too heavy for the website repo)
+3d-models/mirleft-bay/assets/textures/polyhaven/
