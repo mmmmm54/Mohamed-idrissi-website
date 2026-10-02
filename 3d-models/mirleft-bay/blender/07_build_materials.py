@@ -345,7 +345,7 @@ PH_MAP = {
     "M03_Timber_Pergola":         ("wood_planks",            1.2, "#C7A47E", 0.55, 1.0),
     "M04_Stone_Rubble":           ("stacked_stone_wall",     2.5, "#BC9461", 0.35, 1.0),
     "M07_Pavers_Beige":           ("patterned_paving",       2.0, "#CDBDA6", 0.0, 0.8),
-    "M09_Terrace_Stone":          ("marble_tiles",           2.4, "#DCD0BC", 0.0, 0.3),
+    "M09_Terrace_Stone":          ("marble_tiles",           2.4, "#DCD0BC", 0.0, 0.12),
 }
 PH_TERRAIN = {"soil": ("aerial_ground_rock", 8.0), "sand": ("aerial_beach_01", 10.0)}   # tile sizes INFERRED
 

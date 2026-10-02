@@ -117,7 +117,7 @@ def date_palm(seed, height):
     return mb
 
 
-def blob_tree(seed, height, crown, mat, trunk_mat="palm_trunk", lobes=5, cards=170):
+def blob_tree(seed, height, crown, mat, trunk_mat="palm_trunk", lobes=5, cards=170, card_scale=1.0):
     """Olive / argan: forked trunk + crown of leaf-cluster cards (generated olive texture)."""
     r = random.Random(seed)
     mb = C.MeshBuilder()
@@ -142,7 +142,7 @@ def blob_tree(seed, height, crown, mat, trunk_mat="palm_trunk", lobes=5, cards=1
         a1 = np.cross(nrm, [0, 0, 1.0]) if abs(nrm[2]) < 0.95 else np.array([1.0, 0, 0])
         a1 /= np.linalg.norm(a1)
         a2 = np.cross(nrm, a1)
-        s_ = crown * r.uniform(0.17, 0.26)
+        s_ = crown * r.uniform(0.17, 0.26) * card_scale
         q = [p - a1 * s_ - a2 * s_, p + a1 * s_ - a2 * s_, p + a1 * s_ + a2 * s_, p - a1 * s_ + a2 * s_]
         mb.poly(mat, [tuple(v) for v in q], [(0, 0), (1, 0), (1, 1), (0, 1)])
     return mb
@@ -248,11 +248,11 @@ def build(materials):
         "olive": make_source("OLIVE_A", blob_tree(6, 4.2, 3.6, "olive_leaf"), M, src_col),
         "argan": make_source("ARGAN_SCRUB_A", blob_tree(7, 2.4, 3.2, "olive_leaf", cards=60), M, src_col),
         "grass": make_source("GRASS_PENNISETUM_A", grass_clump(8), M, src_col),
-        "pink": make_source("PINK_BLOSSOM_TREE_A", blob_tree(9, 4.4, 3.0, "blossom", cards=110), M, src_col),
-        "pink_s": make_source("PINK_BLOSSOM_TREE_B", blob_tree(10, 3.2, 2.3, "blossom", cards=75), M, src_col),
+        "pink": make_source("PINK_BLOSSOM_TREE_A", blob_tree(9, 4.4, 3.0, "blossom", cards=380, card_scale=0.55), M, src_col),
+        "pink_s": make_source("PINK_BLOSSOM_TREE_B", blob_tree(10, 3.2, 2.3, "blossom", cards=260, card_scale=0.55), M, src_col),
         # green shade trees (client 2026-10-02: not every flowering tree pink, some green)
-        "green": make_source("GREEN_SHADE_TREE_A", blob_tree(11, 4.8, 3.4, "green_leaf", cards=120), M, src_col),
-        "green_s": make_source("GREEN_SHADE_TREE_B", blob_tree(12, 3.4, 2.5, "green_leaf", cards=80), M, src_col),
+        "green": make_source("GREEN_SHADE_TREE_A", blob_tree(11, 4.8, 3.4, "green_leaf", cards=400, card_scale=0.55), M, src_col),
+        "green_s": make_source("GREEN_SHADE_TREE_B", blob_tree(12, 3.4, 2.5, "green_leaf", cards=280, card_scale=0.55), M, src_col),
     }
     for ob in src.values():
         ob.hide_render = True
