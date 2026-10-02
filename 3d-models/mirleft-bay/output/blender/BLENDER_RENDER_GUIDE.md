@@ -9,7 +9,7 @@
 
 What is in the scene:
 - **Every building:** 17 duplex pairs, 33 villa B, 13 villa C, 4 villa A, the kasbah reception, the club and the Pavillon.
-- **Roads and parking:** the masterplan streets in grey asphalt with white markings (ring road, boulevard 6, streets 6.2 and 7 through the villas), the entrance roundabout and parking fields with cars, plus the canals, hotel T-water, pools and lake.
+- **Roads and parking (catalogue masterplan):** grey asphalt streets with dashed centre lines, edge lines and zebra crossings (ring road, boulevard 6, streets 5, 6.2 and 7); 45° parking along the hotel street and the ring road; at the entrance a roundabout, a planted mall with a water channel and tree rows, 45° parking lots and a hatched drop-off bay; a few cars driving. Also the canals, hotel T-water, pools and lake.
 - **Planting:** Washingtonia and date palms, olives, pink flowering trees mixed with green shade trees, stone garden walls.
 - **Textures:** the client's Poly Haven CC0 4K maps (plaster, stone, wood, pavers, tiles, ground, beach), keeping the colours of the site photos.
 - **Left out:** only the 300k close-up grass tufts (the file would be 240 MB). `20_pipeline.py` adds them back.
