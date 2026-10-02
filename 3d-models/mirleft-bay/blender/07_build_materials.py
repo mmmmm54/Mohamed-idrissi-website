@@ -340,8 +340,8 @@ PH_DIR = None
 PH_MAP = {
     # contrast = strength of the texture detail (1 = as photographed)
     #                              slug                     tile m  site colour  keep  contrast
-    "M01_Render_Sand":            ("white_plaster_rough_01", 2.0, "#D2B289", 0.0, 1.0),
-    "M02_Render_Ochre":           ("white_plaster_rough_01", 2.0, "#B79473", 0.0, 1.0),
+    "M01_Render_Sand":            ("white_plaster_rough_01", 2.5, "#D2B289", 0.0, 0.45),
+    "M02_Render_Ochre":           ("white_plaster_rough_01", 2.5, "#B79473", 0.0, 0.45),
     "M03_Timber_Pergola":         ("wood_planks",            1.2, "#C7A47E", 0.55, 1.0),
     "M04_Stone_Rubble":           ("stacked_stone_wall",     2.5, "#BC9461", 0.35, 1.0),
     "M07_Pavers_Beige":           ("patterned_paving",       2.0, "#CDBDA6", 0.0, 0.8),
@@ -448,8 +448,8 @@ def ph_surface(name, slug, tile, target, keep, contrast=1.0):
     else:
         rr = b.ramp(bw.outputs["Val"], [(0.0, (0.95, 0.95, 0.95, 1)), (1.0, (0.7, 0.7, 0.7, 1))])
         b.set(rough=rr.outputs["Color"])
-    h = ph_tex(b, maps["disp"], vec, True).outputs["Color"] if maps["disp"] else bw.outputs["Val"]
-    b.bump(h, 0.45, 0.015 * tile)
+    h = ph_tex(b, maps["disp"], vec, True).outputs["Color"] if maps["disp"] else norm.outputs[0]   # same softened detail
+    b.bump(h, 0.45, 0.015 * tile * (1.0 if maps["disp"] else mu))   # detail is normalised by 1/mu
     m["source"] = "POLY HAVEN CC0: " + slug + " (" + os.path.basename(maps["col"]) + "), tile %.1f m" % tile
     return m
 

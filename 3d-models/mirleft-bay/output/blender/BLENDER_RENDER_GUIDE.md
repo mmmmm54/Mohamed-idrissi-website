@@ -1,4 +1,22 @@
-# Blender render guide — Mirleft Bay (MODE B: Blender → Higgsfield)
+# Blender render guide — Mirleft Bay (Blender only)
+
+## Open the final scene (no D5 needed)
+1. On github.com/mmmmm54/3D-MODELS: **Code ▸ Download ZIP**, then unzip. Keep the `mirleft-bay` folder whole: the scene finds its textures in `mirleft-bay/assets/textures/`.
+2. Open `mirleft-bay/scenes/Mirleft_Bay_Scene.blend` in Blender 4.2 or newer.
+3. If a surface shows pink (missing texture): **File ▸ External Data ▸ Find Missing Files** and pick the `mirleft-bay/assets/textures` folder.
+4. Choose a camera in the `13_CAMERAS` collection (select it, then Ctrl+Numpad 0), then press **F12**. The 11 shots are set up already: 9:16, golden hour, haze, depth of field on ground-level shots, plus bloom, warm/cool grade and vignette in the compositor.
+5. Final quality: Render Properties ▸ Device = GPU (Preferences ▸ System ▸ CUDA/OptiX), samples 256 (already set).
+
+What is in the scene:
+- **Every building:** 17 duplex pairs, 33 villa B, 13 villa C, 4 villa A, the kasbah reception, the club and the Pavillon.
+- **Roads and parking:** roads, parking with cars, canals, hotel T-water, pools and the lake.
+- **Planting:** Washingtonia and date palms, olives, pink flowering trees mixed with green shade trees, stone garden walls.
+- **Textures:** the client's Poly Haven CC0 4K maps (plaster, stone, wood, pavers, tiles, ground, beach), keeping the colours of the site photos.
+- **Left out:** only the 300k close-up grass tufts (the file would be 240 MB). `20_pipeline.py` adds them back.
+
+---
+
+# Rebuild from scripts (MODE B: Blender → Higgsfield)
 
 ## Rebuild the scene
 ```
