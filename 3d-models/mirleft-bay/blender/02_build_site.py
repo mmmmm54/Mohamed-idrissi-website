@@ -172,52 +172,101 @@ ASPHALT_H = 0.06            # carriageway sits 4 cm above the paver base (no z-f
 MARK_H = ASPHALT_H + 0.012
 
 
+def _strip(mb, G, a_, b_, half_w, h=None):
+    """Flat white paint strip from a_ to b_ (world xy), draped on the graded site."""
+    t = (b_ - a_) / (np.linalg.norm(b_ - a_) + 1e-9)
+    w = np.array([-t[1], t[0]]) * half_w
+    za, zb = (float(v) + (MARK_H if h is None else h) for v in G(np.array([a_, b_])))
+    mb.poly("paint_line", [(a_[0] - w[0], a_[1] - w[1], za), (b_[0] - w[0], b_[1] - w[1], zb),
+                           (b_[0] + w[0], b_[1] + w[1], zb), (a_[0] + w[0], a_[1] + w[1], za)])
+
+
 def build_roads(M, col, site, blocks, wet, court):
     """Masterplan street network: asphalt carriageways between the kerbed blocks, beige paver
-    sidewalk along the plot edge, pedestrian promenades kept in pavers, roundabout + access at
-    the entrance, white dashed centre lines."""
-    import bpy
+    sidewalk along the plot edge, pedestrian promenades kept in pavers, roundabout + planted mall
+    at the entrance, white markings (dashed centre
+    lines, edge lines, zebra crossings, hatched drop-off bay)."""
     G = C.SITE_GRADED
+    m = D.M_PER_PX
     west = plan_rect_world((D.ROAD_ASPHALT_X_MIN, 7000, 1000, 4000))
+    mall = plan_rect_world(D.MALL_ISLAND)
     keep_out = unary_union([pg.buffer(0.05) for _, pg in blocks]
                            + [plan_rect_world(b) for b in D.ROAD_PEDESTRIAN]
                            + [wet, court.buffer(1.0)]
                            + [plan_rect_world(b).buffer(3.0) for _, b, _, _ in D.PUBLIC_BUILDINGS])
+    islands = mall
     (rx, ry), r_out, r_isl = D.ROUNDABOUT
     rc = C.plan_to_world([(rx, ry)])[0]
-    m = D.M_PER_PX
     ring_out = Point(rc).buffer(r_out * m, 48)
     island = Point(rc).buffer(r_isl * m, 32)
     (ax0, ay0), (ax1, ay1), aw = D.ENTRANCE_ACCESS
     access = LineString(C.plan_to_world([(ax0, ay0), (ax1, ay1)])).buffer(aw * m / 2, cap_style=2)
     asphalt = site.buffer(-D.ROAD_PERIMETER_SIDEWALK).intersection(west).difference(keep_out)
-    asphalt = unary_union([asphalt, ring_out.difference(keep_out), access.intersection(site)]).difference(island)
+    asphalt = unary_union([asphalt, ring_out.difference(keep_out), access.intersection(site).difference(keep_out)])
+    asphalt = asphalt.difference(island).difference(islands)
     asphalt = asphalt.buffer(-0.2).buffer(0.2)                     # drop slivers
     if asphalt.geom_type == "MultiPolygon":
         asphalt = unary_union([g for g in asphalt.geoms if g.area > 25.0])
     draped("SITE_Road_Asphalt", asphalt, col, M["asphalt"], ASPHALT_H, step=3.0)
     draped("SITE_Roundabout_Island", island, col, M["lawn"], KERB_H + 0.05, M["kerb"], 0.0, step=1.5)
+    draped("SITE_Mall_Median", mall.difference(wet), col, M["lawn"], KERB_H + 0.03, M["kerb"], 0.0, step=2.0)
     C.ROADS = asphalt
     C.ROUNDABOUT_ISLAND = island
+    C.MALL_MEDIAN = mall
 
-    # markings: dashed centre lines (3 m dash, 3 m gap, 12 cm wide)
     mb = C.MeshBuilder()
+    no_mark = unary_union([plan_rect_world(l) for l in D.PARKING_LOTS] + [plan_rect_world(D.DROP_OFF).buffer(1.0)])
+    # 1. dashed centre lines (3 m dash, 3 m gap, 12 cm wide)
     lines = [LineString(C.plan_to_world(pl)) for pl in D.ROAD_CENTRELINES]
     lines.append(site.buffer(-(D.ROAD_PERIMETER_SIDEWALK + 3.6)).exterior)     # ring road centre
     lines.append(Point(rc).buffer((r_out + r_isl) * m / 2, 48).exterior)       # roundabout lane
     inner = prep(asphalt.buffer(-1.2))
+    nm_ = prep(no_mark)
     nd = 0
     for ln in lines:
         for d in np.arange(0.0, ln.length - 3.0, 6.0):
             a_, b_ = np.array(ln.interpolate(d).coords[0]), np.array(ln.interpolate(d + 3.0).coords[0])
-            if not (inner.contains(Point(a_)) and inner.contains(Point(b_))):
-                continue
-            t = (b_ - a_) / (np.linalg.norm(b_ - a_) + 1e-9)
-            w = np.array([-t[1], t[0]]) * 0.06
-            za, zb = (float(v) + MARK_H for v in G(np.array([a_, b_])))
-            mb.poly("paint_line", [(a_[0] - w[0], a_[1] - w[1], za), (b_[0] - w[0], b_[1] - w[1], zb),
-                                   (b_[0] + w[0], b_[1] + w[1], zb), (a_[0] + w[0], a_[1] + w[1], za)])
-            nd += 1
-    if nd:
-        mb.build("SITE_Road_Markings", col, M)
+            if inner.contains(Point(a_)) and inner.contains(Point(b_)) and not nm_.contains(Point((a_ + b_) / 2)):
+                _strip(mb, G, a_, b_, 0.06)
+                nd += 1
+    # 2. solid edge lines 35 cm inside every carriageway edge (not inside the parking lots)
+    edge = asphalt.buffer(-0.35)
+    rings = []
+    for g in ([edge] if edge.geom_type == "Polygon" else list(edge.geoms)):
+        rings += [g.exterior] + list(g.interiors)
+    ne = 0
+    for rg in rings:
+        if rg.length < 12.0:
+            continue
+        for d in np.arange(0.0, rg.length - 1.0, 2.0):
+            a_, b_ = np.array(rg.interpolate(d).coords[0]), np.array(rg.interpolate(min(d + 2.0, rg.length)).coords[0])
+            if not nm_.contains(Point((a_ + b_) / 2)):
+                _strip(mb, G, a_, b_, 0.05)
+                ne += 1
+    # 3. zebra crossings: 0.5 m stripes every 1 m, 3 m deep, across the road
+    u = C.plan_to_world([(1, 0)])[0] - C.plan_to_world([(0, 0)])[0]
+    v = C.plan_to_world([(0, 1)])[0] - C.plan_to_world([(0, 0)])[0]
+    u, v = u / np.linalg.norm(u), v / np.linalg.norm(v)
+    for (cx, cy), rd, width in D.ZEBRAS:
+        c = C.plan_to_world([(cx, cy)])[0]
+        along, across = (v, u) if rd == "y" else (u, v)
+        for k in np.arange(-width / 2 + 0.5, width / 2 - 0.3, 1.0):
+            p0 = c + across * k - along * 1.5
+            _strip(mb, G, p0, p0 + along * 3.0, 0.25)
+    # 4. hatched drop-off bay: outline + 45 deg stripes every 1.5 m
+    dz = plan_rect_world(D.DROP_OFF)
+    ring = list(dz.exterior.coords)
+    for a_, b_ in zip(ring[:-1], ring[1:]):
+        _strip(mb, G, np.array(a_), np.array(b_), 0.07)
+    diag = (u + v) / np.linalg.norm(u + v)
+    cz = np.array(dz.centroid.coords[0])
+    span = math.hypot(*(np.array(dz.bounds[2:]) - np.array(dz.bounds[:2])))
+    nrm_d = np.array([-diag[1], diag[0]])
+    for k in np.arange(-span / 2, span / 2, 1.5):
+        ln = LineString([cz + nrm_d * k - diag * span, cz + nrm_d * k + diag * span]).intersection(dz.buffer(-0.3))
+        if ln.geom_type == "LineString" and ln.length > 0.4:
+            q = np.array(ln.coords)
+            _strip(mb, G, q[0], q[-1], 0.06)
+    mb.build("SITE_Road_Markings", col, M)
+    C.ROAD_MARK_COUNTS = {"dashes": nd, "edge_pieces": ne}
     return asphalt

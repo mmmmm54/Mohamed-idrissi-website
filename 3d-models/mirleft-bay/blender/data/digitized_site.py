@@ -61,7 +61,7 @@ PUBLIC_BUILDINGS = [
     ("PAVILLON_RESTAURANT_CLUBHOUSE", (5590, 5780, 2280, 2410), 2, "kasbah"),   # permit: club house RDC+1 353 m2
     ("MARKET_SUPERETTE", (5560, 5740, 1960, 2050), 1, "kasbah"),              # permit: superette + cafeteria 275 m2
     ("RECEPTION_ADMINISTRATION", (5480, 5600, 2060, 2160), 2, "kasbah_towers"),  # permit: admin 200 m2; F04 style
-    ("SPA", (2930, 3060, 2050, 2330), 1, "kasbah"),                            # catalogue: SPA (T5 north-west)
+    ("SPA", (2930, 3040, 2050, 2330), 1, "kasbah"),                            # catalogue: SPA (T5 north-west); east side trimmed for street 5
     ("HOTEL_WING_NORTH", (2668, 2760, 2027, 2400), 2, "kasbah"),              # permit: hotel RDC+1 1520 m2
     ("HOTEL_WING_SOUTH", (2668, 2760, 2464, 2964), 2, "kasbah"),
     ("BEACH_CLUB", (1385, 1470, 1880, 1960), 1, "light"),                     # catalogue: beach club at the corniche
@@ -137,18 +137,19 @@ CANAL_STRIP = 12                 # px of stone coping on each side
 # Hotel garden: T-shaped water (cross branch at the "HOTEL" label) + wide basin
 HOTEL_WATER = [(2423, 2452, 2040, 2950), (2440, 2720, 2366, 2396), (2452, 2510, 2232, 2366), (2452, 2510, 2396, 2530)]
 # Entrance plaza (T1): long reflecting pool + half-moon basin
-PLAZA_POOL = (5798, 5934, 2212, 2244)
+PLAZA_POOL = (5848, 6130, 2204, 2236)         # entrance mall channel (masterplan: from the roundabout to R104)
 PLAZA_HALFMOON = ((5752, 2292), 22)
 # Parking rows: (start px, end px, bay depth m, side +1 = left of the direction, -1 = right)
-PARKING_ROWS = [
-    ((2790, 2090), (2790, 2340), 5.0, -1),     # hotel public parking (north)
-    ((2790, 2560), (2790, 2910), 5.0, -1),     # hotel public parking (south)
-    ((4735, 1985), (5320, 1945), 5.0, +1),     # north road, T1
-    ((5770, 2075), (5770, 2195), 5.0, -1),     # entrance lot west row
-    ((5880, 2270), (6000, 2270), 5.0, +1),     # entrance lot south row
-    ((5900, 2120), (6030, 2120), 5.0, +1),     # entrance lot north row
-    ((3960, 3055), (4500, 3062), 5.0, +1),     # south road, T3
-    ((5440, 2600), (5660, 2585), 5.0, -1),     # club, south road
+PARKING_ROWS = [   # (start px, end px, bay length m, side hint, angle deg); the side with asphalt wins
+    ((2790, 2090), (2790, 2340), 5.0, -1, 45),     # hotel public parking (north), angled as on the masterplan
+    ((2790, 2560), (2790, 2910), 5.0, -1, 45),     # hotel public parking (south)
+    ((4735, 1985), (5320, 1945), 5.0, +1, 45),     # north ring road above the duplexes
+    ((5470, 1940), (5700, 1940), 5.0, +1, 45),     # north ring road, in front of the market
+    ((3960, 3055), (4500, 3062), 5.0, +1, 45),     # south ring road, T3
+    ((5440, 2600), (5660, 2585), 5.0, -1, 45),     # south ring road, club
+    ((5887, 1790), (5887, 2140), 5.0, +1, 45),     # entrance north street, east kerb (faces the lot aisle)
+    ((5960, 2292), (6220, 2292), 5.0, +1, 45),     # mall south carriageway, south kerb
+    ((5944, 2420), (5944, 2590), 5.0, +1, 45),     # entrance south street, east kerb
 ]
 
 
@@ -166,6 +167,7 @@ ROAD_CUTS = [
     (3382, 3860, 2615, 2655),          # road 7 (villa C rows, T4)
     (3860, 3907, 2615, 2715),          # road 7 crossing the boulevard
     (3907, 4525, 2650, 2715),          # road 7 (villa B rows, T3)
+    (3046, 3082, 1985, 2392),          # street 5 between the SPA and the villa B lots
     (4060, 4105, 1985, 2425),          # street 6.2 west (T3 north)
     (4280, 4330, 1985, 2425),          # street 6.2 east (T3 north)
 ]
@@ -181,7 +183,28 @@ ROAD_CENTRELINES = [
     [(2900, 2652), (3382, 2652), (3382, 2635), (3860, 2635), (3883, 2665), (3907, 2682), (4525, 2682)],   # road 7
     [(4557, 1990), (4557, 2990)],                                   # street 7 (T3 / T2)
     [(2834, 2000), (2834, 2990)],                                   # hotel street 10 / 14
+    [(5858, 1770), (5858, 2180)],                                   # entrance north street
+    [(5912, 2262), (5912, 2580)],                                   # entrance south street
 ]
-ROUNDABOUT = ((6020, 2330), 55, 26)    # centre px, outer radius px (7 m), planted island px (3.3 m)
-ENTRANCE_ACCESS = ((6020, 2330), (6320, 2330), 63)    # access road from R104: from, to, width px (8 m)
-ENTRANCE_PARKING_ZONE = (5790, 6320, 1840, 2620)       # plan box the parking fields are tiled in
+ROUNDABOUT = ((5800, 2220), 40, 16)    # centre px, outer radius px (5 m), planted island px (2 m): west end of the mall
+ENTRANCE_ACCESS = ((5800, 2220), (6320, 2220), 150)   # mall carriageways to R104: from, to, width px (19 m incl. median)
+MALL_ISLAND = (5848, 6130, 2192, 2248)                  # planted median around the channel (trees both sides)
+# streets of the entrance quarter (kept free of parking): (x0, x1, y0, y1)
+ENTRANCE_STREETS = [
+    (5832, 5885, 1760, 2190),          # north street: ring road -> roundabout (east of the sports court)
+    (5885, 5940, 2250, 2590),          # south street: roundabout -> south ring road
+    (5770, 6320, 2150, 2192),          # mall north carriageway
+    (5770, 6320, 2248, 2290),          # mall south carriageway
+]
+# entrance parking lots: 45 deg bay rows along the plot-edge kerb inside these boxes, facing the
+# rows along the street kerbs across a shared aisle (PARKING_ROWS). The permit plot leaves ~0.2 ha
+# here, less than the catalogue drawing suggests, so the lots are single aisles. (x0, x1, y0, y1)
+PARKING_LOTS = [
+    (5888, 6260, 1700, 2148),          # north-east lot, beside the sports court
+    (5944, 6280, 2292, 2600),          # south-east lot
+]
+DROP_OFF = (5948, 6022, 2298, 2410)    # hatched drop-off / coach bay (masterplan grey hatched zone)
+# zebra crossings: centre px, road direction ("x" / "y" in plan), road width m
+ZEBRAS = [((3870, 2378), "y", 8.0), ((3880, 2468), "y", 7.0), ((3883, 2700), "y", 7.0), ((3830, 2635), "x", 5.0),
+          ((4557, 2440), "y", 8.5), ((2834, 2381), "y", 9.0), ((5858, 2140), "y", 6.5), ((5912, 2300), "y", 6.5)]
+

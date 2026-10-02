@@ -17,6 +17,7 @@ from shapely.prepared import prep
 C = globals()["C"]
 D = C.D
 RNG = random.Random(20261001)
+SRC = {}
 
 
 # ---------------------------------------------------------------------------
@@ -257,6 +258,8 @@ def build(materials):
     for ob in src.values():
         ob.hide_render = True
         ob.hide_viewport = True
+    global SRC
+    SRC = src                                    # reused by build_parking (island and mall trees)
     trees = C.child_collection("07_LANDSCAPE", "TREES")
     gardens = C.child_collection("07_LANDSCAPE", "GARDENS")
     n = {"palms": 0, "olives": 0, "scrub": 0, "grass": 0, "hedge_m": 0.0, "pools": 0}
@@ -542,70 +545,127 @@ def build_parking(materials):
         s.hide_render = True
         s.hide_viewport = True
         srcs.append(s)
+    from shapely.geometry import Polygon as _Poly, Point as _Pt, LineString as _LS, box as _box
+    from shapely.ops import unary_union as _union
+    from shapely.prepared import prep as _prep
     lines = C.MeshBuilder()
     r = random.Random(77)
-    bays = cars = 0
-    for (p0, p1, depth, side) in D.PARKING_ROWS:
+    st = {"bays": 0, "cars": 0, "moving": 0, "island_trees": 0}
+    asph = _prep(C.ROADS.buffer(0.05))
+    streets = _union([_Poly(C.plan_to_world([(b[0], b[2]), (b[1], b[2]), (b[1], b[3]), (b[0], b[3])])) for b in D.ENTRANCE_STREETS]
+                     + [_Poly(C.plan_to_world([(D.DROP_OFF[0], D.DROP_OFF[2]), (D.DROP_OFF[1], D.DROP_OFF[2]),
+                                               (D.DROP_OFF[1], D.DROP_OFF[3]), (D.DROP_OFF[0], D.DROP_OFF[3])]))])
+    taken = []
+
+    def paint(a_, b_):
+        a_, b_ = np.asarray(a_), np.asarray(b_)
+        t = (b_ - a_) / (np.linalg.norm(b_ - a_) + 1e-9)
+        w = np.array([-t[1], t[0]]) * 0.06
+        za, zb_ = (float(h) + 0.075 for h in G(np.array([a_, b_])))       # on the asphalt (+0.06)
+        lines.poly("paint_line", [(a_[0] - w[0], a_[1] - w[1], za), (b_[0] - w[0], b_[1] - w[1], zb_),
+                                  (b_[0] + w[0], b_[1] + w[1], zb_), (a_[0] + w[0], a_[1] + w[1], za)])
+
+    def stall_row(a, b, n, ang_deg, L, fill, clip=None):
+        """Bays along the kerb line a->b (world), opening towards n (unit). 45 deg = angled."""
+        a, b = np.asarray(a, float), np.asarray(b, float)
+        Lr = np.linalg.norm(b - a)
+        t = (b - a) / Lr
+        th = math.radians(ang_deg)
+        sax = n * math.sin(th) + t * math.cos(th)            # bay axis
+        sp = 2.5 / math.sin(th)                              # spacing along the kerb
+        k, made = 0.0, 0
+        while k + sp + L * math.cos(th) <= Lr:
+            p = a + t * k
+            q = _Poly([p, p + t * sp, p + t * sp + sax * L, p + sax * L])
+            k += sp
+            if not asph.contains(q) or q.intersects(streets) or (clip is not None and not clip.contains(q)):
+                continue
+            if any(q.buffer(-0.15).intersects(o) for o in taken[-60:]):
+                continue
+            taken.append(q)
+            paint(p, p + sax * L)
+            paint(p + t * sp, p + t * sp + sax * L)
+            st["bays"] += 1
+            made += 1
+            if r.random() < fill:
+                c = p + t * sp / 2 + sax * L / 2
+                zc = float(G(np.array([c]))[0]) + 0.06
+                ang = math.atan2(sax[1], sax[0]) + (math.pi if r.random() < 0.15 else 0)
+                instance(r.choice(srcs), f"VEH_CAR_{st['cars']:03d}", c, zc, ang, 1.0, col)
+                st["cars"] += 1
+        return made
+
+    # 1. kerb rows along the streets (side with asphalt wins; 45 deg as on the masterplan)
+    for row in D.PARKING_ROWS:
+        p0, p1, depth, side = row[:4]
+        ang = row[4] if len(row) > 4 else 90
         a, b = C.plan_to_world([p0])[0], C.plan_to_world([p1])[0]
+        t = (b - a) / np.linalg.norm(b - a)
+        nrm = np.array([-t[1], t[0]])
+        best = None
+        for sgn in (side, -side):
+            # try both directions of travel too, so 45 deg bays can face either way
+            for aa, bb in ((a, b), (b, a)):
+                tt = (bb - aa) / np.linalg.norm(bb - aa)
+                nn = nrm * sgn
+                cnt = sum(asph.contains(_Pt(aa + tt * d + nn * 2.5)) and not streets.contains(_Pt(aa + tt * d + nn * 2.5))
+                          for d in np.linspace(2, np.linalg.norm(bb - aa) - 2, 8))
+                if best is None or cnt > best[0]:
+                    best = (cnt, aa, bb, nn)
+        stall_row(best[1], best[2], best[3], ang, depth, 0.72)
+
+    # 2. entrance lots: 45 deg rows along the plot-edge kerb, facing the street-kerb rows
+    kerb = C.SITE_POLY.buffer(-(D.ROAD_PERIMETER_SIDEWALK + 0.25)).exterior
+    for x0, x1, y0, y1 in D.PARKING_LOTS:
+        box_ = _Poly(C.plan_to_world([(x0, y0), (x1, y0), (x1, y1), (x0, y1)]))
+        seg = kerb.intersection(box_)
+        for ln in ([seg] if seg.geom_type == "LineString" else list(getattr(seg, "geoms", []))):
+            q = np.array(ln.coords)
+            for a, b in zip(q[:-1], q[1:]):
+                if np.linalg.norm(b - a) < 8.0:
+                    continue
+                t = (b - a) / np.linalg.norm(b - a)
+                n = np.array([-t[1], t[0]])
+                if not asph.contains(_Pt((a + b) / 2 + n * 2.5)):
+                    n = -n
+                stall_row(a, b, n, 45, 5.0, 0.7)
+
+    # 3. entrance mall: tree rows on both verges of the channel
+    mall = C.MALL_MEDIAN
+    xs, ys = mall.exterior.coords.xy
+    pts = np.array(list(zip(xs, ys))[:4])
+    e = sorted([(pts[i], pts[(i + 1) % 4]) for i in range(4)], key=lambda ab: -np.linalg.norm(ab[1] - ab[0]))
+    cen = np.array(mall.centroid.coords[0])
+    for a, b in e[:2]:
+        n = (a + b) / 2 - cen
+        n /= np.linalg.norm(n)
         L = np.linalg.norm(b - a)
         t = (b - a) / L
-        nrm = np.array([-t[1], t[0]]) * side
-        n = int(L / 2.5)
-        for i in range(n + 1):
-            q = a + t * (i * 2.5)
-            z = float(G(np.array([q]))[0]) + 0.075          # on the asphalt (+0.06)
-            e = q + nrm * depth
-            w = np.array([-nrm[1], nrm[0]]) * 0.06
-            lines.poly("paint_line", [(q[0] - w[0], q[1] - w[1], z), (e[0] - w[0], e[1] - w[1], z), (e[0] + w[0], e[1] + w[1], z), (q[0] + w[0], q[1] + w[1], z)])
-            if i < n:
-                bays += 1
-                if r.random() < 0.72:
-                    c = q + t * 1.25 + nrm * depth / 2
-                    zc = float(G(np.array([c]))[0]) + 0.06
-                    ang = math.atan2(nrm[1], nrm[0]) + (math.pi if r.random() < 0.5 else 0)
-                    instance(r.choice(srcs), f"VEH_CAR_{cars:03d}", c, zc, ang, 1.0, col)
-                    cars += 1
-    # entrance parking fields (catalogue masterplan): back-to-back rows of 2.5 x 5 m bays with
-    # 6.5 m aisles, tiled in the free asphalt around the roundabout, market and sports court
-    from shapely.geometry import Polygon as _Poly, Point as _Pt
-    from shapely.ops import unary_union as _union
-    m = D.M_PER_PX
-    zb = D.ENTRANCE_PARKING_ZONE
-    zone = C.ROADS.intersection(_Poly(C.plan_to_world([(zb[0], zb[2]), (zb[1], zb[2]), (zb[1], zb[3]), (zb[0], zb[3])])))
-    (rx, ry), r_out, _ = D.ROUNDABOUT
-    (ax0, ay0), (ax1, ay1), aw = D.ENTRANCE_ACCESS
-    from shapely.geometry import LineString as _LS
-    lanes = _union([_Pt(C.plan_to_world([(rx, ry)])[0]).buffer(r_out * m + 6.5),
-                    _LS(C.plan_to_world([(ax0, ay0), (ax1, ay1)])).buffer(aw * m / 2 + 1.0, cap_style=2)])
-    zone = zone.difference(lanes).buffer(-0.3)
-    o = C.plan_to_world([(0, 0)])[0]
-    v = C.plan_to_world([(0, 1)])[0] - o
-    ang_v = math.atan2(v[1], v[0])
-    bw, bd, ai = 2.5 / m, 5.0 / m, 6.5 / m
-    y = zb[2]
-    while y + 2 * bd + ai <= zb[3]:
-        for y0, y1 in ((y, y + bd), (y + bd + ai, y + 2 * bd + ai)):
-            x = zb[0]
-            while x + bw <= zb[1]:
-                q = C.plan_to_world([(x, y0), (x + bw, y0), (x + bw, y1), (x, y1)])
-                if zone.contains(_Poly(q)):
-                    bays += 1
-                    for e in ((q[0], q[3]), (q[1], q[2])):          # bay side lines
-                        a_, b_ = np.array(e[0]), np.array(e[1])
-                        t = (b_ - a_) / np.linalg.norm(b_ - a_)
-                        w = np.array([-t[1], t[0]]) * 0.06
-                        za, zb_ = (float(h) + 0.075 for h in G(np.array([a_, b_])))
-                        lines.poly("paint_line", [(a_[0] - w[0], a_[1] - w[1], za), (b_[0] - w[0], b_[1] - w[1], zb_),
-                                                  (b_[0] + w[0], b_[1] + w[1], zb_), (a_[0] + w[0], a_[1] + w[1], za)])
-                    if r.random() < 0.62:
-                        c = np.mean(q, axis=0)
-                        zc = float(G(np.array([c]))[0]) + 0.06
-                        instance(r.choice(srcs), f"VEH_CAR_{cars:03d}", c, zc, ang_v + (math.pi if r.random() < 0.5 else 0), 1.0, col)
-                        cars += 1
-                x += bw
-        y += 2 * bd + ai
+        for dd in np.arange(3.0, L - 2.0, 7.0):
+            c = a + t * dd - n * 1.1
+            z = float(G(np.array([c]))[0]) + 0.2
+            instance(SRC["date_a" if int(dd / 7) % 2 else "green_s"], f"VEG_MALL_{st['island_trees']:03d}", c, z, r.uniform(0, 6.28), 0.8, col)
+            st["island_trees"] += 1
+
+    # 4. a few cars driving (right-hand traffic, 1.8 m right of the centre line)
+    from shapely.geometry import LineString as _L
+    drive = [_L(C.plan_to_world(pl)) for pl in D.ROAD_CENTRELINES]
+    drive.append(C.SITE_POLY.buffer(-(D.ROAD_PERIMETER_SIDEWALK + 3.6)).exterior)
+    inner = _prep(C.ROADS.buffer(-1.0))
+    for ln in drive:
+        for d in np.arange(r.uniform(10, 40), ln.length - 5, r.uniform(55, 90)):
+            p, q = np.array(ln.interpolate(d).coords[0]), np.array(ln.interpolate(d + 1.0).coords[0])
+            t = (q - p) / (np.linalg.norm(q - p) + 1e-9)
+            dirn = 1 if r.random() < 0.5 else -1
+            c = p + np.array([t[1], -t[0]]) * 1.8 * dirn
+            if not inner.contains(_Pt(c)) or any(o.distance(_Pt(c)) < 4.0 for o in taken[-200:]):
+                continue
+            taken.append(_Pt(c).buffer(2.5))
+            zc = float(G(np.array([c]))[0]) + 0.06
+            instance(r.choice(srcs), f"VEH_DRIVE_{st['moving']:03d}", c, zc, math.atan2(t[1], t[0]) + (0 if dirn > 0 else math.pi), 1.0, col)
+            st["moving"] += 1
     lines.build("PARKING_LINES", col, M)
-    return {"bays": bays, "cars": cars}
+    return st
 
 
 def C_srgb(h):
