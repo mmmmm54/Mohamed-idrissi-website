@@ -104,6 +104,34 @@ def ellipse_world(c, r, n=32):
     return Polygon(C.plan_to_world([(c[0] + r[0] * math.cos(t), c[1] + r[1] * math.sin(t)) for t in np.linspace(0, 2 * math.pi, n, endpoint=False)]))
 
 
+def open_terrain_under(water, site):
+    """The natural terrain runs under the site at grade and would hide the pool floors (1.4 m down):
+    delete its faces under the water. The paving and decks (at grade + 2 cm and up) cover the rest
+    of each hole, so only the basins show through."""
+    import bmesh
+    import bpy
+    ob = bpy.data.objects.get("TERRAIN_NEAR")
+    if ob is None:
+        return 0
+    zone = prep(water.buffer(4.0).intersection(site.buffer(-0.7)))
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    mw = ob.matrix_world
+    dead = [f for f in bm.faces if zone.contains(Point((mw @ f.calc_center_median()).xy))]
+    bmesh.ops.delete(bm, geom=dead, context="FACES")
+    bm.to_mesh(ob.data)
+    bm.free()
+    return len(dead)
+
+
+def water_body(name, poly, col, mat_top, h_top, mat_side, h_bottom, step=2.0):
+    """Water surface + tiled walls (as before) + a tiled FLOOR at the basin depth, so a transparent
+    water material (Blender or D5) shows the blue pool floor instead of the paving below."""
+    ob = draped(name, poly, col, mat_top, h_top, mat_side, h_bottom, step=step)
+    draped(name.replace("_Water", "_Floor"), poly, col, mat_side, h_bottom, step=step)
+    return ob
+
+
 def plan_rect_world(b):
     x0, x1, y0, y1 = b
     return Polygon(C.plan_to_world([(x0, y0), (x1, y0), (x1, y1), (x0, y1)]))
@@ -116,7 +144,6 @@ def build(materials):
     C.SITE_POLY = site
 
     # 1. whole-site paving (roads, parking, plazas)
-    draped("SITE_Paving", site, col, M["pavers"], 0.02, M["stone"], -9.0, step=3.0)    # retaining wall at the edges
 
     # water areas (lake, club pools, hotel channel) are cut out of the lawns
     lake = []
@@ -138,6 +165,11 @@ def build(materials):
     jac = ellipse_world(D.CLUB_JACUZZI[0], (D.CLUB_JACUZZI[1], D.CLUB_JACUZZI[1]))
     wet = unary_union([lake_poly.buffer(1.2)] + [p.buffer(4.0) for p in pools] + [ch.buffer(1.5)] + [c.buffer(1.5) for c in canals]
                       + [channel.buffer(1.2), half.buffer(1.0), jac.buffer(1.2)] + [q.buffer(1.0) for q in small])
+    water_only = unary_union([lake_poly, ch, channel, half, jac] + pools + canals + small)
+    C.WATER_ONLY = water_only
+    open_terrain_under(water_only, site)
+    draped("SITE_Paving", site.difference(water_only), col, M["pavers"], 0.02, step=3.0)
+    draped("SITE_Paving_Edge", site.difference(site.buffer(-0.6)), col, M["pavers"], 0.02, M["stone"], -9.0, step=3.0)   # retaining wall at the edges
     # 2. kerbed blocks: sidewalk ring + lawn inset
     road_cuts = unary_union([plan_rect_world(b) for b in D.ROAD_CUTS])
     blocks = []
@@ -151,7 +183,7 @@ def build(materials):
         if poly.is_empty:
             continue
         blocks.append((name, poly))
-        draped(f"SITE_Block_{name}_Sidewalk", poly, col, M["pavers"], KERB_H, M["kerb"], 0.0, step=3.0)
+        draped(f"SITE_Block_{name}_Sidewalk", poly.difference(water_only), col, M["pavers"], KERB_H, M["kerb"], 0.0, step=3.0)
         inner = poly.buffer(-SIDEWALK, join_style=2).difference(wet)
         if not inner.is_empty:
             draped(f"SITE_Block_{name}_Lawn", inner, col, M["lawn"], KERB_H + 0.03, step=3.0)
@@ -204,7 +236,7 @@ def build(materials):
     # 3. lake (T6): three basins + round planted island
     C.LAKE_POLY = lake_poly
     draped("SITE_Lake_Coping", lake_poly.buffer(1.2).difference(lake_poly), col, M["terrace"], KERB_H + 0.08, M["stone"], 0.0, step=2.5)
-    draped("SITE_Lake_Water", lake_poly, col, M["lake_water"], KERB_H + 0.02, M["pool_tile"], -1.2, step=2.5)
+    water_body("SITE_Lake_Water", lake_poly, col, M["lake_water"], KERB_H + 0.02, M["pool_tile"], -1.2, step=2.5)
     (cx, cy), r = D.LAKE_ROUND
     island = Polygon(C.plan_to_world([(cx + r * math.cos(t), cy + r * math.sin(t)) for t in np.linspace(0, 2 * math.pi, 48, endpoint=False)]))
     draped("SITE_Lake_Island", island, col, M["lawn"], KERB_H + 0.35, M["stone"], 0.0, step=2.0)
@@ -212,23 +244,23 @@ def build(materials):
 
     # 4. club pools (T1) with stone deck
     for i, pg in enumerate(pools):
-        draped(f"SITE_ClubPool_{i}_Deck", pg.buffer(4.0).difference(pg), col, M["terrace"], KERB_H + 0.08, M["kerb"], 0.0, step=2.0)
-        draped(f"SITE_ClubPool_{i}_Water", pg, col, M["pool_water"], KERB_H + 0.02, M["pool_tile"], -1.4, step=1.5)
+        draped(f"SITE_ClubPool_{i}_Deck", pg.buffer(4.0).difference(pg).difference(jac.buffer(1.2)).difference(unary_union(small).buffer(1.0)), col, M["terrace"], KERB_H + 0.08, M["kerb"], 0.0, step=2.0)
+        water_body(f"SITE_ClubPool_{i}_Water", pg, col, M["pool_water"], KERB_H + 0.02, M["pool_tile"], -1.4, step=1.5)
     C.CLUB_POOLS = pools
 
     # 5. hotel water channel + sports court
     draped("SITE_Hotel_Water_Deck", ch.buffer(1.5).difference(ch), col, M["terrace"], KERB_H + 0.08, M["kerb"], 0.0, step=2.0)
-    draped("SITE_Hotel_Water", ch, col, M["pool_water"], KERB_H + 0.02, M["pool_tile"], -1.2, step=2.0)
+    water_body("SITE_Hotel_Water", ch, col, M["pool_water"], KERB_H + 0.02, M["pool_tile"], -1.2, step=2.0)
     for i, cpoly in enumerate(canals):
         draped(f"SITE_Canal_{i}_Coping", cpoly.buffer(1.5, join_style=2).difference(cpoly), col, M["terrace"], KERB_H + 0.10, M["stone"], 0.0, step=2.0)
-        draped(f"SITE_Canal_{i}_Water", cpoly, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=2.0)
+        water_body(f"SITE_Canal_{i}_Water", cpoly, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=2.0)
     draped("SITE_Ent_Channel_Coping", channel.buffer(1.2, join_style=2).difference(channel), col, M["terrace"], KERB_H + 0.10, M["kerb"], 0.0, step=2.0)
-    draped("SITE_Ent_Channel_Water", channel, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=2.0)
-    draped("SITE_Ent_HalfMoon_Water", half, col, M["pool_water"], KERB_H + 0.06, M["pool_tile"], -0.6, step=1.5)
+    water_body("SITE_Ent_Channel_Water", channel, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=2.0)
+    water_body("SITE_Ent_HalfMoon_Water", half, col, M["pool_water"], KERB_H + 0.06, M["pool_tile"], -0.6, step=1.5)
     for i, q in enumerate(small):
-        draped(f"SITE_Club_Basin_{i}_Water", q, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=1.0)
+        water_body(f"SITE_Club_Basin_{i}_Water", q, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=1.0)
     draped("SITE_Club_Jacuzzi_Coping", jac.buffer(1.2).difference(jac), col, M["terrace"], KERB_H + 0.12, M["kerb"], 0.0, step=1.0)
-    draped("SITE_Club_Jacuzzi_Water", jac, col, M["pool_water"], KERB_H + 0.06, M["pool_tile"], -0.8, step=1.0)
+    water_body("SITE_Club_Jacuzzi_Water", jac, col, M["pool_water"], KERB_H + 0.06, M["pool_tile"], -0.8, step=1.0)
     C.WET = wet
     roads = build_roads(M, col, site, blocks, wet)
     return dict(blocks=len(blocks), road_m2=round(roads.area))

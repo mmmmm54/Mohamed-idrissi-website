@@ -1,22 +1,27 @@
 # D5 import guide — Mirleft Bay
 
-## Why surfaces came in WHITE (fixed 2026-10-05)
-The Blender scene (`scenes/Mirleft_Bay_Scene*.blend`) builds its colours with node math (detail transfer,
-box projection). D5 does not read those nodes, so every surface arrives white. **Do not import the
-Blender scene into D5.** Use the files in this folder, where every material is a plain image material.
+## Two versions
+| File | Contents | Use it when |
+|---|---|---|
+| `Mirleft_Bay_D5_FULL.fbx` | Everything: buildings, streets, parking, walls, water, trees, palms, scrub, cars, 14 cameras | You want everything placed already |
+| `Mirleft_Bay_D5_NO_TREES_CARS.fbx` | Same, **without** trees, palms, scrub and cars. Parking bays, lines, streets and garden walls stay | You place D5 library trees, palms and cars yourself |
+
+Both use the same `textures/` folder: keep it next to the FBX.
 
 ## Import
-1. Keep `Mirleft_Bay_D5.fbx` and the `textures/` folder side by side (unzip the whole `d5` folder).
-2. D5 ▸ Import ▸ Model ▸ `Mirleft_Bay_D5.fbx`, unit **metres**.
-3. If a material still shows white: select it ▸ Base Color ▸ load the matching `textures/<material>_COL.jpg`
-   (and `_NRM.jpg` in Normal). The material names are the same as the texture names.
-4. Swap these for D5 library materials for the best result:
-   - `M06_Glass` → D5 Glass
-   - `M10_Pool_Water`, `M10_Lake_Water`, `H03_Ocean` → D5 Water
-   - `T03_Lawn` → D5 Grass (scatter)
-   - trees and cars → D5 library assets, if you want them more realistic
+1. D5 ▸ Import ▸ Model ▸ the FBX, unit **metres**.
+2. Do **not** import the Blender scene (`scenes/Mirleft_Bay_Scene*.blend`) into D5: its node materials come in white.
+3. If a material still shows white: Base Color ▸ `textures/<material>_COL.jpg`, Normal ▸ `textures/<material>_NRM.jpg`.
 
-## What is in the FBX
-Every building of the permit plan, the streets with their markings, the parking and cars, the garden walls, the trees, the water, and the 14 cameras.
+## Water (pools, canals, lake, channel, jacuzzi)
+Each basin has three parts: the water surface (`M10_Pool_Water`, `M10_Lake_Water`), tiled walls and a tiled
+**floor** 0.6–1.4 m down (`M10_Pool_Mosaic`, blue). Put D5 Water on the water surface. You see the blue
+floor through it.
+
+## Recommended D5 material swaps
+- `M06_Glass` → D5 Glass
+- `M10_Pool_Water`, `M10_Lake_Water`, `H03_Ocean` → D5 Water
+- `T03_Lawn` → D5 Grass (scatter)
+
 UVs are box-projected in metres divided by the texture's tile size, so textures sit at true scale with D5 tiling = 1.
-Only the 300k close-up grass tufts are left out: use D5 grass on the lawns instead.
+Only the 300k close-up grass tufts are left out: use D5 grass on the lawns.

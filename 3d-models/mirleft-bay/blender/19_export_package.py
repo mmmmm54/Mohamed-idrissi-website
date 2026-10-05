@@ -10,7 +10,8 @@ Opens output/checkpoints/checkpoint_09_cameras.blend and writes output/d5/:
   * Mirleft_Bay_D5.blend      the same scene, for D5's Blender sync plugin if you use it
 Everything is kept (buildings, palms, pink trees, olives, scrub, cars, parking, water) so D5 only
 needs small fixes. Only the 300k close-up grass tufts are left out (about 4 million triangles; use
-D5 grass on the T03_Lawn faces). `--light` drops vegetation and cars for a lighter file. UVs are in metres (1 UV unit = 1 m;
+D5 grass on the T03_Lawn faces). `--light` writes the NO_TREES_CARS version: no trees, palms, scrub
+or cars (parking bays, lines, streets and garden walls stay), to place D5 library models. UVs are in metres (1 UV unit = 1 m;
 terrain 1 unit = 10 m), so D5 materials tile at true scale.
 """
 import os
@@ -123,7 +124,7 @@ def bake_detail(src, target, keep, contrast, name):
 BAKE = {k: ("ph",) + tuple(v) + ((1.0,) if len(v) == 4 else ()) for k, v in M07.PH_MAP.items()}
 BAKE.update({
     "T01_Terrain_Soil_Sand_Rock": ("ph", "aerial_ground_rock", 9.0, "#B08458", 0.0, 0.6),
-    "M10_Pool_Mosaic": ("gen", "TEX_POOL_MOSAIC", 0.5),
+    "M10_Pool_Mosaic": ("file", os.path.join(TEXDIR, "TEX_POOL_MOSAIC_COL.jpg"), 0.5, "#2F8FC2", 0.0, 1.0),   # blue pool floor
     "M12_Roof_Gravel": ("gen", "TEX_GRAVEL", 1.0),
     "Kerb_Concrete": ("gen", "TEX_CONCRETE", 2.0),
     "T03_Lawn": ("gen", "TEX_LAWN", 2.0),
@@ -167,6 +168,9 @@ def d5_material(old):
         spec = BAKE[name]
         if spec[0] == "ph" and M07.ph_maps(spec[1]):
             col, nrm = bake_detail(M07.ph_maps(spec[1])["col"], spec[3], spec[4], spec[5], name)
+            tile = spec[2]
+        elif spec[0] == "file":
+            col, nrm = bake_detail(spec[1], spec[3], spec[4], spec[5], name)
             tile = spec[2]
         else:
             gen = spec[1] if spec[0] == "gen" else {"M01_Render_Sand": "TEX_RENDER_SAND", "M02_Render_Ochre": "TEX_RENDER_OCHRE",
@@ -259,7 +263,7 @@ for o in vl.objects:
     if o.type == "MESH":
         tris += sum(len(p.vertices) - 2 for p in o.data.polygons)
 
-fbx = os.path.join(OUT, "Mirleft_Bay_D5.fbx")
+fbx = os.path.join(OUT, "Mirleft_Bay_D5_NO_TREES_CARS.fbx" if LIGHT else "Mirleft_Bay_D5_FULL.fbx")
 bpy.ops.object.select_all(action="DESELECT")
 import shutil
 bpy.ops.outliner.orphans_purge(do_recursive=True)       # old procedural materials and their images
@@ -272,7 +276,7 @@ bpy.ops.export_scene.fbx(filepath=fbx, use_selection=False, use_visible=True,
                          apply_scale_options="FBX_SCALE_UNITS", axis_forward="-Z", axis_up="Y",
                          mesh_smooth_type="FACE", use_mesh_modifiers=True, path_mode="COPY",
                          embed_textures=True, bake_space_transform=False)
-blend = os.path.join(OUT, "Mirleft_Bay_D5.blend")
+blend = os.path.join(OUT, "Mirleft_Bay_D5_NO_TREES_CARS.blend" if LIGHT else "Mirleft_Bay_D5_FULL.blend")
 bpy.ops.wm.save_as_mainfile(filepath=blend, compress=True, copy=True)
 if os.path.exists(blend + "1"):
     os.remove(blend + "1")

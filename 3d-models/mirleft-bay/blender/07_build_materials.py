@@ -526,7 +526,7 @@ def build():
         "pavers": tiles("M07_Pavers_Beige", "#D3C4AE", "#C2A98F", 0.20, 0.10, "#9C8E7E", 0.003),
         "brick": tiles("M08_Pavers_Brick", "#A9634B", "#8F4F3B", 0.20, 0.10, "#6B5446", 0.003),
         "terrace": tiles("M09_Terrace_Stone", "#DCD0BC", "#CFC1AA", 0.60, 0.40, "#A99B88", 0.003, 0.6, 0.15, 0.0),
-        "pool_tile": tiles("M10_Pool_Mosaic", "#BFE3E0", "#A6D6D4", 0.025, 0.025, "#E8F2F0", 0.002, 0.2, 0.1, 0.0),
+        "pool_tile": tiles("M10_Pool_Mosaic", "#2F8FC2", "#2479AE", 0.025, 0.025, "#D8ECF4", 0.002, 0.2, 0.1, 0.0),   # blue mosaic floor + walls
         "pool_water": water("M10_Pool_Water", "#D4F2F0", 0.02, 1.4, 0.12),
         "lake_water": water("M10_Lake_Water", "#A9D8D2", 0.04, 0.5, 0.2),
         "asphalt": simple("M11_Asphalt", "#5E5B57", 0.9, 0.0, 30.0, 0.35, 0.3),
