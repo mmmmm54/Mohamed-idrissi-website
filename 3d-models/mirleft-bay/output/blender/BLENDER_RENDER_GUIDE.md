@@ -4,12 +4,13 @@
 1. On github.com/mmmmm54/3D-MODELS: **Code ▸ Download ZIP**, then unzip. Keep the `mirleft-bay` folder whole: the scene finds its textures in `mirleft-bay/assets/textures/`.
 2. Open `mirleft-bay/scenes/Mirleft_Bay_Scene.blend` in Blender 4.2 or newer.
 3. If a surface shows pink (missing texture): **File ▸ External Data ▸ Find Missing Files** and pick the `mirleft-bay/assets/textures` folder.
-4. Choose a camera in the `13_CAMERAS` collection (select it, then Ctrl+Numpad 0), then press **F12**. The 13 shots are set up already: 9:16, golden hour, haze, depth of field on ground-level shots, plus bloom, warm/cool grade and vignette in the compositor.
+4. Choose a camera in the `13_CAMERAS` collection (select it, then Ctrl+Numpad 0), then press **F12**. The 14 shots are set up already: 9:16, golden hour, haze, depth of field on ground-level shots, plus bloom, warm/cool grade and vignette in the compositor.
 5. Final quality: Render Properties ▸ Device = GPU (Preferences ▸ System ▸ CUDA/OptiX), samples 256 (already set).
 
 What is in the scene:
 - **Every building:** 17 duplex pairs, 33 villa B, 13 villa C, 4 villa A, the kasbah reception, the club and the Pavillon.
-- **Roads and parking (catalogue masterplan):** grey asphalt streets with dashed centre lines, edge lines and zebra crossings (ring road, boulevard 6, streets 5, 6.2 and 7); 45° parking along the hotel street and the ring road; at the entrance a roundabout, a planted mall with a water channel and tree rows, 45° parking lots and a hatched drop-off bay; a few cars driving. Also the canals, hotel T-water, pools and lake.
+- **Roads and parking (permit plan F01, re-read 2026-10-05):** grey asphalt streets with dashed centre lines, edge lines and zebra crossings (ring road 12 m, entrance street 8 m, streets 7 and 6, footpaths 5); angled bays along the ring road and the hotel street; the entrance rotated with its diagonal street: sports block with two courts, garden block, north and south lots, mall median with water channel and kiosk, half-moon drop-off loop. Also the canals, hotel T-water, pools and lake.
+- **Tranches 1-2 (F01):** every duplex pair in its own walled garden plot with trees, footpaths between plots, the paved club zone (lagoon pool with jacuzzi, children's pool, garden beds, palms), the club house with two small basins, and the market set on the diagonal street with kiosks round it.
 - **Planting:** Washingtonia and date palms, olives, pink flowering trees mixed with green shade trees, stone garden walls.
 - **Textures:** the client's Poly Haven CC0 4K maps (plaster, stone, wood, pavers, tiles, ground, beach), keeping the colours of the site photos.
 - **Left out:** only the 300k close-up grass tufts (the file would be 240 MB). `20_pipeline.py` adds them back.
@@ -64,4 +65,4 @@ Sun positions are computed for 29.553 N, 10.060 W on 2026-10-15 (`14_build_light
 To switch preset in Blender's Python console: `exec(bpy.data.texts['LIGHTING_PRESETS.txt'].as_string())`, then load the module and call `apply("LIGHTING_04_SUNSET")`. The easier route is to change `MASTER` in `14_build_lighting.py` and re-run the pipeline.
 
 ## Cameras (BLENDER_CAMERA_GUIDE)
-13 cameras in collection `13_CAMERAS` (SH12 residence streets and SH13 entrance parking were added 2026-10-02), all 9:16 with vertical sensor fit. Each one carries custom properties `purpose` and `higgsfield`. See `output/higgsfield/02_SHOT_LIST.md`.
+14 cameras in collection `13_CAMERAS` (SH12 residence streets and SH13 entrance were added 2026-10-02, SH14 Tranches 1-2 aerial on 2026-10-05), all 9:16 with vertical sensor fit. Each one carries custom properties `purpose` and `higgsfield`. See `output/higgsfield/02_SHOT_LIST.md`.
