@@ -468,8 +468,36 @@ def build(materials):
     for j, ((x0, x1), (y0, y1)) in enumerate(D.VILLA_A_LOTS):
         put("TYPE_VILLA_A", x1 - (2.0 + 13.4 / 2) / D.M_PER_PX, (y0 + y1) / 2, j + 1)
 
-    # public buildings (unique, built in place)
-    for name, b, lv, style in D.PUBLIC_BUILDINGS:
+    # public buildings (unique, built in place); optional 5th value = rotation in plan px (deg)
+    def plan_rot_delta(cpx, rot_deg):
+        """World rotation that matches a rotation of rot_deg in plan px (handles the plan->world flip)."""
+        if not rot_deg:
+            return 0.0
+        c0 = C.plan_to_world([cpx])[0]
+        base = C.plan_to_world([(cpx[0] + 1.0, cpx[1])])[0] - c0
+        r = math.radians(rot_deg)
+        dv = C.plan_to_world([(cpx[0] + math.cos(r), cpx[1] + math.sin(r))])[0] - c0
+        return math.atan2(base[0] * dv[1] - base[1] * dv[0], base[0] * dv[0] + base[1] * dv[1])
+
+    extra = list(D.PUBLIC_BUILDINGS)
+    # F01 entrance quarter: pavilion of the sports block, kiosk at the end of the mall (rotated with the street)
+    rot_ent = math.degrees(math.atan2(D.ENT_A[1], D.ENT_A[0]))
+    for nm, r in (("SPORTS_PAVILION", D.ENT_SPORTS_HOUSE), ("MALL_KIOSK", D.ENT_KIOSK)):
+        cpx = D.ent((r[0] + r[1]) / 2, (r[2] + r[3]) / 2)
+        hu, hv = (r[1] - r[0]) / 2, (r[3] - r[2]) / 2
+        extra.append((nm, (cpx[0] - hu, cpx[0] + hu, cpx[1] - hv, cpx[1] + hv), 1, "light", rot_ent))
+    # kiosks round the market (small square shops on F01), in the market's own frame
+    mk = [b for b in D.PUBLIC_BUILDINGS if b[0] == "MARKET_RECEPTION"][0]
+    mcx, mcy = (mk[1][0] + mk[1][1]) / 2, (mk[1][2] + mk[1][3]) / 2
+    mr = math.radians(mk[4])
+    for i, (du, dv) in enumerate(D.KIOSKS):
+        pu, pv = du / D.M_PER_PX, dv / D.M_PER_PX
+        cpx = (mcx + pu * math.cos(mr) - pv * math.sin(mr), mcy + pu * math.sin(mr) + pv * math.cos(mr))
+        h = 1.6 / D.M_PER_PX
+        extra.append((f"KIOSK_{i}", (cpx[0] - h, cpx[0] + h, cpx[1] - h, cpx[1] + h), 1, "light", mk[4]))
+    for entry in extra:
+        name, b, lv, style = entry[:4]
+        rot_px = entry[4] if len(entry) > 4 else 0.0
         (cx, cy), (su, sv) = C.plan_box_world(b)
         k = Kit()
         if style == "light":
@@ -482,9 +510,10 @@ def build(materials):
         col = C.child_collection("03_ARCHITECTURE", "PUBLIC_" + name)
         z = float(G(np.array([[cx, cy]]))[0]) + lift
         obs = k.build("PUB_" + name, col, M)
+        dz = plan_rot_delta(((b[0] + b[1]) / 2, (b[2] + b[3]) / 2), rot_px)
         for ob in obs:
             ob.location = (cx, cy, z)
-            ob.rotation_euler = (0, 0, yaw)
+            ob.rotation_euler = (0, 0, yaw + dz)
         records.append(("PUB_" + name, style, (cx, cy), z))
     C.BUILDING_RECORDS = records
     C.TYPES = types

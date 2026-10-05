@@ -29,7 +29,8 @@ SHOTS = {
     "SH10_SUNSET_LAKE":         ("plan", (2080, 2470, 1.6), (1250, 2330, 3.0), 30, "YES", "Lake park looking west, palms against the sun"),
     "SH11_FINAL_WIDE":          ("world", (-700, 520, 240), (0, -10, 30), 32, "NO", "Pull-back over the ocean, the resort on its spur"),
     "SH12_RESIDENCE_STREETS":   ("plan", (3600, 2950, 70), (3700, 2500, 0), 24, "NO", "Low aerial over road 7 and the boulevard between the villas"),
-    "SH13_ENTRANCE_PARKING":    ("plan", (6250, 2700, 95), (5950, 2250, 0), 24, "NO", "Entrance: roundabout, parking fields, kasbah reception"),
+    "SH13_ENTRANCE_PARKING":    ("plan", (6250, 2700, 95), (5950, 2250, 0), 24, "NO", "Entrance: diagonal street, mall, sports block, parking lots"),
+    "SH14_TRANCHE1_AERIAL":     ("plan", (5250, 3000, 90), (5250, 2250, 0), 22, "NO", "Tranches 1-2: duplex gardens, club pools, market plaza (F01)"),
 }
 
 # artistic depth of field on the ground-level shots: f-stop, focus on the shot's target point

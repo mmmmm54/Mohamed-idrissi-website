@@ -1,5 +1,5 @@
 """
-02_build_site — graded site surface, kerbed blocks, sidewalks, pools, lake, sports court.
+02_build_site — graded site surface, kerbed blocks, garden plots, sidewalks, pools, lake, entrance, streets.
 
 Base surface: beige concrete pavers (as-built photo F04). Streets: grey asphalt with white
 markings on top, following the catalogue masterplan (client request 2026-10-02).
@@ -88,6 +88,22 @@ def draped(name, poly, col, mat_top, h_top, mat_side=None, h_bottom=None, step=3
     return ob
 
 
+def ent_poly(r):
+    """Rectangle in the entrance frame (a0, a1, b0, b1 px) -> world polygon."""
+    return Polygon(C.plan_to_world(D.ent_rect(r)))
+
+
+def ent_band(a_c, half_px, side=0):
+    """Band along the entrance street direction: |a - a_c| <= half_px (side=+1: a >= a_c - half_px)."""
+    b0, b1 = -900, 700
+    lo, hi = (a_c - half_px, a_c + half_px) if side == 0 else (a_c - 32, a_c + half_px)
+    return Polygon(C.plan_to_world([D.ent(lo, b0), D.ent(hi, b0), D.ent(hi, b1), D.ent(lo, b1)]))
+
+
+def ellipse_world(c, r, n=32):
+    return Polygon(C.plan_to_world([(c[0] + r[0] * math.cos(t), c[1] + r[1] * math.sin(t)) for t in np.linspace(0, 2 * math.pi, n, endpoint=False)]))
+
+
 def plan_rect_world(b):
     x0, x1, y0, y1 = b
     return Polygon(C.plan_to_world([(x0, y0), (x1, y0), (x1, y1), (x0, y1)]))
@@ -114,10 +130,14 @@ def build(materials):
     pools = [Polygon(C.plan_to_world(p)).buffer(0) for p in D.T1_POOLS]
     ch = unary_union([plan_rect_world(b) for b in D.HOTEL_WATER])
     canals = [plan_rect_world(b) for b in D.CANALS]
-    plaza = plan_rect_world(D.PLAZA_POOL)
-    (hx, hy), hr = D.PLAZA_HALFMOON
-    half = Polygon(C.plan_to_world([(hx + hr * math.cos(t), hy + hr * math.sin(t)) for t in np.linspace(-math.pi / 2, math.pi / 2, 24)]))
-    wet = unary_union([lake_poly.buffer(1.2)] + [p.buffer(4.0) for p in pools] + [ch.buffer(1.5)] + [c.buffer(1.5) for c in canals] + [plaza.buffer(1.5), half.buffer(1.0)])
+    channel = ent_poly(D.ENT_CHANNEL)
+    (ha, hb), r_loop, r_basin = D.ENT_HALFMOON
+    half = Polygon([D.ent(ha + r_basin * math.cos(t), hb + r_basin * math.sin(t)) for t in np.linspace(math.pi / 2, 1.5 * math.pi, 24)])
+    half = Polygon(C.plan_to_world(list(half.exterior.coords)))
+    small = [ellipse_world(c, r) for c, r in D.CLUB_POOL_SMALL]
+    jac = ellipse_world(D.CLUB_JACUZZI[0], (D.CLUB_JACUZZI[1], D.CLUB_JACUZZI[1]))
+    wet = unary_union([lake_poly.buffer(1.2)] + [p.buffer(4.0) for p in pools] + [ch.buffer(1.5)] + [c.buffer(1.5) for c in canals]
+                      + [channel.buffer(1.2), half.buffer(1.0), jac.buffer(1.2)] + [q.buffer(1.0) for q in small])
     # 2. kerbed blocks: sidewalk ring + lawn inset
     road_cuts = unary_union([plan_rect_world(b) for b in D.ROAD_CUTS])
     blocks = []
@@ -135,6 +155,50 @@ def build(materials):
         inner = poly.buffer(-SIDEWALK, join_style=2).difference(wet)
         if not inner.is_empty:
             draped(f"SITE_Block_{name}_Lawn", inner, col, M["lawn"], KERB_H + 0.03, step=3.0)
+    # T1 / T2 (F01 re-read 2026-10-05): garden plots lawn edge to edge, paved club + plaza zone,
+    # rotated entrance blocks (sports, garden, lot borders, mall median, drop-off island)
+    for i, b in enumerate(D.T1_PLOTS + D.T2_PLOTS):
+        poly = plan_rect_world(b)
+        nm = f"T1_PLOT_{i:02d}" if i < len(D.T1_PLOTS) else f"T2_PLOT_{i - len(D.T1_PLOTS):02d}"
+        blocks.append((nm, poly))
+        draped(f"SITE_{nm}", poly, col, M["lawn"], KERB_H + 0.03, M["kerb"], 0.0, step=2.5)
+    street_w = ent_band(D.ENT_STREET_A, 32 + 1)                 # entrance street (8 m) kept clear
+    loop = Point(C.plan_to_world([D.ent(ha, hb)])[0]).buffer(r_loop * D.M_PER_PX, 40)
+    pub = Polygon(C.plan_to_world(D.T1_PUBLIC_ZONE)).intersection(site.buffer(-D.ROAD_PERIMETER_SIDEWALK))
+    pub = pub.difference(ent_band(D.ENT_STREET_A, 9999, side=+1)).difference(street_w).difference(loop)
+    blocks.append(("T1_PUBLIC_ZONE", pub))
+    draped("SITE_T1_Club_Plaza", pub.difference(wet), col, M["terrace"], KERB_H, M["kerb"], 0.0, step=2.5)
+    # garden beds of the club (F01: green beds round the lagoon and along the west edge of the zone)
+    beds = unary_union([pools[0].buffer(10.0).difference(pools[0].buffer(5.5)),
+                        plan_rect_world((5322, 5350, 2320, 2690))]).intersection(pub.buffer(-0.5)).difference(wet)
+    beds = beds.difference(Polygon(C.plan_to_world([(5380, 2560), (5600, 2560), (5600, 2700), (5380, 2700)])))   # keep the south deck open
+    if not beds.is_empty:
+        draped("SITE_T1_Club_Garden_Beds", beds, col, M["lawn"], KERB_H + 0.04, M["kerb"], KERB_H, step=1.5)
+    C.CLUB_BEDS = beds
+    island = Polygon(C.plan_to_world([D.ent(ha + (r_basin + 12) * math.cos(t), hb + (r_basin + 12) * math.sin(t))
+                                      for t in np.linspace(math.pi / 2, 1.5 * math.pi, 28)]))
+    blocks.append(("ENT_DROPOFF_ISLAND", island))
+    draped("SITE_Ent_DropOff_Island", island.difference(half), col, M["terrace"], KERB_H + 0.02, M["kerb"], 0.0, step=1.5)
+    ent_blocks = {"ENT_SPORTS_BLOCK": (D.ENT_SPORTS_BLOCK, "lawn"), "ENT_GARDEN_BLOCK": (D.ENT_GARDEN_BLOCK, "lawn"),
+                  "ENT_MALL_MEDIAN": (D.ENT_MALL, "lawn")}
+    for nm, (r, kind) in ent_blocks.items():
+        poly = ent_poly(r).intersection(site.buffer(-D.ROAD_PERIMETER_SIDEWALK))
+        blocks.append((nm, poly))
+        draped(f"SITE_{nm}", poly.difference(wet), col, M["lawn"], KERB_H + 0.03, M["kerb"], 0.0, step=2.0)
+    for i, r in enumerate(D.ENT_COURTS):
+        draped(f"SITE_Ent_Court_{i}", ent_poly(r), col, M["court"], KERB_H + 0.06, step=2.0)
+    borders = []
+    m = D.M_PER_PX
+    for i, (a0, a1, b0, b1) in enumerate(D.ENT_LOTS):       # planted strips on the west and street sides of each lot
+        w = D.ENT_LOT_BORDER / m
+        for j, r in enumerate(((a0 - w, a0, b0 - w, b1), (a0 - w, a1, b0 - w, b0) if i == 0 else (a0 - w, a1, b1, b1 + w))):
+            q = ent_poly(r).intersection(site.buffer(-D.ROAD_PERIMETER_SIDEWALK))
+            if q.area > 2.0:
+                borders.append(q)
+                blocks.append((f"ENT_LOT{i}_BORDER{j}", q))
+                draped(f"SITE_Ent_Lot{i}_Border{j}", q, col, M["lawn"], KERB_H + 0.03, M["kerb"], 0.0, step=1.5)
+    C.ENT_BORDERS = borders
+    C.PUBLIC_ZONE = pub
     C.SITE_BLOCKS = blocks
 
     # 3. lake (T6): three basins + round planted island
@@ -158,13 +222,15 @@ def build(materials):
     for i, cpoly in enumerate(canals):
         draped(f"SITE_Canal_{i}_Coping", cpoly.buffer(1.5, join_style=2).difference(cpoly), col, M["terrace"], KERB_H + 0.10, M["stone"], 0.0, step=2.0)
         draped(f"SITE_Canal_{i}_Water", cpoly, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=2.0)
-    draped("SITE_Plaza_Pool_Coping", plaza.buffer(1.2, join_style=2).difference(plaza), col, M["terrace"], KERB_H + 0.10, M["kerb"], 0.0, step=2.0)
-    draped("SITE_Plaza_Pool_Water", plaza, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=2.0)
-    draped("SITE_Plaza_HalfMoon_Water", half, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=1.5)
+    draped("SITE_Ent_Channel_Coping", channel.buffer(1.2, join_style=2).difference(channel), col, M["terrace"], KERB_H + 0.10, M["kerb"], 0.0, step=2.0)
+    draped("SITE_Ent_Channel_Water", channel, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=2.0)
+    draped("SITE_Ent_HalfMoon_Water", half, col, M["pool_water"], KERB_H + 0.06, M["pool_tile"], -0.6, step=1.5)
+    for i, q in enumerate(small):
+        draped(f"SITE_Club_Basin_{i}_Water", q, col, M["pool_water"], KERB_H + 0.04, M["pool_tile"], -0.6, step=1.0)
+    draped("SITE_Club_Jacuzzi_Coping", jac.buffer(1.2).difference(jac), col, M["terrace"], KERB_H + 0.12, M["kerb"], 0.0, step=1.0)
+    draped("SITE_Club_Jacuzzi_Water", jac, col, M["pool_water"], KERB_H + 0.06, M["pool_tile"], -0.8, step=1.0)
     C.WET = wet
-    court = plan_rect_world(D.SPORTS_COURT)
-    draped("SITE_Sports_Court", court.buffer(-1.0), col, M["court"], KERB_H, M["kerb"], 0.0, step=3.0)   # orange clay (catalogue)
-    roads = build_roads(M, col, site, blocks, wet, court)
+    roads = build_roads(M, col, site, blocks, wet)
     return dict(blocks=len(blocks), road_m2=round(roads.area))
 
 
@@ -181,45 +247,30 @@ def _strip(mb, G, a_, b_, half_w, h=None):
                            (b_[0] + w[0], b_[1] + w[1], zb), (a_[0] + w[0], a_[1] + w[1], za)])
 
 
-def build_roads(M, col, site, blocks, wet, court):
-    """Masterplan street network: asphalt carriageways between the kerbed blocks, beige paver
-    sidewalk along the plot edge, pedestrian promenades kept in pavers, roundabout + planted mall
-    at the entrance, white markings (dashed centre
-    lines, edge lines, zebra crossings, hatched drop-off bay)."""
+def build_roads(M, col, site, blocks, wet):
+    """F01 street network: asphalt everywhere between the kerbed blocks except the pedestrian zones,
+    beige paver sidewalk along the plot edge, white markings (dashed centre lines, edge lines,
+    zebra crossings)."""
     G = C.SITE_GRADED
-    m = D.M_PER_PX
     west = plan_rect_world((D.ROAD_ASPHALT_X_MIN, 7000, 1000, 4000))
-    mall = plan_rect_world(D.MALL_ISLAND)
     keep_out = unary_union([pg.buffer(0.05) for _, pg in blocks]
                            + [plan_rect_world(b) for b in D.ROAD_PEDESTRIAN]
-                           + [wet, court.buffer(1.0)]
-                           + [plan_rect_world(b).buffer(3.0) for _, b, _, _ in D.PUBLIC_BUILDINGS])
-    islands = mall
-    (rx, ry), r_out, r_isl = D.ROUNDABOUT
-    rc = C.plan_to_world([(rx, ry)])[0]
-    ring_out = Point(rc).buffer(r_out * m, 48)
-    island = Point(rc).buffer(r_isl * m, 32)
-    (ax0, ay0), (ax1, ay1), aw = D.ENTRANCE_ACCESS
-    access = LineString(C.plan_to_world([(ax0, ay0), (ax1, ay1)])).buffer(aw * m / 2, cap_style=2)
+                           + [wet] + [plan_rect_world(b).buffer(3.0) for _, b, *_ in D.PUBLIC_BUILDINGS if b[0] < 5000])
     asphalt = site.buffer(-D.ROAD_PERIMETER_SIDEWALK).intersection(west).difference(keep_out)
-    asphalt = unary_union([asphalt, ring_out.difference(keep_out), access.intersection(site).difference(keep_out)])
-    asphalt = asphalt.difference(island).difference(islands)
-    asphalt = asphalt.buffer(-0.2).buffer(0.2)                     # drop slivers
+    small_lots = unary_union([plan_rect_world(b) for b in D.T1_SMALL_LOTS])
+    exits = unary_union([ent_poly((a0, 260, b0, b1)) for a0, a1, b0, b1 in D.ENT_CARRIAGEWAYS]).intersection(site)   # mall to R104
+    asphalt = unary_union([asphalt, small_lots, exits.difference(keep_out)]).buffer(-0.2).buffer(0.2)
     if asphalt.geom_type == "MultiPolygon":
         asphalt = unary_union([g for g in asphalt.geoms if g.area > 25.0])
     draped("SITE_Road_Asphalt", asphalt, col, M["asphalt"], ASPHALT_H, step=3.0)
-    draped("SITE_Roundabout_Island", island, col, M["lawn"], KERB_H + 0.05, M["kerb"], 0.0, step=1.5)
-    draped("SITE_Mall_Median", mall.difference(wet), col, M["lawn"], KERB_H + 0.03, M["kerb"], 0.0, step=2.0)
     C.ROADS = asphalt
-    C.ROUNDABOUT_ISLAND = island
-    C.MALL_MEDIAN = mall
 
     mb = C.MeshBuilder()
-    no_mark = unary_union([plan_rect_world(l) for l in D.PARKING_LOTS] + [plan_rect_world(D.DROP_OFF).buffer(1.0)])
+    no_mark = unary_union([ent_poly(l) for l in D.ENT_LOTS] + [small_lots.buffer(0.5)])
     # 1. dashed centre lines (3 m dash, 3 m gap, 12 cm wide)
     lines = [LineString(C.plan_to_world(pl)) for pl in D.ROAD_CENTRELINES]
     lines.append(site.buffer(-(D.ROAD_PERIMETER_SIDEWALK + 3.6)).exterior)     # ring road centre
-    lines.append(Point(rc).buffer((r_out + r_isl) * m / 2, 48).exterior)       # roundabout lane
+    lines.append(LineString(C.plan_to_world([D.ent(D.ENT_STREET_A, D.ENT_STREET_B[0]), D.ent(D.ENT_STREET_A, D.ENT_STREET_B[1])])))
     inner = prep(asphalt.buffer(-1.2))
     nm_ = prep(no_mark)
     nd = 0
@@ -244,29 +295,20 @@ def build_roads(M, col, site, blocks, wet, court):
                 _strip(mb, G, a_, b_, 0.05)
                 ne += 1
     # 3. zebra crossings: 0.5 m stripes every 1 m, 3 m deep, across the road
-    u = C.plan_to_world([(1, 0)])[0] - C.plan_to_world([(0, 0)])[0]
-    v = C.plan_to_world([(0, 1)])[0] - C.plan_to_world([(0, 0)])[0]
+    o = C.plan_to_world([(0, 0)])[0]
+    u = C.plan_to_world([(1, 0)])[0] - o
+    v = C.plan_to_world([(0, 1)])[0] - o
     u, v = u / np.linalg.norm(u), v / np.linalg.norm(v)
-    for (cx, cy), rd, width in D.ZEBRAS:
-        c = C.plan_to_world([(cx, cy)])[0]
-        along, across = (v, u) if rd == "y" else (u, v)
+    ea = C.plan_to_world([D.ent(1, 0)])[0] - C.plan_to_world([D.ent(0, 0)])[0]
+    eb = C.plan_to_world([D.ent(0, 1)])[0] - C.plan_to_world([D.ent(0, 0)])[0]
+    ea, eb = ea / np.linalg.norm(ea), eb / np.linalg.norm(eb)
+    zebras = [(C.plan_to_world([c])[0], (v, u) if rd == "y" else (u, v), w) for c, rd, w in D.ZEBRAS]
+    zebras += [(C.plan_to_world([D.ent(a_, b_)])[0], (ea, eb), 5.0) for a_, b_ in D.ENT_ZEBRAS]
+    zebras += [(C.plan_to_world([D.ent(D.ENT_STREET_A, bb)])[0], (eb, ea), 8.0) for bb in (-70, 70)]
+    for c, (along, across), width in zebras:
         for k in np.arange(-width / 2 + 0.5, width / 2 - 0.3, 1.0):
             p0 = c + across * k - along * 1.5
             _strip(mb, G, p0, p0 + along * 3.0, 0.25)
-    # 4. hatched drop-off bay: outline + 45 deg stripes every 1.5 m
-    dz = plan_rect_world(D.DROP_OFF)
-    ring = list(dz.exterior.coords)
-    for a_, b_ in zip(ring[:-1], ring[1:]):
-        _strip(mb, G, np.array(a_), np.array(b_), 0.07)
-    diag = (u + v) / np.linalg.norm(u + v)
-    cz = np.array(dz.centroid.coords[0])
-    span = math.hypot(*(np.array(dz.bounds[2:]) - np.array(dz.bounds[:2])))
-    nrm_d = np.array([-diag[1], diag[0]])
-    for k in np.arange(-span / 2, span / 2, 1.5):
-        ln = LineString([cz + nrm_d * k - diag * span, cz + nrm_d * k + diag * span]).intersection(dz.buffer(-0.3))
-        if ln.geom_type == "LineString" and ln.length > 0.4:
-            q = np.array(ln.coords)
-            _strip(mb, G, q[0], q[-1], 0.06)
     mb.build("SITE_Road_Markings", col, M)
     C.ROAD_MARK_COUNTS = {"dashes": nd, "edge_pieces": ne}
     return asphalt

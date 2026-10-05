@@ -46,28 +46,29 @@ DUPLEX_PAIRS = {
     "T1": [  # 12 pairs = 24 units (permit: 24 duplex)
         (4792, 4897, 2153, 2274), (4792, 4897, 2379, 2500), (4792, 4897, 2605, 2732),
         (4992, 5092, 2037, 2158), (4992, 5092, 2258, 2384), (4992, 5092, 2489, 2616),
-        (5160, 5266, 2010, 2131), (5160, 5266, 2189, 2310), (5160, 5266, 2389, 2510), (5160, 5266, 2532, 2658),
+        (5160, 5266, 2010, 2131), (5160, 5266, 2189, 2310), (5160, 5266, 2389, 2510), (5160, 5266, 2558, 2685),
         (5329, 5445, 1989, 2121), (5329, 5445, 2179, 2300),
     ],
-    "T2": [  # 5 pairs = 10 units (permit: 10 duplex); hidden under the red tint, evenly spaced
-        (4615, 4725, 1992, 2112), (4615, 4725, 2176, 2296), (4615, 4725, 2360, 2480),
-        (4615, 4725, 2544, 2664), (4615, 4725, 2728, 2848),
+    "T2": [  # 5 pairs = 10 units (permit: 10 duplex); re-read 2026-10-05 on the contrast-enhanced F01 strip:
+             # units west of street 6, centres every ~200 px (25 m)
+        (4598, 4703, 2000, 2120), (4598, 4703, 2200, 2320), (4598, 4703, 2405, 2525),
+        (4598, 4703, 2595, 2715), (4598, 4703, 2800, 2920),
     ],
 }
 
 # Public buildings (catalogue 2026 names, positions from F01). levels = storeys.
 PUBLIC_BUILDINGS = [
-    # name, (x0, x1, y0, y1), levels, style
-    ("PAVILLON_RESTAURANT_CLUBHOUSE", (5590, 5780, 2280, 2410), 2, "kasbah"),   # permit: club house RDC+1 353 m2
-    ("MARKET_SUPERETTE", (5560, 5740, 1960, 2050), 1, "kasbah"),              # permit: superette + cafeteria 275 m2
-    ("RECEPTION_ADMINISTRATION", (5480, 5600, 2060, 2160), 2, "kasbah_towers"),  # permit: admin 200 m2; F04 style
+    # name, (x0, x1, y0, y1), levels, style[, rotation deg in plan px (x towards y)]
+    ("PAVILLON_RESTAURANT_CLUBHOUSE", (5598, 5700, 2250, 2378), 2, "kasbah"),  # permit: club house RDC+1 353 m2; F01 re-read 2026-10-05
+    ("MARKET_RECEPTION", (5537, 5637, 1994, 2156), 2, "kasbah_towers", -18.7),  # F01: cross-shaped building set on the diagonal street;
+                                                                                 # permit: superette/cafeteria 275 m2 + admin 200 m2
     ("SPA", (2930, 3040, 2050, 2330), 1, "kasbah"),                            # catalogue: SPA (T5 north-west); east side trimmed for street 5
     ("HOTEL_WING_NORTH", (2668, 2760, 2027, 2400), 2, "kasbah"),              # permit: hotel RDC+1 1520 m2
     ("HOTEL_WING_SOUTH", (2668, 2760, 2464, 2964), 2, "kasbah"),
     ("BEACH_CLUB", (1385, 1470, 1880, 1960), 1, "light"),                     # catalogue: beach club at the corniche
+    ("MAINTENANCE_CENTRE", (4185, 4245, 3018, 3052), 1, "kasbah"),           # F01 label "Centre d'entretien", south of T3
 ]
 
-SPORTS_COURT = (5712, 5828, 1850, 2010)       # catalogue: terrain de sport
 HOTEL_POOL_STRIP = (2423, 2452, 2040, 2950)   # long water channel in the hotel garden
 VILLA_A_POOL_W = 27                           # px (3.4 m)
 
@@ -93,13 +94,6 @@ GREEN_BLOCKS = [
     ("T4_SOUTH", (3382, 3860, 2450, 3010)),
     ("T3_NORTH", (3900, 4522, 1985, 2425)),
     ("T3_SOUTH", (3907, 4525, 2460, 3000)),
-    ("T2", (4592, 4745, 1960, 2900)),
-    ("T1_COL_A", (4770, 4910, 1990, 2900)),
-    ("T1_COL_B", (4975, 5110, 1990, 2760)),
-    ("T1_COL_C", (5140, 5290, 1985, 2760)),
-    ("T1_COL_D", (5310, 5465, 1960, 2340)),
-    ("T1_CLUB", (5340, 5880, 2260, 2620)),
-    ("T1_NORTH_PLAZA", (5465, 5770, 1940, 2170)),
 ]
 
 # Spot heights read off F01 (plan px, metres). Mostly outside the plot (ravines and
@@ -136,20 +130,17 @@ CANALS = [(2860, 3862, 2412, 2424), (3912, 4560, 2428, 2440)]
 CANAL_STRIP = 12                 # px of stone coping on each side
 # Hotel garden: T-shaped water (cross branch at the "HOTEL" label) + wide basin
 HOTEL_WATER = [(2423, 2452, 2040, 2950), (2440, 2720, 2366, 2396), (2452, 2510, 2232, 2366), (2452, 2510, 2396, 2530)]
-# Entrance plaza (T1): long reflecting pool + half-moon basin
-PLAZA_POOL = (5848, 6130, 2204, 2236)         # entrance mall channel (masterplan: from the roundabout to R104)
-PLAZA_HALFMOON = ((5752, 2292), 22)
 # Parking rows: (start px, end px, bay depth m, side +1 = left of the direction, -1 = right)
 PARKING_ROWS = [   # (start px, end px, bay length m, side hint, angle deg); the side with asphalt wins
     ((2790, 2090), (2790, 2340), 5.0, -1, 45),     # hotel public parking (north), angled as on the masterplan
     ((2790, 2560), (2790, 2910), 5.0, -1, 45),     # hotel public parking (south)
-    ((4735, 1985), (5320, 1945), 5.0, +1, 45),     # north ring road above the duplexes
-    ((5470, 1940), (5700, 1940), 5.0, +1, 45),     # north ring road, in front of the market
+    ((4592, 1946), (4706, 1946), 5.0, +1, 60),     # north ring road along the T2 plots (F01: angled bays)
+    ((4772, 2002), (4898, 2002), 5.0, +1, 60),     # ... T1 column A
+    ((4960, 1972), (5098, 1972), 5.0, +1, 60),     # ... T1 column B
+    ((5142, 1957), (5293, 1957), 5.0, +1, 60),     # ... T1 column C
+    ((5312, 1942), (5453, 1942), 5.0, +1, 60),     # ... T1 column D
     ((3960, 3055), (4500, 3062), 5.0, +1, 45),     # south ring road, T3
-    ((5440, 2600), (5660, 2585), 5.0, -1, 45),     # south ring road, club
-    ((5887, 1790), (5887, 2140), 5.0, +1, 45),     # entrance north street, east kerb (faces the lot aisle)
-    ((5960, 2292), (6220, 2292), 5.0, +1, 45),     # mall south carriageway, south kerb
-    ((5944, 2420), (5944, 2590), 5.0, +1, 45),     # entrance south street, east kerb
+    ((5330, 2700), (5700, 2525), 5.0, -1, 60),     # south ring road along the club (F01: angled bays)
 ]
 
 
@@ -175,7 +166,8 @@ ROAD_CUTS = [
 ROAD_PEDESTRIAN = [
     (2880, 3836, 2380, 2455),          # canal promenade, west of the boulevard
     (3907, 4592, 2418, 2465),          # canal promenade, east of the boulevard
-    (4745, 5465, 1990, 2905),          # duplex quarter: beige paths (catalogue)
+    (4762, 4903, 1985, 2905),          # T1 column A: plots and footpaths (F01)
+    (4943, 5460, 1930, 2905),          # T1 columns B-D: plots and footpaths (F01)
 ]
 # dashed centre lines (plan px polylines)
 ROAD_CENTRELINES = [
@@ -183,28 +175,64 @@ ROAD_CENTRELINES = [
     [(2900, 2652), (3382, 2652), (3382, 2635), (3860, 2635), (3883, 2665), (3907, 2682), (4525, 2682)],   # road 7
     [(4557, 1990), (4557, 2990)],                                   # street 7 (T3 / T2)
     [(2834, 2000), (2834, 2990)],                                   # hotel street 10 / 14
-    [(5858, 1770), (5858, 2180)],                                   # entrance north street
-    [(5912, 2262), (5912, 2580)],                                   # entrance south street
+    [(4736, 1950), (4736, 2935)],                                   # street 6 (T2 / T1)
+    [(4923, 1960), (4923, 2880)],                                   # street 6 (T1 columns A / B)
 ]
-ROUNDABOUT = ((5800, 2220), 40, 16)    # centre px, outer radius px (5 m), planted island px (2 m): west end of the mall
-ENTRANCE_ACCESS = ((5800, 2220), (6320, 2220), 150)   # mall carriageways to R104: from, to, width px (19 m incl. median)
-MALL_ISLAND = (5848, 6130, 2192, 2248)                  # planted median around the channel (trees both sides)
-# streets of the entrance quarter (kept free of parking): (x0, x1, y0, y1)
-ENTRANCE_STREETS = [
-    (5832, 5885, 1760, 2190),          # north street: ring road -> roundabout (east of the sports court)
-    (5885, 5940, 2250, 2590),          # south street: roundabout -> south ring road
-    (5770, 6320, 2150, 2192),          # mall north carriageway
-    (5770, 6320, 2248, 2290),          # mall south carriageway
+# ---------------------------------------------------------------------------
+# Tranches 1 and 2, re-digitised 2026-10-05 on F01 at full resolution (client review: "analyse
+# tranche 1, 2, 3 well"). The circled numbers on F01 are road widths in metres (12 ring road,
+# 8 entrance street, 7 / 6 streets, 5 footpaths), not roundabouts.
+# ---------------------------------------------------------------------------
+# garden plots (kerbed lawn edge to edge, hedge on the perimeter; each duplex pair sits in one plot)
+T1_PLOTS = [
+    (4770, 4900, 2005, 2080), (4770, 4900, 2085, 2290), (4770, 4900, 2340, 2545), (4770, 4900, 2550, 2800),   # column A
+    (4958, 5100, 1975, 2185), (4958, 5100, 2225, 2420), (4958, 5100, 2425, 2665), (4958, 5100, 2668, 2722),   # column B
+    (5140, 5295, 1960, 2165), (5140, 5295, 2170, 2355), (5140, 5295, 2360, 2540), (5140, 5295, 2545, 2700),   # column C
+    (5310, 5455, 1945, 2140), (5310, 5455, 2145, 2305),                                                       # column D
 ]
-# entrance parking lots: 45 deg bay rows along the plot-edge kerb inside these boxes, facing the
-# rows along the street kerbs across a shared aisle (PARKING_ROWS). The permit plot leaves ~0.2 ha
-# here, less than the catalogue drawing suggests, so the lots are single aisles. (x0, x1, y0, y1)
-PARKING_LOTS = [
-    (5888, 6260, 1700, 2148),          # north-east lot, beside the sports court
-    (5944, 6280, 2292, 2600),          # south-east lot
-]
-DROP_OFF = (5948, 6022, 2298, 2410)    # hatched drop-off / coach bay (masterplan grey hatched zone)
+T2_PLOTS = [(4590, 4708, 1950, 2160), (4590, 4708, 2162, 2362), (4590, 4708, 2364, 2560),
+            (4590, 4708, 2562, 2760), (4590, 4708, 2762, 2930)]
+T1_LANES = [(5100, 5140, 1960, 2760), (5295, 5310, 1945, 2700)]   # tree-lined footpaths between the columns
+T1_SMALL_LOTS = [(4772, 4880, 2812, 2900), (4960, 5100, 2728, 2792)]   # "parking" south of columns A and B
+# club / plaza: one paved public zone from column D to the entrance street (polygon, plan px)
+T1_PUBLIC_ZONE = [(5455, 1915), (5520, 1905), (5700, 1878), (5800, 1878), (6000, 2440), (5885, 2440),   # east side clipped by the street
+                  (5700, 2520), (5550, 2578), (5440, 2632), (5322, 2700), (5322, 2310), (5455, 2310)]
+CLUB_POOL_SMALL = [((5718, 2263), (24, 14)), ((5720, 2343), (24, 14))]   # two small basins on the club house terrace
+CLUB_JACUZZI = ((5440, 2600), 24)
+KIOSKS = [(-9.0, -14.0), (9.0, -14.0), (-11.0, 0.0), (11.0, 0.0), (-9.0, 14.0), (9.0, 14.0)]   # m around the market, its frame
+
+# entrance quarter, rotated with the entrance street (F01). Local frame in plan px: origin at the
+# mall centre, a = along the mall towards R104, b = along the entrance street towards the south.
+ENT_O = (5962, 2212)
+ENT_A = (0.938, -0.347)
+ENT_B = (0.347, 0.938)
+ENT_STREET_A = -125          # entrance street centre line (local a, px); 8 m wide (checked on the F01 overlay)
+ENT_STREET_B = (-560, 330)   # from the north ring road to the south ring road
+ENT_MALL = (-90, 102, -25, 25)             # planted median (a0, a1, b0, b1 local px)
+ENT_CHANNEL = (-78, 76, -6, 6)             # water channel in the median
+ENT_KIOSK = (78, 98, -14, 14)              # small pavilion at the east end of the median (pink on F01)
+ENT_CARRIAGEWAYS = [(-93, 175, -65, -25), (-93, 175, 25, 65)]
+ENT_SPORTS_BLOCK = (-93, -10, -450, -215)
+ENT_COURTS = [(-86, -50, -322, -238), (-46, -14, -322, -238)]   # two courts (catalogue: terrain de sport)
+ENT_SPORTS_HOUSE = (-95, -35, -405, -360)
+ENT_GARDEN_BLOCK = (-10, 130, -440, -215)                        # "espaces jardin"
+ENT_LOTS = [(-80, 108, -205, -72), (-75, 150, 70, 240)]           # north and south lots (asphalt, bays)
+ENT_LOT_BORDER = 2.0         # m planted strip on the street sides of each lot
+ENT_HALFMOON = ((-153, 5), 68, 28)        # drop-off loop on the west side of the street: centre local, loop r px, basin r px
+PLAZA_ROW = ((5515, 1905), (5625, 1890))  # perpendicular bays north of the plaza (F01 "parking")
 # zebra crossings: centre px, road direction ("x" / "y" in plan), road width m
 ZEBRAS = [((3870, 2378), "y", 8.0), ((3880, 2468), "y", 7.0), ((3883, 2700), "y", 7.0), ((3830, 2635), "x", 5.0),
-          ((4557, 2440), "y", 8.5), ((2834, 2381), "y", 9.0), ((5858, 2140), "y", 6.5), ((5912, 2300), "y", 6.5)]
+          ((4557, 2440), "y", 8.5), ((2834, 2381), "y", 9.0), ((4736, 2300), "x", 6.0), ((4923, 2318), "x", 5.0)]
+ENT_ZEBRAS = [(-78, -45), (-78, 45), (150, -45), (150, 45)]     # local a, b px: both mall ends, both carriageways
 
+
+
+def ent(a, b):
+    """Entrance local frame (px) -> plan px."""
+    return (ENT_O[0] + a * ENT_A[0] + b * ENT_B[0], ENT_O[1] + a * ENT_A[1] + b * ENT_B[1])
+
+
+def ent_rect(r):
+    """(a0, a1, b0, b1) in the entrance frame -> plan px polygon (4 points)."""
+    a0, a1, b0, b1 = r
+    return [ent(a0, b0), ent(a1, b0), ent(a1, b1), ent(a0, b1)]

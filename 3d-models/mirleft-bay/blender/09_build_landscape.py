@@ -12,6 +12,7 @@ import random
 
 import numpy as np
 from shapely.geometry import LineString, Point, Polygon
+from shapely.ops import unary_union
 from shapely.prepared import prep
 
 C = globals()["C"]
@@ -347,25 +348,96 @@ def build(materials):
             plant("grass", C.plan_to_world([(u, v)])[0], RNG.uniform(0.8, 1.2))
             n["grass"] += 1
 
-    # duplex gardens: hedge enclosure in front of each unit + palms
+    # duplex gardens (F01): every pair sits in its own plot; stone garden wall on the plot perimeter,
+    # a wall between the two units on the building's centre line, terrace at the garden facade,
+    # trees scattered in the garden (dark green dots on F01)
+    from shapely.geometry import box as _box
+    plots = [Polygon(C.plan_to_world([(b[0], b[2]), (b[1], b[2]), (b[1], b[3]), (b[0], b[3])])) for b in D.T1_PLOTS + D.T2_PLOTS]
+    plot_px = D.T1_PLOTS + D.T2_PLOTS
+    for (px0, px1, py0, py1), pg in zip(plot_px, plots):
+        q = list(pg.exterior.coords)[:4]
+        for k_ in range(4):
+            hedge_line(np.array(q[k_]), np.array(q[(k_ + 1) % 4]))
+    used = set()
     for tr, pairs in D.DUPLEX_PAIRS.items():
         for (x0, x1, y0, y1) in pairs:
             cxp, cyp = (x0 + x1) / 2, (y0 + y1) / 2
+            j = next((i for i, b in enumerate(plot_px) if b[0] <= cxp <= b[1] and b[2] <= cyp <= b[3]), None)
             gx1 = cxp - 5.2 / m                 # garden facade
-            C.GRASS_BLOCKERS.append(Polygon(C.plan_to_world([(gx1, cyp - 7.8 / m), (cxp + 5.3 / m, cyp - 7.8 / m), (cxp + 5.3 / m, cyp + 7.8 / m), (gx1, cyp + 7.8 / m)])))
-            gx0 = gx1 - 6.0 / m
+            foot = Polygon(C.plan_to_world([(gx1, cyp - 7.8 / m), (cxp + 5.3 / m, cyp - 7.8 / m), (cxp + 5.3 / m, cyp + 7.8 / m), (gx1, cyp + 7.8 / m)]))
+            C.GRASS_BLOCKERS.append(foot)
+            if j is not None:
+                used.add(j)
+                b = plot_px[j]
+                hedge_line(np.array(C.plan_to_world([(b[0], cyp)])[0]), np.array(C.plan_to_world([(gx1, cyp)])[0]))
+                hedge_line(np.array(C.plan_to_world([(cxp + 5.3 / m, cyp)])[0]), np.array(C.plan_to_world([(b[1], cyp)])[0]))
             for ya, yb in ((cyp - 7.7 / m, cyp), (cyp, cyp + 7.7 / m)):
-                q = C.plan_to_world([(gx0, ya), (gx1, ya), (gx1, yb), (gx0, yb)])
-                hedge_line(q[0], q[3])
-                hedge_line(q[0], q[1])
-                hedge_line(q[3], q[2])
                 terr = Polygon(C.plan_to_world([(gx1 - 3.0 / m, ya + 0.3 / m), (gx1, ya + 0.3 / m), (gx1, yb - 0.3 / m), (gx1 - 3.0 / m, yb - 0.3 / m)]))
                 C.GRASS_BLOCKERS.append(terr.buffer(0.1))
                 draped(f"DUP_{tr}_{x0}_{ya:.0f}_Terrace", terr, gardens, M["terrace"], 0.22, M["kerb"], 0.17, step=1.5)
-                plant(RNG.choice(["wash_a", "wash_b"]), C.plan_to_world([(gx0 + 0.9 / m, ya + 1.0 / m)])[0], RNG.uniform(0.85, 1.1))
-                k = RNG.random()
-                plant("olive" if k < 0.4 else "green_s" if k < 0.75 else "pink_s", C.plan_to_world([(gx0 + 1.6 / m, yb - 1.8 / m)])[0], RNG.uniform(0.7, 0.95))
-                n["olives"] += 1
+            # trees in this plot (both units), clear of the house, terraces and walls
+            if j is not None:
+                b = plot_px[j]
+                free = plots[j].buffer(-1.6).difference(foot.buffer(1.8)).difference(Polygon(C.plan_to_world(
+                    [(gx1 - 3.6 / m, cyp - 8.0 / m), (gx1, cyp - 8.0 / m), (gx1, cyp + 8.0 / m), (gx1 - 3.6 / m, cyp + 8.0 / m)])))
+                fp = prep(free)
+                minx, miny, maxx, maxy = free.bounds
+                placed_t, tries = [], 0
+                while len(placed_t) < 6 and tries < 200:
+                    tries += 1
+                    pt = np.array([RNG.uniform(minx, maxx), RNG.uniform(miny, maxy)])
+                    if fp.contains(Point(pt)) and all(np.hypot(*(pt - q_)) > 4.0 for q_ in placed_t):
+                        placed_t.append(pt)
+                        k = RNG.random()
+                        plant("wash_a" if k < 0.25 else "olive" if k < 0.5 else "green_s" if k < 0.85 else "pink_s", pt,
+                              RNG.uniform(0.7, 1.0) if k >= 0.25 else RNG.uniform(0.8, 1.05))
+                        n["olives"] += 1
+    # plots without a house (F01 "jardin"): trees only
+    for j, pg in enumerate(plots):
+        if j in used:
+            continue
+        minx, miny, maxx, maxy = pg.buffer(-1.5).bounds
+        for _ in range(5):
+            plant(RNG.choice(["olive", "green_s", "pink_s"]), np.array([RNG.uniform(minx, maxx), RNG.uniform(miny, maxy)]), RNG.uniform(0.75, 1.0))
+
+    # tree-lined footpaths between the T1 columns
+    for (lx0, lx1, ly0, ly1) in D.T1_LANES:
+        if lx1 - lx0 < 30:
+            continue
+        for yy in np.arange(ly0 + 20, ly1 - 10, 62):
+            plant(RNG.choice(["wash_b", "wash_c"]), C.plan_to_world([((lx0 + lx1) / 2, yy)])[0], RNG.uniform(0.85, 1.05), 0.05)
+
+    # club + plaza (F01: palms scattered on the paving, garden beds), market forecourt trees
+    pub = C.PUBLIC_ZONE
+    avoid = unary_union([C.WET.buffer(1.5)] + [Polygon(C.plan_to_world([(b[0], b[2]), (b[1], b[2]), (b[1], b[3]), (b[0], b[3])])).buffer(5.0)
+                                               for _, b, *_ in D.PUBLIC_BUILDINGS if b[0] > 5300])
+    zone = prep(pub.buffer(-2.0).difference(avoid))
+    minx, miny, maxx, maxy = pub.bounds
+    for xx in np.arange(minx + 3, maxx, 9.0):
+        for yy in np.arange(miny + 3, maxy, 9.0):
+            pt = np.array([xx + RNG.uniform(-2.5, 2.5), yy + RNG.uniform(-2.5, 2.5)])
+            if zone.contains(Point(pt)) and RNG.random() < 0.55:
+                plant(RNG.choice(["date_a", "date_b", "wash_c", "green_s"]), pt, RNG.uniform(0.8, 1.1), 0.17)
+                n["palms"] += 1
+    # entrance: garden block (trees), sports block edges, lot borders
+    for nm_, pg in C.SITE_BLOCKS:
+        if nm_ == "ENT_GARDEN_BLOCK":
+            gp = prep(pg.buffer(-2.0))
+            gx0_, gy0_, gx1_, gy1_ = pg.bounds
+            for _ in range(60):
+                pt = np.array([RNG.uniform(gx0_, gx1_), RNG.uniform(gy0_, gy1_)])
+                if gp.contains(Point(pt)):
+                    plant(RNG.choice(["olive", "green", "pink", "wash_b"]), pt, RNG.uniform(0.8, 1.1), 0.2)
+        if nm_.startswith("ENT_LOT") or nm_ == "ENT_SPORTS_BLOCK":
+            ring_ = pg.buffer(-0.9).exterior if pg.area > 4 else None
+            if ring_ is None:
+                continue
+            step_ = 7.0 if nm_.startswith("ENT_LOT") else 11.0
+            for d in np.arange(2.0, ring_.length, step_):
+                pt = np.array(ring_.interpolate(d).coords[0])
+                if nm_ == "ENT_SPORTS_BLOCK" and pg.buffer(-3.0).contains(Point(pt)):
+                    continue
+                plant(RNG.choice(["green_s", "olive", "date_a"]), pt, RNG.uniform(0.75, 0.95), 0.2)
 
     # street palms along the outer ring road and the central east-west avenue
     site = C.SITE_POLY
@@ -552,9 +624,10 @@ def build_parking(materials):
     r = random.Random(77)
     st = {"bays": 0, "cars": 0, "moving": 0, "island_trees": 0}
     asph = _prep(C.ROADS.buffer(0.05))
-    streets = _union([_Poly(C.plan_to_world([(b[0], b[2]), (b[1], b[2]), (b[1], b[3]), (b[0], b[3])])) for b in D.ENTRANCE_STREETS]
-                     + [_Poly(C.plan_to_world([(D.DROP_OFF[0], D.DROP_OFF[2]), (D.DROP_OFF[1], D.DROP_OFF[2]),
-                                               (D.DROP_OFF[1], D.DROP_OFF[3]), (D.DROP_OFF[0], D.DROP_OFF[3])]))])
+    def _ent(r):
+        return _Poly(C.plan_to_world(D.ent_rect(r)))
+    street_c = D.ENT_STREET_A
+    streets = _union([_ent((street_c - 33, street_c + 33, -900, 700))] + [_ent(r) for r in D.ENT_CARRIAGEWAYS])
     taken = []
 
     def paint(a_, b_):
@@ -614,24 +687,37 @@ def build_parking(materials):
                     best = (cnt, aa, bb, nn)
         stall_row(best[1], best[2], best[3], ang, depth, 0.72)
 
-    # 2. entrance lots: 45 deg rows along the plot-edge kerb, facing the street-kerb rows
-    kerb = C.SITE_POLY.buffer(-(D.ROAD_PERIMETER_SIDEWALK + 0.25)).exterior
-    for x0, x1, y0, y1 in D.PARKING_LOTS:
-        box_ = _Poly(C.plan_to_world([(x0, y0), (x1, y0), (x1, y1), (x0, y1)]))
-        seg = kerb.intersection(box_)
-        for ln in ([seg] if seg.geom_type == "LineString" else list(getattr(seg, "geoms", []))):
-            q = np.array(ln.coords)
-            for a, b in zip(q[:-1], q[1:]):
-                if np.linalg.norm(b - a) < 8.0:
-                    continue
-                t = (b - a) / np.linalg.norm(b - a)
-                n = np.array([-t[1], t[0]])
-                if not asph.contains(_Pt((a + b) / 2 + n * 2.5)):
-                    n = -n
-                stall_row(a, b, n, 45, 5.0, 0.7)
+    # 2. entrance lots (F01, rotated with the entrance street): double-loaded aisles along the mall
+    #    direction, 90 deg bays; small "parking" lots south of T1 columns A and B; plaza bays
+    def lot_rows(a0, a1, b0, b1, frame):
+        """Rows inside a lot rectangle given in a local frame (function (a, b) -> plan px)."""
+        depth, aisle = 5.0 / D.M_PER_PX, 6.0 / D.M_PER_PX
+        if b1 - b0 < 2 * depth + aisle:                       # shallow lot: one row facing the aisle
+            pa, pb = np.array(C.plan_to_world([frame(a0, b0)])[0]), np.array(C.plan_to_world([frame(a1, b0)])[0])
+            nn = np.array(C.plan_to_world([frame(a0, b0 + 1)])[0]) - pa
+            stall_row(pa, pb, nn / np.linalg.norm(nn), 90, 5.0, 0.7)
+            return
+        bb = b0
+        while bb + 2 * depth + aisle <= b1 + 1:
+            for kb, nb in ((bb, +1), (bb + 2 * depth + aisle, -1)):
+                pa, pb = np.array(C.plan_to_world([frame(a0, kb)])[0]), np.array(C.plan_to_world([frame(a1, kb)])[0])
+                nn = np.array(C.plan_to_world([frame(a0, kb + 1)])[0]) - pa
+                stall_row(pa, pb, nn / np.linalg.norm(nn) * nb, 90, 5.0, 0.7)
+            bb += 2 * depth + aisle
+    for (a0, a1, b0, b1) in D.ENT_LOTS:
+        lot_rows(a0 + 2, a1, b0 + 2, b1, D.ent)
+    for (x0, x1, y0, y1) in D.T1_SMALL_LOTS:
+        lot_rows(x0 + 2, x1 - 2, y0 + 2, y1, lambda a_, b_: (a_, b_))
+    (q0, q1) = D.PLAZA_ROW
+    a, b = C.plan_to_world([q0])[0], C.plan_to_world([q1])[0]
+    t = (b - a) / np.linalg.norm(b - a)
+    nrm = np.array([-t[1], t[0]])
+    if not asph.contains(_Pt((a + b) / 2 + nrm * 2.5)):
+        nrm = -nrm
+    stall_row(a, b, nrm, 90, 5.0, 0.7)
 
     # 3. entrance mall: tree rows on both verges of the channel
-    mall = C.MALL_MEDIAN
+    mall = [pg for nm_, pg in C.SITE_BLOCKS if nm_ == "ENT_MALL_MEDIAN"][0]
     xs, ys = mall.exterior.coords.xy
     pts = np.array(list(zip(xs, ys))[:4])
     e = sorted([(pts[i], pts[(i + 1) % 4]) for i in range(4)], key=lambda ab: -np.linalg.norm(ab[1] - ab[0]))
