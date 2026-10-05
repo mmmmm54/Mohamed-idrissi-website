@@ -273,7 +273,7 @@ def build(materials):
         occupied.append(xy)
 
     hedge = C.MeshBuilder()
-    C.GRASS_BLOCKERS = [C.LAKE_POLY.buffer(1.5)] + [p.buffer(4.2) for p in C.CLUB_POOLS]
+    C.GRASS_BLOCKERS = [C.LAKE_POLY.buffer(1.5), C.WET.buffer(0.3)] + [p.buffer(4.2) for p in C.CLUB_POOLS]   # every water deck / coping
 
     def prism(mat, a, b, half_w, z0, zt):
         dvec = (b - a) / (np.linalg.norm(b - a) + 1e-9)
