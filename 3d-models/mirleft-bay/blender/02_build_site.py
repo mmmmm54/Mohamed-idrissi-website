@@ -161,7 +161,7 @@ def build(materials):
     (ha, hb), r_loop, r_basin = D.ENT_HALFMOON
     half = Polygon([D.ent(ha + r_basin * math.cos(t), hb + r_basin * math.sin(t)) for t in np.linspace(math.pi / 2, 1.5 * math.pi, 24)])
     half = Polygon(C.plan_to_world(list(half.exterior.coords)))
-    small = [ellipse_world(c, r) for c, r in D.CLUB_POOL_SMALL]
+    small = [ent_poly(r) for r in D.CLUB_BASINS_ENT]
     jac = ellipse_world(D.CLUB_JACUZZI[0], (D.CLUB_JACUZZI[1], D.CLUB_JACUZZI[1]))
     wet = unary_union([lake_poly.buffer(1.2)] + [p.buffer(4.0) for p in pools] + [ch.buffer(1.5)] + [c.buffer(1.5) for c in canals]
                       + [channel.buffer(1.2), half.buffer(1.0), jac.buffer(1.2)] + [q.buffer(1.0) for q in small])
@@ -201,7 +201,16 @@ def build(materials):
     street_w = ent_band(D.ENT_STREET_A, 32 + 1)                 # entrance street (8 m) kept clear
     loop = Point(C.plan_to_world([D.ent(ha, hb)])[0]).buffer(r_loop * D.M_PER_PX, 40)
     pub = Polygon(C.plan_to_world(D.T1_PUBLIC_ZONE)).intersection(site.buffer(-D.ROAD_PERIMETER_SIDEWALK))
-    pub = pub.difference(ent_band(D.ENT_STREET_A, 9999, side=+1)).difference(street_w).difference(loop)
+    zone_full = pub
+    pub = pub.difference(ent_poly((D.PLAZA_EDGE_A, 900, -900, 900))).difference(loop)      # straight edge along the street
+    strip = ent_poly((D.PLAZA_STRIP_A[0], D.PLAZA_STRIP_A[1], -900, 900)).intersection(zone_full).difference(loop).difference(street_w)
+    beds = strip.intersection(ent_poly((D.PLAZA_STRIP_A[0], D.PLAZA_STRIP_A[1], D.PLAZA_BEDS_B[0], D.PLAZA_BEDS_B[1])))
+    walk = strip.difference(beds)
+    blocks.append(("T1_PLAZA_BEDS", beds))
+    blocks.append(("T1_PLAZA_WALK", walk))
+    draped("SITE_T1_Plaza_Beds", beds, col, M["lawn"], KERB_H + 0.04, M["kerb"], 0.0, step=1.5)
+    draped("SITE_T1_Plaza_Walk", walk, col, M["pavers"], KERB_H, M["kerb"], 0.0, step=2.0)
+    C.PLAZA_BEDS, C.PLAZA_WALK = beds, walk
     blocks.append(("T1_PUBLIC_ZONE", pub))
     draped("SITE_T1_Club_Plaza", pub.difference(wet), col, M["terrace"], KERB_H, M["kerb"], 0.0, step=2.5)
     # garden beds of the club (F01: green beds round the lagoon and along the west edge of the zone)

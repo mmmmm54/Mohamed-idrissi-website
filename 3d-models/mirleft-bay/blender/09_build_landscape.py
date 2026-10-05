@@ -400,6 +400,19 @@ def build(materials):
         for _ in range(5):
             plant(RNG.choice(["olive", "green_s", "pink_s"]), np.array([RNG.uniform(minx, maxx), RNG.uniform(miny, maxy)]), RNG.uniform(0.75, 1.0))
 
+    # plaza edge (F01): planted beds round the drop-off loop, tree row along the sidewalk
+    bp_ = prep(C.PLAZA_BEDS.buffer(-0.8))
+    minx, miny, maxx, maxy = C.PLAZA_BEDS.bounds
+    for _ in range(40):
+        pt = np.array([RNG.uniform(minx, maxx), RNG.uniform(miny, maxy)])
+        if bp_.contains(Point(pt)):
+            plant(RNG.choice(["green_s", "olive", "pink_s", "date_a"]), pt, RNG.uniform(0.7, 0.9), 0.2)
+    a0_, a1_ = D.PLAZA_STRIP_A
+    row = LineString(C.plan_to_world([D.ent((a0_ + a1_) / 2, -560), D.ent((a0_ + a1_) / 2, 330)])).intersection(C.PLAZA_WALK)
+    for seg in ([row] if row.geom_type == "LineString" else list(getattr(row, "geoms", []))):
+        for d in np.arange(2.0, seg.length, 7.0):
+            plant(RNG.choice(["date_a", "date_b"]), np.array(seg.interpolate(d).coords[0]), RNG.uniform(0.9, 1.05), 0.17)
+
     # hotel lodge garden: big trees in the round beds, palms on the terrace, date palms round the basin
     for (c, r) in D.HOTEL_BIG_TREES:
         plant(RNG.choice(["olive", "green"]), C.plan_to_world([c])[0], RNG.uniform(1.15, 1.35), 0.2)
@@ -570,7 +583,9 @@ def build_grass(materials, zones):
     for s in srcs:
         s.hide_render = True
         s.hide_viewport = True
-    lawns = unary_union([b.buffer(-1.9) for _, b in C.SITE_BLOCKS])
+    paved = {"T1_PUBLIC_ZONE", "T6_HOTEL_ZONE", "T6_LAKE_PLAZA", "ENT_DROPOFF_ISLAND"}   # paved blocks: no grass tufts
+    lawns = unary_union([b.buffer(-1.9) for nm_, b in C.SITE_BLOCKS if nm_ not in paved])
+    lawns = lawns.difference(unary_union([b.buffer(0.5) for nm_, b in C.SITE_BLOCKS if nm_ in paved]))
     blockers = unary_union(C.GRASS_BLOCKERS)
     lp, bp = prep(lawns), prep(blockers)
     col = C.child_collection("07_LANDSCAPE", "GRASS_TUFTS")

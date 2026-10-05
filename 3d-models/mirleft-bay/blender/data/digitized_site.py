@@ -59,7 +59,8 @@ DUPLEX_PAIRS = {
 # Public buildings (catalogue 2026 names, positions from F01). levels = storeys.
 PUBLIC_BUILDINGS = [
     # name, (x0, x1, y0, y1), levels, style[, rotation deg in plan px (x towards y)]
-    ("PAVILLON_RESTAURANT_CLUBHOUSE", (5598, 5700, 2250, 2378), 2, "kasbah"),  # permit: club house RDC+1 353 m2; F01 re-read 2026-10-05
+    ("PAVILLON_RESTAURANT_CLUBHOUSE", (5614, 5716, 2258, 2386), 2, "kasbah", -20.3),  # permit: club house RDC+1 353 m2; F01: set square to the
+                                                                                        # diagonal entrance street, like the market (client 2026-10-05)
     ("MARKET_RECEPTION", (5537, 5637, 1994, 2156), 2, "kasbah_towers", -18.7),  # F01: cross-shaped building set on the diagonal street;
                                                                                  # permit: superette/cafeteria 275 m2 + admin 200 m2
     ("SPA", (2930, 3040, 2050, 2330), 1, "kasbah"),                            # catalogue: SPA (T5 north-west); east side trimmed for street 5
@@ -202,7 +203,11 @@ T1_SMALL_LOTS = [(4772, 4880, 2812, 2900), (4960, 5100, 2728, 2792)]   # "parkin
 # club / plaza: one paved public zone from column D to the entrance street (polygon, plan px)
 T1_PUBLIC_ZONE = [(5455, 1915), (5520, 1905), (5700, 1878), (5800, 1878), (6000, 2440), (5885, 2440),   # east side clipped by the street
                   (5700, 2520), (5550, 2578), (5440, 2632), (5322, 2700), (5322, 2310), (5455, 2310)]
-CLUB_POOL_SMALL = [((5718, 2263), (24, 14)), ((5720, 2343), (24, 14))]   # two small basins on the club house terrace
+CLUB_BASINS_ENT = [(-263, -239, -58, -14), (-263, -239, 18, 62)]   # two small basins east of the club house, lined up
+                                                                  # along the diagonal street (entrance frame a0, a1, b0, b1 px)
+PLAZA_EDGE_A = -205          # the club / market plaza stops on a straight line parallel to the entrance street (entrance frame a)
+PLAZA_STRIP_A = (-205, -158) # between it and the street: tree-lined sidewalk, with two planted beds round the drop-off loop
+PLAZA_BEDS_B = (-140, 150)   # b range of the planted beds
 CLUB_JACUZZI = ((5440, 2600), 24)
 KIOSKS = [(-9.0, -14.0), (9.0, -14.0), (-11.0, 0.0), (11.0, 0.0), (-9.0, 14.0), (9.0, 14.0)]   # m around the market, its frame
 
