@@ -166,8 +166,11 @@ ROAD_CUTS = [
 ROAD_PEDESTRIAN = [
     (2880, 3836, 2380, 2455),          # canal promenade, west of the boulevard
     (3907, 4592, 2418, 2465),          # canal promenade, east of the boulevard
-    (4762, 4903, 1985, 2905),          # T1 column A: plots and footpaths (F01)
-    (4943, 5460, 1930, 2905),          # T1 columns B-D: plots and footpaths (F01)
+    (4762, 4903, 2003, 2808),          # T1 column A: plots and footpaths (F01), between the ring-road bays and the small lot
+    (4943, 5100, 1973, 2725),          # T1 column B
+    (5100, 5297, 1958, 2730),          # T1 lane + column C
+    (5297, 5460, 1943, 2312),          # T1 column D (the club zone is south of it)
+    (4572, 4590, 1950, 2930),          # sidewalk west of the T2 plots
 ]
 # dashed centre lines (plan px polylines)
 ROAD_CENTRELINES = [
