@@ -400,6 +400,34 @@ def build(materials):
         for _ in range(5):
             plant(RNG.choice(["olive", "green_s", "pink_s"]), np.array([RNG.uniform(minx, maxx), RNG.uniform(miny, maxy)]), RNG.uniform(0.75, 1.0))
 
+    # hotel lodge garden: big trees in the round beds, palms on the terrace, date palms round the basin
+    for (c, r) in D.HOTEL_BIG_TREES:
+        plant(RNG.choice(["olive", "green"]), C.plan_to_world([c])[0], RNG.uniform(1.15, 1.35), 0.2)
+    hz = C.HOTEL_ZONE
+    avoid_h = unary_union([C.WET.buffer(1.0)] + [Polygon(C.plan_to_world([(b[0], b[2]), (b[1], b[2]), (b[1], b[3]), (b[0], b[3])])).buffer(3.0)
+                                                 for nm_, b, *_ in D.PUBLIC_BUILDINGS if nm_.startswith("HOTEL")])
+    hp = prep(hz.buffer(-2.0).difference(avoid_h))
+    minx, miny, maxx, maxy = hz.bounds
+    for xx in np.arange(minx + 3, maxx, 8.0):
+        for yy in np.arange(miny + 3, maxy, 8.0):
+            pt = np.array([xx + RNG.uniform(-2, 2), yy + RNG.uniform(-2, 2)])
+            if hp.contains(Point(pt)) and RNG.random() < 0.5:
+                plant(RNG.choice(["date_a", "date_b", "wash_c", "green_s"]), pt, RNG.uniform(0.8, 1.05), 0.17)
+                n["palms"] += 1
+    # lake plaza: planters on a grid (the dots on F01)
+    lpp = prep(C.LAKE_PLAZA.buffer(-1.5))
+    minx, miny, maxx, maxy = C.LAKE_PLAZA.bounds
+    for xx in np.arange(minx + 2, maxx, 5.5):
+        for yy in np.arange(miny + 2, maxy, 5.5):
+            pt = np.array([xx, yy])
+            if lpp.contains(Point(pt)):
+                plant(RNG.choice(["green_s", "olive", "pink_s"]), pt, RNG.uniform(0.6, 0.8), 0.25)
+    # T4 jardin: trees round the round path
+    (jx, jy), jr = D.T4_JARDIN_RING
+    for k_ in range(8):
+        a_ = 2 * math.pi * k_ / 8
+        plant(RNG.choice(["olive", "green_s", "pink_s"]), C.plan_to_world([(jx + (jr + 10) * math.cos(a_), jy + (jr + 10) * math.sin(a_))])[0], RNG.uniform(0.75, 0.95))
+
     # tree-lined footpaths between the T1 columns
     for (lx0, lx1, ly0, ly1) in D.T1_LANES:
         if lx1 - lx0 < 30:

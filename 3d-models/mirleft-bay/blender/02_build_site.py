@@ -174,9 +174,13 @@ def build(materials):
     road_cuts = unary_union([plan_rect_world(b) for b in D.ROAD_CUTS])
     blocks = []
     for name, b in D.GREEN_BLOCKS:
-        if b is None:      # T6 lake park: the plot west of the villa A strip
-            cut = plan_rect_world((1000, 2100, 1500, 3400))
-            poly = site.intersection(cut).buffer(-2.5)
+        if b is None:      # T6 lake park: the plot west of the villa A strip, below the north ring road
+            (nx0, ny0), (nx1, ny1) = D.T6_PARK_NORTH
+            k = (ny1 - ny0) / (nx1 - nx0)
+            cut = Polygon(C.plan_to_world([(1000, ny0 + (1000 - nx0) * k), (2100, ny1), (2100, 3400), (1000, 3400)]))
+            poly = site.buffer(-2.5).intersection(cut)
+        elif isinstance(b, list):
+            poly = Polygon(C.plan_to_world(b)).intersection(site.buffer(-1.0))
         else:
             poly = plan_rect_world(b).intersection(site.buffer(-1.0))
         poly = poly.difference(road_cuts)                 # streets through the villa blocks
@@ -231,6 +235,27 @@ def build(materials):
                 draped(f"SITE_Ent_Lot{i}_Border{j}", q, col, M["lawn"], KERB_H + 0.03, M["kerb"], 0.0, step=1.5)
     C.ENT_BORDERS = borders
     C.PUBLIC_ZONE = pub
+    # T6 / hotel / T4 (F01 re-read 2026-10-05)
+    hz = plan_rect_world(D.HOTEL_ZONE).intersection(site.buffer(-1.0))
+    blocks.append(("T6_HOTEL_ZONE", hz))
+    draped("SITE_Hotel_Terrace", hz.difference(water_only), col, M["terrace"], KERB_H, M["kerb"], 0.0, step=2.5)
+    hg = plan_rect_world(D.HOTEL_GARDEN).difference(wet)
+    blocks.append(("T6_HOTEL_GARDEN", hg))
+    draped("SITE_Hotel_Garden", hg, col, M["lawn"], KERB_H + 0.04, M["kerb"], KERB_H, step=2.0)
+    for i, (c, r) in enumerate(D.HOTEL_BIG_TREES):
+        draped(f"SITE_Hotel_TreeCircle_{i}", ellipse_world(c, (r, r)).intersection(hz), col, M["lawn"], KERB_H + 0.04, M["kerb"], KERB_H, step=1.0)
+    lp = Polygon(C.plan_to_world(D.LAKE_PLAZA)).buffer(0).difference(lake_poly.buffer(1.2))
+    (lcx, lcy), lr = D.LAKE_ROUND
+    lp = lp.difference(Polygon(C.plan_to_world([(lcx + lr * math.cos(t), lcy + lr * math.sin(t)) for t in np.linspace(0, 2 * math.pi, 48, endpoint=False)])))
+    blocks.append(("T6_LAKE_PLAZA", lp))
+    draped("SITE_Lake_Plaza", lp, col, M["terrace"], KERB_H + 0.06, M["kerb"], KERB_H, step=1.5)
+    for i, b in enumerate(D.LAKE_BRIDGES):
+        draped(f"SITE_Lake_Bridge_{i}", plan_rect_world(b), col, M["timber"], KERB_H + 0.40, M["stone"], -0.4, step=1.5)
+    (jx, jy), jr = D.T4_JARDIN_RING
+    ring = ellipse_world((jx, jy), (jr, jr)).difference(ellipse_world((jx, jy), (jr - 12, jr - 12)))
+    draped("SITE_T4_Jardin_Ring", ring, col, M["terrace"], KERB_H + 0.06, M["kerb"], KERB_H, step=1.0)
+    C.HOTEL_ZONE = hz
+    C.LAKE_PLAZA = lp
     C.SITE_BLOCKS = blocks
 
     # 3. lake (T6): three basins + round planted island

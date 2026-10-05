@@ -87,11 +87,10 @@ T1_POOLS = [
 GREEN_BLOCKS = [
     ("T6_LAKE_PARK", None),                       # computed: site west of x=2100
     ("T6_VILLA_A", (2100, 2350, 1995, 2985)),
-    ("T6_HOTEL", (2405, 2768, 1990, 2990)),
     ("T5_NORTH", (2900, 3460, 1985, 2390)),
     ("T5_SOUTH", (2900, 3382, 2450, 2860)),
     ("T4_NORTH", (3491, 3836, 1963, 2386)),
-    ("T4_SOUTH", (3382, 3860, 2450, 3010)),
+    ("T4_SOUTH", [(3382, 2450), (3860, 2450), (3860, 3035), (3385, 2860)]),   # F01: bottom edge follows the diagonal ring road
     ("T3_NORTH", (3900, 4522, 1985, 2425)),
     ("T3_SOUTH", (3907, 4525, 2460, 3000)),
 ]
@@ -129,7 +128,10 @@ GE_ROAD_R104 = [(912, 126), (895, 250), (882, 360), (868, 470), (845, 580), (820
 CANALS = [(2860, 3862, 2412, 2424), (3912, 4560, 2428, 2440)]
 CANAL_STRIP = 12                 # px of stone coping on each side
 # Hotel garden: T-shaped water (cross branch at the "HOTEL" label) + wide basin
-HOTEL_WATER = [(2423, 2452, 2040, 2950), (2440, 2720, 2366, 2396), (2452, 2510, 2232, 2366), (2452, 2510, 2396, 2530)]
+HOTEL_WATER = [(2430, 2446, 2185, 2705),    # narrow channel along the west side of the hotel garden (F01, re-read 2026-10-05)
+               (2460, 2515, 2230, 2600),    # wide basin in the garden
+               (2446, 2750, 2427, 2463),    # cross branch at the "HOTEL" label
+               (2062, 2350, 2427, 2463)]    # the same channel runs on west between the villa A plots (blue band on F01)
 # Parking rows: (start px, end px, bay depth m, side +1 = left of the direction, -1 = right)
 PARKING_ROWS = [   # (start px, end px, bay length m, side hint, angle deg); the side with asphalt wins
     ((2790, 2090), (2790, 2340), 5.0, -1, 45),     # hotel public parking (north), angled as on the masterplan
@@ -151,7 +153,7 @@ PARKING_ROWS = [   # (start px, end px, bay length m, side hint, angle deg); the
 # the masterplan streets). Positions follow the gaps of the permit plan F01.
 # ---------------------------------------------------------------------------
 ROAD_PERIMETER_SIDEWALK = 4.5          # m of beige pavers along the plot edge (street palms)
-ROAD_ASPHALT_X_MIN = 2090              # west of this the plot is park / beach club paths
+ROAD_ASPHALT_X_MIN = 1440              # the north ring road runs on over T6 (F01); the park block covers the rest
 # streets cut through the villa blocks (x0, x1, y0, y1)
 ROAD_CUTS = [
     (2900, 3382, 2632, 2672),          # road 7 (villa C rows, T5)
@@ -239,3 +241,16 @@ def ent_rect(r):
     """(a0, a1, b0, b1) in the entrance frame -> plan px polygon (4 points)."""
     a0, a1, b0, b1 = r
     return [ent(a0, b0), ent(a1, b0), ent(a1, b1), ent(a0, b1)]
+
+
+# ---------------------------------------------------------------------------
+# Tranches 4-6 + hotel, re-read 2026-10-05 on F01 at full resolution
+# ---------------------------------------------------------------------------
+T6_PARK_NORTH = ((1450, 1928), (2100, 1975))     # lawn starts below this line; the ring road runs above it
+LAKE_PLAZA = [(1610, 2145), (1695, 2140), (1705, 2210), (1790, 2260), (1805, 2350), (1790, 2450), (1750, 2480),
+              (1695, 2530), (1630, 2535), (1610, 2470), (1605, 2250)]   # paved terrace west of the lake, dotted with planters
+LAKE_BRIDGES = [(1815, 1980, 2250, 2275), (1780, 1940, 2450, 2472)]      # footbridges between the basins
+HOTEL_ZONE = (2405, 2768, 1990, 2990)            # "Lodge Hotel Legere": paved garden
+HOTEL_GARDEN = (2420, 2565, 2160, 2740)          # planted garden round the basin
+HOTEL_BIG_TREES = [((2440, 2065), 30), ((2615, 2040), 30), ((2440, 2935), 30), ((2620, 2950), 30)]   # round tree circles
+T4_JARDIN_RING = ((3635, 2890), 25)              # round path in the T4 "Jardin"
