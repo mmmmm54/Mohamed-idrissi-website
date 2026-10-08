@@ -55,6 +55,10 @@ export const collaborators = [
   { name: 'The Norvale Club', file: 'norvale.png', style: 'norvale' },
   { name: 'Dr. Majed Mikhail', file: 'dr-majed-mikhail.svg', style: 'doctor' },
   { name: 'Bio Care & Beauty', file: 'bio-care-beauty.png', style: 'standard' },
+  { name: 'Elif Immobilier', file: 'elif-immobilier.png', style: 'crest' },
+  { name: 'Haut Standing Car', file: 'haut-standing-car.jpg', style: 'whitebg' },
+  { name: 'Safwan Or', file: 'safwan-or.png', style: 'whitebg' },
+  { name: 'Instituto Selectividad', file: 'instituto-selectividad.webp', style: 'standard' },
 ];
 
 /*

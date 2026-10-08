@@ -108,6 +108,12 @@
 .client-logo img[src$="norvale.png"] { --logo-w:140.31px; --logo-h:59.69px; --logo-x:.62px; --logo-y:1.38px; }
 .client-logo img[src$="dr-majed-mikhail.svg"] { --logo-w:64px; --logo-h:64px; }
 .client-logo img[src$="bio-care-beauty.png"] { --logo-w:124px; --logo-h:56px; }
+.client-logo img[src$="elif-immobilier.png"] { --logo-w:68px; --logo-h:68px; }
+.client-logo img[src$="haut-standing-car.jpg"] { --logo-w:150px; --logo-h:150px; --logo-y:4px; }
+.client-logo img[src$="safwan-or.png"] { --logo-w:120px; --logo-h:66px; }
+.client-logo img[src$="instituto-selectividad.webp"] { --logo-w:96px; --logo-h:96px; }
+/* Logo supplied on a white square: read the blue channel so the yellow mark turns to ink and the white drops out. */
+.client-logo--whitebg img { filter:url(#brand-blue-channel) contrast(1.8) url(#brand-blue-ink); mix-blend-mode:multiply; }
 .client-logo img[src$="sarasota-paradise.png"] { --logo-w:78px; --logo-h:78px; }
 /* Dark round crest: inverted first, so the lettering reads as ink instead of a solid disc. */
 .client-logo--paradise img { filter:grayscale(1) invert(1) brightness(.85) contrast(4) url(#brand-blue-ink); mix-blend-mode:multiply; }

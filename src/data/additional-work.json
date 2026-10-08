@@ -193,5 +193,75 @@
         ]
       }
     ]
+  },
+  "elif-menage": {
+    "name": "Elif Ménage",
+    "direct": true,
+    "groups": [
+      {
+        "title": "Fresh in every corner.",
+        "note": "Laundry, floors and living rooms, in deep blue and sunny yellow, with Darija headlines set large.",
+        "files": [
+          "01.jpg",
+          "02.jpg",
+          "03.jpg"
+        ]
+      }
+    ]
+  },
+  "haut-standing-car": {
+    "name": "Haut Standing Car",
+    "direct": true,
+    "groups": [
+      {
+        "title": "Pick the place, leave the rest to us.",
+        "note": "Three campaign ideas for a car rental company: the road trip, a day of meals across Morocco, and summer in the north.",
+        "files": [
+          "01.jpg",
+          "02.jpg",
+          "03.jpg"
+        ]
+      }
+    ]
+  },
+  "safwan-or": {
+    "name": "Safwan Or",
+    "direct": true,
+    "groups": [
+      {
+        "title": "Three sets, three titles.",
+        "note": "Héritage en Or, Prestige Royal and Tradition Précieuse: each set alone on its bust, with the shop softened behind it.",
+        "files": [
+          "01.jpg",
+          "02.jpg",
+          "03.jpg"
+        ]
+      }
+    ]
+  },
+  "instituto-selectividad": {
+    "name": "Instituto Selectividad",
+    "direct": true,
+    "groups": [
+      {
+        "title": "Enrolment and fields of study.",
+        "note": "The 2026/2027 launch, the call to study in Spain, and the specialities in medicine, health, engineering and business.",
+        "files": [
+          "01.jpg",
+          "02.jpg",
+          "03.jpg",
+          "04.jpg",
+          "05.jpg"
+        ]
+      },
+      {
+        "title": "Seasonal posts.",
+        "note": "Messages for Eid and for the baccalaureate, in the same red and yellow.",
+        "files": [
+          "06.jpg",
+          "07.jpg"
+        ]
+      }
+    ]
   }
 }
