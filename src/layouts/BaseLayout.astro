@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { shortBio, ANALYTICS_ENABLED } from '../lib/site';
 
 interface Props {
   title?: string;
@@ -10,6 +11,8 @@ interface Props {
   schema?: object[];
   /* Keep a page out of Google, e.g. the 404 page. */
   noindex?: boolean;
+  /* Path of a Markdown version of this page, announced to agents with rel="alternate". */
+  markdown?: string;
 }
 
 const {
@@ -18,6 +21,7 @@ const {
   image = '/og-image.png',
   schema = [],
   noindex = false,
+  markdown,
 } = Astro.props;
 
 const site = Astro.site ?? new URL('https://www.mohamedidrissi.site');
@@ -30,6 +34,7 @@ const person = {
   '@type': 'Person',
   name: 'Mohamed Idrissi',
   jobTitle: 'Graphic Designer & Creative Director',
+  description: shortBio,
   url: site.href,
   image: new URL('/og-image.png', site).href,
   email: 'mailto:mohamedidrissi205@gmail.com',
@@ -70,22 +75,25 @@ const person = {
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" href="/sitemap.xml" />
+    {markdown && <link rel="alternate" type="text/markdown" href={markdown} />}
     {[person, ...schema].map((item) => <script is:inline type="application/ld+json" set:html={JSON.stringify(item)} />)}
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
     <script is:inline>document.documentElement.classList.add('js');</script>
-    <!-- Vercel Web Analytics: visitor counts, no cookies. Loads only on the live domain, never on a local preview. -->
-    <script is:inline>
-      if (/(^|\.)mohamedidrissi\.site$/.test(location.hostname)) {
-        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-        var insights = document.createElement('script');
-        insights.defer = true;
-        insights.src = '/_vercel/insights/script.js';
-        document.head.appendChild(insights);
-      }
-    </script>
+    {ANALYTICS_ENABLED && (
+      /* Vercel Web Analytics: visitor counts, no cookies. Live domain only, never a local preview. */
+      <script is:inline>
+        if (/(^|\.)mohamedidrissi\.site$/.test(location.hostname)) {
+          window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+          var insights = document.createElement('script');
+          insights.defer = true;
+          insights.src = '/_vercel/insights/script.js';
+          document.head.appendChild(insights);
+        }
+      </script>
+    )}
   </head>
   <body>
     <slot />

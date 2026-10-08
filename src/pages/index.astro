@@ -3,11 +3,14 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { slugOf, coverOf, loopVideoOf, galleryOf, postersOf } from '../lib/projects';
 import '../styles/editorial.css';
+import '../styles/info.css';
 import ServiceIcon from '../components/ServiceIcon.astro';
 import SketchArrow from '../components/SketchArrow.astro';
+import FooterLinks from '../components/FooterLinks.astro';
 import ProjectCover from '../components/ProjectCover.astro';
 import Testimonials from '../components/Testimonials.astro';
 import projectCovers from '../data/project-covers.json';
+import { collaborators } from '../lib/site';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
 const coverPicks = projectCovers as Record<string, string[]>;
@@ -28,26 +31,9 @@ const business = {
   sameAs: ['https://www.behance.net/Mohamed_Idrissi'],
 };
 const email = 'mohamedidrissi205@gmail.com';
-// Supplied brand assets. Originals are preserved; sizing is handled in CSS.
-const collaborators = [
-  { name: 'ExploreMorocco', file: 'exploremorocco.png', style: 'wide' },
-  { name: 'MAALEM', file: 'maalem.jpg', style: 'maalem' },
-  { name: 'Asia This Way', file: 'asia-this-way.png', style: 'compact' },
-  { name: 'Moghreb Atletico Tétouan', file: 'mat.png', style: 'crest' },
-  { name: 'JustFit', file: 'justfit.png', style: 'standard' },
-  { name: 'IS Nutrition', file: 'is-nutrition.png', style: 'nutrition' },
-  { name: 'Morocco Travel', file: 'morocco-travel.png', style: 'standard' },
-  { name: 'Vanysis', file: 'vanysis.png', style: 'wide' },
-  { name: 'Overt', file: 'overt.avif', style: 'wide' },
-  { name: 'Nomad Vélo', file: 'nomad-velo.webp', style: 'wide' },
-  { name: 'E-Botola', file: 'e-botola.png', style: 'crest' },
-  { name: 'Sarasota Paradise', file: 'sarasota-paradise.png', style: 'paradise' },
-  { name: 'The Norvale Club', file: 'norvale.png', style: 'norvale' },
-  { name: 'Dr. Majed Mikhail', file: 'dr-majed-mikhail.svg', style: 'doctor' },
-];
 ---
 
-<BaseLayout schema={[business]}>
+<BaseLayout schema={[business]} markdown="/index.md">
   <!-- Blue ink mapping: black → #2a37dd, white → white (for the JPEG logo). -->
   <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute"><defs><filter id="brand-blue-ink" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.835294 0 0 0 0.164706 0 0.784314 0 0 0.215686 0 0 0.133333 0 0.866667 0 0 0 1 0" /></filter></defs></svg>
   <nav class="portfolio-nav page-width" aria-label="Main navigation"><a href="/" aria-label="Mohamed Idrissi home"><img src="/images/brand-icon.svg" width="64" height="44" alt="" /></a><div><a href="#work">Work</a><a href="#services">Services</a><a href="#contact">Let’s talk ↗</a></div></nav>
@@ -147,6 +133,7 @@ const collaborators = [
   <footer class="site-footer page-width">
     <a class="footer-mark" href="#top" aria-label="Back to the top"><img src="/images/brand-icon.svg" alt="" /></a>
     <p class="footer-signoff">From Tétouan,<br /><span>with a little ink.</span></p>
+    <FooterLinks />
     <a class="footer-top" href="#top">Back to top <SketchArrow /></a>
   </footer>
 

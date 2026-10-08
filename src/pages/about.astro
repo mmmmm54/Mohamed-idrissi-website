@@ -1,0 +1,48 @@
+---
+import { getCollection } from 'astro:content';
+import InfoLayout from '../layouts/InfoLayout.astro';
+import { slugOf } from '../lib/projects';
+import { person, aboutParagraphs, services, process, collaborators, shortBio } from '../lib/site';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const schema = [{
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: `About ${person.name}`,
+  url: new URL('/about/', Astro.site).href,
+  description: shortBio,
+  mainEntity: { '@type': 'Person', name: person.name, jobTitle: 'Graphic Designer & Creative Director', url: new URL('/', Astro.site).href },
+}];
+---
+
+<InfoLayout
+  title="About Mohamed Idrissi | Graphic Designer in Tétouan, Morocco"
+  description="Mohamed Idrissi is a graphic designer and creative director in Tétouan, Morocco: brand identity, social campaigns and video for sports, fitness and lifestyle brands."
+  eyebrow="About"
+  heading={`${person.name}. Mind & hand.`}
+  schema={schema}
+>
+  {aboutParagraphs.map((paragraph) => <p>{paragraph}</p>)}
+
+  <h2>What I do</h2>
+  <ul>
+    {services.map((service) => <li><strong>{service.title}.</strong> {service.text}</li>)}
+  </ul>
+
+  <h2>How I work</h2>
+  <p>Every project moves through the same three steps, from the first conversation to the final files:</p>
+  <ol>
+    {process.map((step) => <li>{step}</li>)}
+  </ol>
+
+  <h2>Brands I’ve worked with</h2>
+  <p>{collaborators.map((brand) => brand.name).join(', ')}.</p>
+
+  <h2>Selected work</h2>
+  <ul>
+    {projects.map((project) => <li><a href={`/work/${slugOf(project.id)}/`}>{project.data.title}</a> — {project.data.description}</li>)}
+  </ul>
+
+  <h2>Where</h2>
+  <p>Based in {person.city}, {person.country}. To start a project, see the <a href="/contact/">contact page</a>, or browse more work on <a href={person.behanceUrl} rel="me">Behance</a>.</p>
+</InfoLayout>

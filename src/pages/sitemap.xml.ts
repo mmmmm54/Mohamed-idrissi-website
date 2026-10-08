@@ -6,7 +6,7 @@ import { slugOf } from '../lib/projects';
 export const GET: APIRoute = async ({ site }) => {
   const base = site ?? new URL('https://www.mohamedidrissi.site');
   const projects = await getCollection('projects');
-  const paths = ['/', ...projects.map((project) => `/work/${slugOf(project.id)}/`)];
+  const paths = ['/', ...projects.map((project) => `/work/${slugOf(project.id)}/`), '/about/', '/contact/', '/privacy/'];
   const today = new Date().toISOString().slice(0, 10);
   const urls = paths
     .map((path) => `  <url><loc>${new URL(path, base).href}</loc><lastmod>${today}</lastmod><priority>${path === '/' ? '1.0' : '0.8'}</priority></url>`)

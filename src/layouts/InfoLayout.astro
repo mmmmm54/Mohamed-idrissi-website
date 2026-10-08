@@ -1,0 +1,37 @@
+---
+/*
+  Shell for the plain information pages (About, Contact, Privacy): the site nav,
+  one readable column of text, and the shared footer. These are the pages people
+  and AI agents check to confirm who runs the site and how to reach him.
+*/
+import BaseLayout from './BaseLayout.astro';
+import SketchArrow from '../components/SketchArrow.astro';
+import FooterLinks from '../components/FooterLinks.astro';
+import '../styles/editorial.css';
+import '../styles/info.css';
+
+interface Props {
+  title: string;
+  description: string;
+  heading: string;
+  eyebrow: string;
+  schema?: object[];
+}
+const { title, description, heading, eyebrow, schema = [] } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <nav class="portfolio-nav page-width" aria-label="Main navigation"><a href="/" aria-label="Mohamed Idrissi home"><img src="/images/brand-icon.svg" width="64" height="44" alt="" /></a><div><a href="/#work">Work</a><a href="/#services">Services</a><a href="/contact/">Let’s talk ↗</a></div></nav>
+  <main class="info-page page-width">
+    <p class="info-eyebrow">{eyebrow}</p>
+    <h1>{heading}</h1>
+    <div class="info-body">
+      <slot />
+    </div>
+  </main>
+  <footer class="site-footer page-width">
+    <a class="footer-mark" href="/" aria-label="Back to the homepage"><img src="/images/brand-icon.svg" alt="" /></a>
+    <FooterLinks />
+    <a class="footer-top" href="/#work">See the work <SketchArrow /></a>
+  </footer>
+</BaseLayout>

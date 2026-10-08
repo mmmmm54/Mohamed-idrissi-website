@@ -1,0 +1,46 @@
+---
+import InfoLayout from '../layouts/InfoLayout.astro';
+import { person } from '../lib/site';
+
+const schema = [{
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  name: `Contact ${person.name}`,
+  url: new URL('/contact/', Astro.site).href,
+  mainEntity: {
+    '@type': 'Person',
+    name: person.name,
+    email: `mailto:${person.email}`,
+    telephone: person.whatsapp,
+    address: { '@type': 'PostalAddress', addressLocality: person.city, addressCountry: 'MA' },
+    sameAs: [person.behanceUrl],
+  },
+}];
+---
+
+<InfoLayout
+  title="Contact Mohamed Idrissi | Graphic Designer in Tétouan, Morocco"
+  description="Email or WhatsApp Mohamed Idrissi to start a brand identity, social campaign or video project. What to include in your brief."
+  eyebrow="Contact"
+  heading="Have something in mind?"
+  schema={schema}
+>
+  <p>Launching something new or ready for a refresh? Tell me about your brand, what you need and your ideal timeline. A rough brief is a good start.</p>
+
+  <ul class="info-contact">
+    <li><span>Email</span><a href={`mailto:${person.email}?subject=${encodeURIComponent('Project enquiry')}`}>{person.email}</a></li>
+    <li><span>WhatsApp, text or voice note</span><a href={person.whatsappUrl} target="_blank" rel="noreferrer">{person.whatsappDisplay}</a></li>
+    <li><span>Portfolio</span><a href={person.behanceUrl} target="_blank" rel="me noreferrer">Behance</a></li>
+  </ul>
+
+  <h2>What to include in your brief</h2>
+  <ul>
+    <li><strong>Your brand.</strong> Who you are, who you talk to, and a link to your current website or social accounts if you have them.</li>
+    <li><strong>What you need.</strong> A brand identity, a set of social posts, a campaign, a matchday system, a video, or a mix.</li>
+    <li><strong>Your timeline.</strong> When you would like to launch, and any fixed dates such as an opening, a season or an event.</li>
+    <li><strong>References.</strong> Work you like, from your field or any other. It helps to say what you like about it.</li>
+  </ul>
+
+  <h2>Where I am</h2>
+  <p>I’m based in {person.city}, {person.country}. Selected projects are on the <a href="/#work">homepage</a>, and you can read more <a href="/about/">about me</a>.</p>
+</InfoLayout>

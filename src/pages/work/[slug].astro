@@ -3,7 +3,9 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import projectCovers from '../../data/project-covers.json';
 import '../../styles/case.css';
+import '../../styles/info.css';
 import SketchArrow from '../../components/SketchArrow.astro';
+import FooterLinks from '../../components/FooterLinks.astro';
 import JustfitWork from '../../components/JustfitWork.astro';
 import MatWork from '../../components/MatWork.astro';
 import CuratedWork from '../../components/CuratedWork.astro';
@@ -214,6 +216,7 @@ const schema = [
   <footer class="site-footer page-width">
     <a class="footer-mark" href="/" aria-label="Back to the homepage"><img src="/images/brand-icon.svg" alt="" /></a>
     <p>From Tétouan,<br /><em>with a little ink.</em></p>
+    <FooterLinks />
     <a class="case-home-link" href="/#work">More work <SketchArrow /></a>
   </footer>
   <script>

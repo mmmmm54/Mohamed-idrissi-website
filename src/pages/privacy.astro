@@ -1,0 +1,37 @@
+---
+import InfoLayout from '../layouts/InfoLayout.astro';
+import { person, ANALYTICS_ENABLED } from '../lib/site';
+
+/* Update this date whenever the facts below change. */
+const updated = '2026-10-08';
+---
+
+<InfoLayout
+  title="Privacy | Mohamed Idrissi"
+  description="What happens to your data when you visit mohamedidrissi.site or contact Mohamed Idrissi: no cookies, no tracking, and messages used only to reply."
+  eyebrow="Privacy"
+  heading="Privacy, in plain words."
+>
+  <p>This is a portfolio site. It has no accounts, no forms and no shop, and it does not set cookies or store anything in your browser.</p>
+
+  <h2>Who is responsible</h2>
+  <p>{person.name}, {person.role.toLowerCase()} based in {person.city}, {person.country}. For any question about your data, email <a href={`mailto:${person.email}`}>{person.email}</a>.</p>
+
+  <h2>What happens when you visit</h2>
+  <ul>
+    <li><strong>Hosting.</strong> The site is hosted by Vercel. Like any web host, Vercel’s servers process technical data such as your IP address and browser type to deliver the pages and keep the service secure.</li>
+    <li><strong>Fonts.</strong> The typefaces are loaded from Google Fonts, so your browser sends a request, including your IP address, to Google’s servers.</li>
+    {ANALYTICS_ENABLED
+      ? <li><strong>Visitor statistics.</strong> Vercel Web Analytics counts visits and page views. It does not use cookies, and the figures are only seen in aggregate.</li>
+      : <li><strong>No analytics or tracking.</strong> The site does not run analytics, advertising or tracking scripts.</li>}
+    <li><strong>Links out.</strong> Links to Behance, WhatsApp and email open those services, which then apply their own privacy policies.</li>
+  </ul>
+
+  <h2>When you get in touch</h2>
+  <p>If you email me or message me on WhatsApp, I use your name, contact details and what you send only to reply and to discuss your project. I don’t sell or share it, and I don’t add you to any mailing list. I keep messages for as long as we are talking about a project or working together.</p>
+
+  <h2>Your choices</h2>
+  <p>You can ask me at any time what I have kept from our conversations, and ask me to correct or delete it, by emailing <a href={`mailto:${person.email}`}>{person.email}</a>.</p>
+
+  <p class="info-updated">Last updated {updated}</p>
+</InfoLayout>

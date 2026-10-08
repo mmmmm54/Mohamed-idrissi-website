@@ -1,0 +1,25 @@
+/* About, Contact and Privacy: one calm column, the same type and tokens as the rest of the site. */
+.info-page { display: flex; flex-direction: column; align-items: flex-start; padding-block: var(--opening-space) var(--section-space); }
+.info-eyebrow { margin: 0 0 var(--stack-s); font-family: var(--font-mono); font-size: var(--size-label); letter-spacing: .12em; text-transform: uppercase; color: var(--blue); }
+.info-page h1 { max-width: 18ch; color: var(--ink); font-size: var(--heading-medium); font-weight: 700; letter-spacing: -.045em; line-height: 1.02; }
+.info-body { max-width: 40rem; margin-top: var(--stack-m); color: var(--ink-soft); font-size: clamp(1rem, 1.2vw, 1.1rem); line-height: 1.65; }
+.info-body > p:first-child { color: var(--ink); font-size: clamp(1.1rem, 1.5vw, 1.3rem); line-height: 1.5; }
+.info-body h2 { margin: calc(var(--stack-m) * 1.6) 0 var(--stack-s); padding-top: var(--stack-m); border-top: 1px solid var(--line); color: var(--ink); font-family: var(--font-body); font-size: 1rem; font-weight: 600; letter-spacing: 0; line-height: 1.3; }
+.info-body h2:first-of-type { margin-top: var(--stack-m); }
+.info-body p { margin: 0 0 var(--stack-s); }
+.info-body ul, .info-body ol { margin: 0 0 var(--stack-s); padding-left: 1.2rem; }
+.info-body li { margin-bottom: .35rem; }
+.info-body li::marker { color: var(--blue); }
+.info-body strong { color: var(--ink); font-weight: 600; }
+.info-body a { color: var(--blue); text-underline-offset: .2em; }
+.info-body a:hover { color: var(--ink); }
+.info-body .info-updated { margin-top: var(--stack-m); font-family: var(--font-mono); font-size: var(--size-label); letter-spacing: .06em; text-transform: uppercase; }
+.info-body .info-contact { display: grid; gap: var(--stack-s); margin: var(--stack-m) 0 0; padding: 0; list-style: none; }
+.info-contact li { margin: 0; }
+.info-contact a { display: inline-flex; align-items: center; min-height: 44px; font-size: clamp(1.05rem, 1.6vw, 1.3rem); font-weight: 500; text-decoration: none; }
+.info-contact span { display: block; font-family: var(--font-mono); font-size: var(--size-label); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+
+/* Footer links, shared with the homepage and project pages. */
+.footer-links { display: flex; flex-wrap: wrap; gap: var(--stack-m); font-family: var(--font-ui); font-size: var(--size-ui); }
+.footer-links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink-soft); text-decoration: none; }
+.footer-links a:hover { color: var(--blue); }

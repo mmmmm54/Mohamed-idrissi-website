@@ -2,6 +2,8 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SketchArrow from '../components/SketchArrow.astro';
+import FooterLinks from '../components/FooterLinks.astro';
+import '../styles/info.css';
 import { slugOf } from '../lib/projects';
 import '../styles/editorial.css';
 
@@ -20,6 +22,7 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
     <ul class="not-found-links">
       {projects.map((project) => <li><a href={`/work/${slugOf(project.id)}/`}>{project.data.title}</a></li>)}
     </ul>
+    <FooterLinks />
   </main>
 </BaseLayout>
 
