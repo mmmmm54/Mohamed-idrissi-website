@@ -54,6 +54,7 @@ export const collaborators = [
   { name: 'Sarasota Paradise', file: 'sarasota-paradise.png', style: 'paradise' },
   { name: 'The Norvale Club', file: 'norvale.png', style: 'norvale' },
   { name: 'Dr. Majed Mikhail', file: 'dr-majed-mikhail.svg', style: 'doctor' },
+  { name: 'Bio Care & Beauty', file: 'bio-care-beauty.png', style: 'standard' },
 ];
 
 /*
