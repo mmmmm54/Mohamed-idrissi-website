@@ -45,7 +45,6 @@ const email = 'mohamedidrissi205@gmail.com';
       <img class="hero-logo" src="/images/brand-mark.svg" alt="" aria-hidden="true" />
       <h1 id="hero-title"><span>Brand identity for</span><span class="sketch-word">brands that move.<svg class="sketch-underline" viewBox="0 0 620 25" fill="none" aria-hidden="true" focusable="false"><path d="M5 14C132 3 312 21 610 7M84 21C257 9 413 17 575 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></span></h1>
       <p class="hero-copy">I’m Mohamed. Graphic & motion designer in Tétouan, Morocco.<br />Identities, campaigns, reels and films for brands that want to be seen.</p>
-      <div class="hero-actions"><a class="round-link" href="#work">Selected work <span aria-hidden="true">↓</span></a><a class="hero-secondary" href="#motion"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>Motion & video</a></div>
     </section>
 
     <section class="work page-width" id="work" aria-labelledby="work-title">
@@ -53,8 +52,8 @@ const email = 'mohamedidrissi205@gmail.com';
         <h2 id="work-title">Selected work</h2>
         <!-- Shown by the script below. Without JavaScript both lists simply follow each other. -->
         <div class="work-tabs" role="tablist" aria-label="Type of work" hidden>
-          <button type="button" role="tab" id="tab-design" aria-controls="design" aria-selected="true">Design <span>{projects.length}</span></button>
-          <button type="button" role="tab" id="tab-motion" aria-controls="motion" aria-selected="false" tabindex="-1">Motion & video <span>{motion.length}</span></button>
+          <button type="button" role="tab" id="tab-design" aria-controls="design" aria-selected="true">Made to be seen <span>{projects.length}</span></button>
+          <button type="button" role="tab" id="tab-motion" aria-controls="motion" aria-selected="false" tabindex="-1">Made to move <span>{motion.length}</span></button>
         </div>
       </div>
 
@@ -88,7 +87,7 @@ const email = 'mohamedidrissi205@gmail.com';
       </div>
 
       <div class="work-panel work-panel--motion" id="motion">
-        <p class="work-panel-label">Motion & video</p>
+        <p class="work-panel-label">Made to move: motion & video</p>
         {motionGroups.map((group) => {
           const items = motion.filter((item) => item.group === group.key);
           return items.length > 0 && (

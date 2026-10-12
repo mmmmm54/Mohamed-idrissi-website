@@ -24,7 +24,6 @@
 .hero h1 { color:var(--ink); font-size:var(--editorial-title); line-height:1; font-weight:700; max-width:18ch; }
 .hero h1 span:last-child { color:var(--blue); }
 .hero-copy { max-width:36rem; margin-top:var(--stack-m); font-weight:400; line-height:1.6; }
-.hero-actions { justify-content:flex-start; }
 .round-link, .case-link { border:0; border-radius:0; border-bottom:1px solid currentColor; padding:.45rem 0; background:none; color:var(--ink); font-weight:500; letter-spacing:0; gap:var(--stack-m); }
 .round-link:hover, .case-link:hover { background:none; color:var(--blue); transform:none; }
 .trust-line { margin-top:var(--stack-m); font-weight:400; }
@@ -284,11 +283,6 @@
   #work .mosaic-project:hover .project-preview-detail { opacity:1; width:100%; height:100%; max-height:none; }
 }
 
-/* Hero call to action: the one solid blue button on the page. */
-.hero .round-link { gap:.6rem; padding:.85rem 1.35rem; border:0; border-radius:var(--radius-pill); background:var(--blue); color:var(--white); font-size:.95rem; font-weight:600; }
-.hero .round-link:hover { background:var(--ink); color:var(--white); }
-.hero .round-link span { display:inline-block; transition:transform var(--motion-hover) var(--motion-ease); }
-.hero .round-link:hover span { transform:translateY(3px); }
 
 /* Comfortable tap targets on phones: at least 44px tall. */
 .portfolio-nav div a, .secondary-links a { display:inline-flex; align-items:center; min-height:44px; }
@@ -332,7 +326,7 @@
 .work-heading { align-items:center; }
 .work-tabs { display:inline-flex; gap:.25rem; padding:.25rem; border:1px solid var(--line); border-radius:var(--radius-pill); }
 .work-tabs[hidden] { display:none; }
-.work-tabs [role="tab"] { display:inline-flex; align-items:center; gap:.45rem; min-height:40px; padding:.45rem 1rem; border:0; border-radius:var(--radius-pill); background:transparent; color:var(--ink-soft); font:inherit; font-family:var(--font-ui); font-size:var(--size-ui); font-weight:600; cursor:pointer; }
+.work-tabs [role="tab"] { display:inline-flex; align-items:center; gap:.45rem; min-height:48px; padding:.55rem 1.25rem; border:0; border-radius:var(--radius-pill); background:transparent; color:var(--ink-soft); font:inherit; font-family:var(--font-ui); font-size:.95rem; font-weight:600; cursor:pointer; }
 .work-tabs [role="tab"] span { font-family:var(--font-mono); font-size:var(--size-label); opacity:.7; }
 .work-tabs [role="tab"][aria-selected="true"] { background:var(--blue); color:var(--white); }
 .work-tabs [role="tab"]:not([aria-selected="true"]):hover { color:var(--blue); }
@@ -342,9 +336,6 @@
 .work-panel-label { margin:0 0 var(--stack-m); padding-top:var(--stack-m); border-top:var(--editorial-rule); font-family:var(--font-body); font-size:1rem; font-weight:500; color:var(--ink); }
 .work.has-tabs .work-panel--motion { margin-top:0; }
 .work.has-tabs .work-panel-label { display:none; }
-.hero-secondary { display:inline-flex; align-items:center; gap:.5rem; min-height:44px; margin-top:1.8rem; padding:.85rem 1.1rem; color:var(--ink); font-family:var(--font-ui); font-size:.95rem; font-weight:600; text-decoration:none; }
-.hero-secondary svg { color:var(--blue); }
-.hero-secondary:hover { color:var(--blue); }
 @media(max-width:39.99rem) {
   .work-heading { flex-direction:column; align-items:flex-start; }
   .work-tabs { width:100%; }
