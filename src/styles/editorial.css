@@ -323,13 +323,26 @@
 /* ---------------------------------------------------------------
    WORK TABS: Design / Motion & video
 --------------------------------------------------------------- */
-.work-heading { align-items:center; }
-.work-tabs { display:inline-flex; gap:.25rem; padding:.25rem; border:1px solid var(--line); border-radius:var(--radius-pill); }
+.work-heading { justify-content:center; border-top:0; padding-top:0; margin-bottom:var(--stack-l); }
+/* Segmented control: a soft track, a blue pill that slides to the chosen tab. */
+.work-tabs { position:relative; display:inline-flex; gap:.25rem; padding:.35rem; border-radius:var(--radius-pill); background:var(--soft-surface); box-shadow:inset 0 0 0 1px var(--line); }
 .work-tabs[hidden] { display:none; }
-.work-tabs [role="tab"] { display:inline-flex; align-items:center; gap:.45rem; min-height:48px; padding:.55rem 1.25rem; border:0; border-radius:var(--radius-pill); background:transparent; color:var(--ink-soft); font:inherit; font-family:var(--font-ui); font-size:.95rem; font-weight:600; cursor:pointer; }
-.work-tabs [role="tab"] span { font-family:var(--font-mono); font-size:var(--size-label); opacity:.7; }
-.work-tabs [role="tab"][aria-selected="true"] { background:var(--blue); color:var(--white); }
+.work-tabs-thumb { position:absolute; top:.35rem; bottom:.35rem; left:.35rem; width:0; border-radius:var(--radius-pill); background:var(--blue); box-shadow:0 6px 18px color-mix(in srgb, var(--blue) 35%, transparent), 0 1px 2px color-mix(in srgb, var(--ink) 20%, transparent); pointer-events:none; }
+.work-tabs.has-thumb .work-tabs-thumb { transition:transform var(--tabs-slide) var(--ease-apple), width var(--tabs-slide) var(--ease-apple); }
+.work-tabs [role="tab"] { position:relative; z-index:1; display:inline-flex; align-items:center; justify-content:center; gap:.55rem; min-height:56px; padding:.6rem 1.75rem; border:0; border-radius:var(--radius-pill); background:transparent; color:var(--ink-soft); font:inherit; font-family:var(--font-ui); font-size:1.05rem; font-weight:600; letter-spacing:-.01em; cursor:pointer; transition:color var(--tabs-slide) var(--ease-apple), transform .2s var(--ease-apple); }
+.work-tabs [role="tab"] span { font-family:var(--font-mono); font-size:var(--size-label); opacity:.65; }
+.work-tabs [role="tab"][aria-selected="true"] { color:var(--white); }
 .work-tabs [role="tab"]:not([aria-selected="true"]):hover { color:var(--blue); }
+.work-tabs [role="tab"]:active { transform:scale(.96); }
+/* Before the script measures the tabs, the chosen one still shows blue. */
+.work-tabs:not(.has-thumb) [role="tab"][aria-selected="true"] { background:var(--blue); }
+/* The new list rises in as the pill lands. */
+.work-panel.is-entering { animation:panel-in 600ms var(--ease-apple) both; }
+@keyframes panel-in { from { opacity:0; transform:translateY(14px) scale(.99); } to { opacity:1; transform:none; } }
+@media(prefers-reduced-motion:reduce) {
+  .work-tabs.has-thumb .work-tabs-thumb, .work-tabs [role="tab"] { transition:none; }
+  .work-panel.is-entering { animation:none; }
+}
 .work-panel:focus-visible { outline-offset:8px; }
 /* Without tabs (no JavaScript) the motion list follows the design list under its own label. */
 .work-panel--motion { margin-top:var(--section-space); }
@@ -337,7 +350,7 @@
 .work.has-tabs .work-panel--motion { margin-top:0; }
 .work.has-tabs .work-panel-label { display:none; }
 @media(max-width:39.99rem) {
-  .work-heading { flex-direction:column; align-items:flex-start; }
+  .work-heading { margin-bottom:var(--stack-m); }
   .work-tabs { width:100%; }
-  .work-tabs [role="tab"] { flex:1; justify-content:center; padding-inline:.6rem; }
+  .work-tabs [role="tab"] { flex:1; min-height:52px; padding-inline:.5rem; font-size:.95rem; }
 }

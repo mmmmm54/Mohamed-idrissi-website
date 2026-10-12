@@ -49,9 +49,11 @@ const email = 'mohamedidrissi205@gmail.com';
 
     <section class="work page-width" id="work" aria-labelledby="work-title">
       <div class="section-heading work-heading">
-        <h2 id="work-title">Selected work</h2>
+        <!-- Kept for screen readers and search engines; the tabs below are the visible title. -->
+        <h2 id="work-title" class="sr-only">Selected work</h2>
         <!-- Shown by the script below. Without JavaScript both lists simply follow each other. -->
         <div class="work-tabs" role="tablist" aria-label="Type of work" hidden>
+          <span class="work-tabs-thumb" aria-hidden="true"></span>
           <button type="button" role="tab" id="tab-design" aria-controls="design" aria-selected="true">Made to be seen <span>{projects.length}</span></button>
           <button type="button" role="tab" id="tab-motion" aria-controls="motion" aria-selected="false" tabindex="-1">Made to move <span>{motion.length}</span></button>
         </div>
@@ -176,17 +178,40 @@ const email = 'mohamedidrissi205@gmail.com';
         panel!.setAttribute('role', 'tabpanel');
         panel!.setAttribute('aria-labelledby', tabs[index].id);
       });
+      /* The blue pill slides under the chosen tab, like an iOS segmented control. */
+      const thumb = tabList.querySelector<HTMLElement>('.work-tabs-thumb');
+      const moveThumb = (index: number) => {
+        if (!thumb) return;
+        /* Sub-pixel measures, so the pill sits exactly on the tab. */
+        const target = tabs[index].getBoundingClientRect();
+        const start = tabs[0].getBoundingClientRect();
+        thumb.style.width = `${target.width}px`;
+        thumb.style.transform = `translateX(${target.left - start.left}px)`;
+      };
       const select = (index: number, focus = false) => {
         tabs.forEach((tab, i) => {
           const active = i === index;
           tab.setAttribute('aria-selected', String(active));
           tab.tabIndex = active ? 0 : -1;
+          const wasHidden = panels[i]!.hidden;
           panels[i]!.hidden = !active;
+          /* Replay the entrance only when a panel actually appears. */
+          if (active && wasHidden) {
+            panels[i]!.classList.remove('is-entering');
+            void panels[i]!.offsetWidth;
+            panels[i]!.classList.add('is-entering');
+          }
         });
+        moveThumb(index);
         if (focus) tabs[index].focus();
       };
       const fromHash = () => (location.hash === '#motion' ? 1 : 0);
       select(fromHash());
+      /* First position without animation, then turn the slide on. */
+      setTimeout(() => tabList.classList.add('has-thumb'), 60);
+      const current = () => tabs.findIndex((tab) => tab.getAttribute('aria-selected') === 'true');
+      window.addEventListener('resize', () => moveThumb(current()));
+      document.fonts?.ready.then(() => moveThumb(current()));
       tabs.forEach((tab, index) => {
         tab.addEventListener('click', () => {
           select(index);

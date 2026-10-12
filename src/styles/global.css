@@ -80,6 +80,9 @@
      Each card shifts its own hold a little around this value. */
   --poster-hold: 4000ms;
   --poster-fade: 1400ms;
+  /* Apple-like ease: a quick start that settles softly. Used by the work tabs. */
+  --ease-apple: cubic-bezier(.32, .72, 0, 1);
+  --tabs-slide: 520ms;
 }
 
 * { box-sizing: border-box; }
