@@ -145,7 +145,6 @@
   #work .small-card:nth-child(2) { margin-top:var(--editorial-gap); }
   .service-grid article { grid-template-columns:var(--signature-icon) 1fr 1fr; }
   .service-grid p { grid-column:3; }
-  .hero-logo { position:absolute; right:var(--stack-m); bottom:var(--editorial-gap); width:6rem; transform:rotate(-8deg); }
 }
 @media(max-width:30rem) {
   #work .card-copy { grid-template-columns:1fr; }
@@ -156,13 +155,12 @@
 .sketch-word { position:relative; width:fit-content; padding-bottom:.15em; }
 .sketch-underline { position:absolute; left:0; bottom:-.08em; width:100%; height:.3em; overflow:visible; pointer-events:none; }
 .hero-copy { margin-top:var(--stack-m); }
-.hero .hero-logo { bottom:var(--opening-space); }
 /* Quiet, continuous mascot motion; independent of pointer position. */
 @media(prefers-reduced-motion:no-preference) {
   .hero .hero-logo { animation:mascot-float 10s ease-in-out infinite; transform-origin:50% 55%; }
   @keyframes mascot-float {
-    0%, 100% { transform:translateY(0) rotate(-6deg); }
-    50% { transform:translateY(-9px) rotate(2deg); }
+    0%, 100% { transform:translateY(0) rotate(-4deg); }
+    50% { transform:translateY(-8px) rotate(4deg); }
   }
 }
 @media(prefers-reduced-motion:reduce) {
@@ -323,7 +321,7 @@
 /* ---------------------------------------------------------------
    WORK TABS: Design / Motion & video
 --------------------------------------------------------------- */
-.work-heading { justify-content:center; border-top:0; padding-top:0; margin-bottom:var(--stack-l); }
+.work-heading { justify-content:center; border-top:0; padding-top:0; margin-bottom:calc(var(--stack-m) * 2.5); }
 /* Segmented control: a soft track, a blue pill that slides to the chosen tab. */
 .work-tabs { position:relative; display:inline-flex; gap:.25rem; padding:.35rem; border-radius:var(--radius-pill); background:var(--soft-surface); box-shadow:inset 0 0 0 1px var(--line); }
 .work-tabs[hidden] { display:none; }
@@ -354,3 +352,15 @@
   .work-tabs { width:100%; }
   .work-tabs [role="tab"] { flex:1; min-height:52px; padding-inline:.5rem; font-size:.95rem; }
 }
+
+/* ---------------------------------------------------------------
+   HERO, centred: the mascot greets, the title leads, the tabs follow.
+--------------------------------------------------------------- */
+.hero { align-items:center; text-align:center; padding-block:var(--opening-space) calc(var(--stack-m) * 2); }
+.hero .hero-logo { position:static; width:clamp(4.5rem, 7vw, 6rem); margin:0 auto var(--stack-m); }
+.hero h1 { max-width:none; margin-inline:auto; }
+.hero h1 span { margin-inline:auto; }
+.hero-copy { max-width:44rem; margin-inline:auto; text-wrap:balance; }
+/* "brands that move." stays on one line, so its underline matches the words. */
+.hero .sketch-word { white-space:nowrap; }
+@media(max-width:30rem) { .hero h1 { font-size:clamp(2rem, 11vw, 2.8rem); } }
