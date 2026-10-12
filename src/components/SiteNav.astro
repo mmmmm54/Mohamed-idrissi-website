@@ -1,0 +1,26 @@
+---
+/*
+  The site menu, shared by every page that has it: two links, the logo in the
+  centre, two links. On the homepage the links jump within the page; elsewhere
+  they lead back to it. Reading and Tab order match what is on screen.
+*/
+interface Props {
+  /* True on the homepage, where links point at sections of the same page. */
+  home?: boolean;
+}
+const { home = false } = Astro.props;
+const at = (hash: string) => (home ? hash : `/${hash}`);
+const talk = home ? '#contact' : '/contact/';
+---
+
+<nav class="portfolio-nav page-width" aria-label="Main navigation">
+  <div class="nav-side nav-side--start">
+    <a href={at('#work')}>Work</a>
+    <a href={at('#motion')}>Motion</a>
+  </div>
+  <a class="nav-logo" href="/" aria-label="Mohamed Idrissi home"><img src="/images/brand-icon.svg" width="64" height="44" alt="" /></a>
+  <div class="nav-side nav-side--end">
+    <a href={at('#services')}>Services</a>
+    <a href={talk}>Let’s talk ↗</a>
+  </div>
+</nav>

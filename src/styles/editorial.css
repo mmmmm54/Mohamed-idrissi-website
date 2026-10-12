@@ -299,14 +299,9 @@
   #work .mosaic-project .case-link .sketch-arrow { width:1.4rem; height:1rem; }
 
   /* Logo ribbon: smaller slots so four logos share the screen, pause button beside the title. */
-  .collaborations { position:relative; }
-  .collaborations .collaborations-heading { padding-right:3rem; }
-  .collaborations-heading p { text-align:left; max-width:none; }
   .collaborations .brand-strip { gap:var(--stack-s); padding:var(--stack-s); }
-  .collaborations { margin-bottom:var(--stack-m); }
   .collaborations .client-logo { width:88px; height:52px; }
   .collaborations .client-logo img { transform:translate(calc(-50% + var(--logo-x,0px)),calc(-50% + var(--logo-y,0px))) scale(.66); }
-  .collaborations .motion-toggle { position:absolute; top:var(--stack-m); right:0; margin:0; }
 }
 
 /* Floating WhatsApp button, phones and tablets only. */
@@ -364,3 +359,39 @@
 /* "brands that move." stays on one line, so its underline matches the words. */
 .hero .sketch-word { white-space:nowrap; }
 @media(max-width:30rem) { .hero h1 { font-size:clamp(2rem, 11vw, 2.8rem); } }
+
+/* ---------------------------------------------------------------
+   MENU: logo in the centre, two links either side.
+--------------------------------------------------------------- */
+.portfolio-nav { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:var(--stack-m); }
+.portfolio-nav .nav-side { display:flex; align-items:center; gap:var(--stack-m); }
+.portfolio-nav .nav-side--end { justify-content:flex-end; }
+.portfolio-nav .nav-logo { display:block; }
+@media(hover:hover) and (prefers-reduced-motion:no-preference) {
+  .portfolio-nav .nav-logo img { transition:transform var(--motion-hover) var(--motion-ease); }
+  .portfolio-nav .nav-logo:hover img { transform:rotate(-6deg) scale(1.04); }
+}
+@media(max-width:30rem) {
+  .portfolio-nav { gap:var(--stack-s); }
+  .portfolio-nav .nav-side { gap:.7rem; }
+  .portfolio-nav .nav-logo img { width:3.2rem; }
+}
+
+/* ---------------------------------------------------------------
+   BRANDS: title left, note and pause together on the right, aligned to
+   the title's last line; the logo ribbon close below.
+--------------------------------------------------------------- */
+.collaborations { margin:var(--section-space) auto 0; padding:0; text-align:left; }
+.collaborations .collaborations-heading { display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:var(--stack-s) var(--stack-m); margin:0 0 var(--stack-s); padding:0; }
+.collaborations-aside { display:flex; align-items:center; gap:var(--stack-s); padding-bottom:.4em; }
+.collaborations .collaborations-heading p { margin:0; max-width:none; white-space:nowrap; font-size:.95rem; color:var(--ink-soft); }
+.collaborations .motion-toggle { display:grid; place-items:center; flex:none; width:44px; height:44px; min-height:0; margin:0; padding:0; border:1px solid var(--line); border-radius:50%; color:var(--ink-soft); }
+.collaborations .motion-toggle:hover, .collaborations .motion-toggle:focus-visible { color:var(--blue); border-color:var(--blue); }
+.collaborations .brand-marquee { margin-top:0; }
+.collaborations .brand-strip { padding-block:var(--stack-s); }
+@media(max-width:39.99rem) {
+  .collaborations .collaborations-heading { flex-direction:column; align-items:flex-start; }
+  .collaborations-aside { width:100%; justify-content:space-between; padding-bottom:0; }
+  .collaborations .collaborations-heading p { white-space:normal; }
+}
+@media(prefers-reduced-motion:reduce) { .collaborations .motion-toggle { display:none; } }

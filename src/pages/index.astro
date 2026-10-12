@@ -1,4 +1,5 @@
 ---
+import SiteNav from '../components/SiteNav.astro';
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { slugOf, coverOf, loopVideoOf, galleryOf, postersOf } from '../lib/projects';
@@ -39,7 +40,7 @@ const email = 'mohamedidrissi205@gmail.com';
 <BaseLayout schema={[business]} markdown="/index.md">
   <!-- Blue ink mapping: black → #2a37dd, white → white (for the JPEG logo). -->
   <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute"><defs><filter id="brand-blue-ink" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.835294 0 0 0 0.164706 0 0.784314 0 0 0.215686 0 0 0.133333 0 0.866667 0 0 0 1 0" /></filter><filter id="brand-blue-channel" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1 0" /></filter></defs></svg>
-  <nav class="portfolio-nav page-width" aria-label="Main navigation"><a href="/" aria-label="Mohamed Idrissi home"><img src="/images/brand-icon.svg" width="64" height="44" alt="" /></a><div><a href="#work">Work</a><a href="#motion">Motion</a><a href="#services">Services</a><a href="#contact">Let’s talk ↗</a></div></nav>
+  <SiteNav home />
   <main id="top">
     <section class="hero page-width reveal" aria-labelledby="hero-title">
       <img class="hero-logo" src="/images/brand-mark.svg" alt="" aria-hidden="true" />
@@ -103,13 +104,12 @@ const email = 'mohamedidrissi205@gmail.com';
     </section>
 
     <section class="collaborations page-width reveal" id="brands" aria-labelledby="collaborations-title">
-      <div class="collaborations-heading"><h2 id="collaborations-title">Good brands.<br /><span class="brands-title-ink">Shared stories.<svg viewBox="0 0 350 20" fill="none" aria-hidden="true"><path d="M3 10c85-13 194 9 341-4M45 17c85-9 169 1 264-3" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" /></svg></span></h2><p>A few of the brands I’ve worked with.</p></div>
+      <div class="collaborations-heading"><h2 id="collaborations-title">Good brands.<br /><span class="brands-title-ink">Shared stories.<svg viewBox="0 0 350 20" fill="none" aria-hidden="true"><path d="M3 10c85-13 194 9 341-4M45 17c85-9 169 1 264-3" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" /></svg></span></h2><div class="collaborations-aside"><p>A few of the brands I’ve worked with.</p><button class="motion-toggle" type="button" aria-label="Pause moving logos" aria-pressed="false" title="Pause moving logos"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" fill="currentColor"><g class="pause-symbol"><rect x="7" y="5" width="3" height="14" /><rect x="14" y="5" width="3" height="14" /></g><path class="play-symbol" d="m8 5 11 7-11 7Z" /></svg></button></div></div>
       <div class="brand-marquee"><div class="brand-track">
         {[0, 1].map((copy) => <ul class="brand-strip" aria-hidden={copy === 1 ? 'true' : undefined}>
           {collaborators.map((brand) => <li><span class={`client-logo client-logo--${brand.style}`}><img src={`/images/clients/${brand.file}`} alt={brand.name} loading="lazy" decoding="async" /></span></li>)}
         </ul>)}
       </div></div>
-      <button class="motion-toggle" type="button" aria-label="Pause moving logos" aria-pressed="false" title="Pause moving logos"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" fill="currentColor"><g class="pause-symbol"><rect x="7" y="5" width="3" height="14" /><rect x="14" y="5" width="3" height="14" /></g><path class="play-symbol" d="m8 5 11 7-11 7Z" /></svg></button>
     </section>
 
     <Testimonials />
