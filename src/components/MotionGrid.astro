@@ -1,0 +1,61 @@
+---
+/*
+  A grid of video cards. Each card shows its poster, plays a short silent preview
+  while on screen, and opens the full video in the page's MotionPlayer. Without
+  JavaScript the card is a plain link to the video file, so it still plays.
+*/
+import { motionFile, formatDuration, type MotionItem } from '../lib/motion';
+import '../styles/motion.css';
+
+interface Props {
+  items: MotionItem[];
+  /* Heading level for each video title, so the page outline stays in order. */
+  titleLevel?: 3 | 4;
+}
+const { items, titleLevel = 4 } = Astro.props;
+const Title = `h${titleLevel}` as 'h3' | 'h4';
+---
+
+<ul class="motion-grid">
+  {items.map((item) => (
+    <li class="motion-card">
+      <a
+        class="motion-open"
+        href={motionFile(item, 'full.mp4')}
+        data-motion-src={motionFile(item, 'full.mp4')}
+        data-motion-title={item.title}
+        data-motion-meta={[item.client, formatDuration(item.duration)].filter(Boolean).join(' · ')}
+        aria-label={`Play ${item.title}, ${formatDuration(item.duration)}`}
+      >
+        <span class="motion-frame">
+          <img src={motionFile(item, 'poster.webp')} alt="" width={item.width} height={item.height} loading="lazy" decoding="async" />
+          <video class="motion-preview" data-src={motionFile(item, 'preview.mp4')} muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+          <span class="motion-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5.5v13l11-6.5z" /></svg></span>
+          <span class="motion-duration" aria-hidden="true">{formatDuration(item.duration)}</span>
+        </span>
+      </a>
+      <Title class="motion-title">{item.title}</Title>
+      {item.client && <p class="motion-meta">{item.client}</p>}
+    </li>
+  ))}
+</ul>
+
+<script>
+  /* Silent previews play only while a card is on screen, and never with reduced motion or Save-Data. */
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+  if (!reduce.matches && !saveData && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        const video = entry.target as HTMLVideoElement;
+        if (entry.isIntersecting) {
+          if (video.dataset.src) { video.src = video.dataset.src; delete video.dataset.src; }
+          video.play().then(() => video.closest('.motion-card')?.classList.add('is-previewing')).catch(() => {});
+        } else {
+          video.pause();
+        }
+      }
+    }, { threshold: 0.6 });
+    document.querySelectorAll<HTMLVideoElement>('.motion-preview').forEach((video) => observer.observe(video));
+  }
+</script>

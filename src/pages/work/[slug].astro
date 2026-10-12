@@ -13,6 +13,9 @@ import CuratedWork from '../../components/CuratedWork.astro';
 import VanysisWork from '../../components/VanysisWork.astro';
 import AdditionalWork from '../../components/AdditionalWork.astro';
 import ServiceIcon from '../../components/ServiceIcon.astro';
+import MotionGrid from '../../components/MotionGrid.astro';
+import MotionPlayer from '../../components/MotionPlayer.astro';
+import { motionFor } from '../../lib/motion';
 import { slugOf, coverOf, galleryOf, isWideAt, isTodo, postersOf } from '../../lib/projects';
 
 export async function getStaticPaths() {
@@ -48,6 +51,7 @@ const collections = [
 ].map(group => ({ ...group, images: galleryOf(slug, group.key) }));
 const hasArtwork = !!additionalSlug || !!curatedSlug || ['justfit','mat','vanysis'].includes(slug) || gallery.length > 0 || collections.some(group => group.images.length > 0);
 const availableFilms = data.films.filter(film => film.embed);
+const projectMotion = motionFor(slug);
 const nextMark = nextSlug === 'exploremorocco' ? '/images/clients/exploremorocco.png' : nextSlug === 'mat' ? '/images/clients/mat.png' : nextSlug === 'dr-majed-mikhail' ? '/images/clients/dr-majed-mikhail.svg' : ['is-nutrition','e-botola','morocco-travel'].includes(nextSlug) ? `/images/clients/${nextSlug}.png` : next.data.notebook?.image;
 const services = data.services.join(', ');
 const pageUrl = new URL(`/work/${slug}/`, Astro.site).href;
@@ -75,7 +79,7 @@ const schema = [
 ];
 ---
 
-<BaseLayout title={`${data.title} | Mohamed Idrissi, Graphic Designer`} description={`${data.summary} By Mohamed Idrissi, graphic designer in Tétouan, Morocco.`} image={shareImage} schema={schema}>
+<BaseLayout title={`${data.title} | Mohamed Idrissi, Graphic & Motion Designer`} description={`${data.summary} By Mohamed Idrissi, graphic and motion designer in Tétouan, Morocco.`} image={shareImage} schema={schema}>
   <header class="case-nav page-width">
     <a class="nav-back" href="/#work"><SketchArrow /> All work</a>
     <a class="nav-mark" href="/" aria-label="Mohamed Idrissi, home"><img src="/images/brand-icon.svg" alt="" /></a>
@@ -167,6 +171,13 @@ const schema = [
           </section>
         )}
 
+        {projectMotion.length > 0 && (
+          <section class="case-section case-section--full" aria-labelledby="motion-label">
+            <h2 class="section-label" id="motion-label">In motion.</h2>
+            <MotionGrid items={projectMotion} titleLevel={3} />
+          </section>
+        )}
+
         <section class="case-section case-section--full" aria-labelledby="deliverables-label">
           <h2 class="section-label" id="deliverables-label">The work.</h2>
           {slug === 'justfit' && <JustfitWork />}
@@ -214,6 +225,8 @@ const schema = [
       </section>
     </article>
   </main>
+
+  {projectMotion.length > 0 && <MotionPlayer />}
 
   <footer class="site-footer page-width">
     <a class="footer-mark" href="/" aria-label="Back to the homepage"><img src="/images/brand-icon.svg" alt="" /></a>

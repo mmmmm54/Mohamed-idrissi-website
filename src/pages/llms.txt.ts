@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { slugOf } from '../lib/projects';
 import { person, shortBio, services, SITE_URL } from '../lib/site';
+import { motion, motionFile, formatDuration } from '../lib/motion';
 
 /*
   A plain-text guide for AI assistants and answer engines, in the llmstxt.org format:
@@ -14,6 +15,10 @@ export const GET: APIRoute = async ({ site }) => {
   const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
   const work = projects
     .map((project) => `- [${project.data.title}](${url(`/work/${slugOf(project.id)}/`)}): ${project.data.year}. ${project.data.summary}`)
+    .join('\n');
+
+  const films = motion
+    .map((item) => `- [${item.title}](${url(motionFile(item, 'full.mp4'))}): ${[item.client, formatDuration(item.duration)].filter(Boolean).join(', ')}`)
     .join('\n');
 
   const body = `# ${person.name}
@@ -34,12 +39,18 @@ How to reach him: email ${person.email}, or WhatsApp ${person.whatsappDisplay} (
 - [Fitness and nutrition brands](${url('/work/justfit/')}): Social campaigns, offers and product visuals for gyms and sports nutrition brands. See also [IS Nutrition](${url('/work/is-nutrition/')}).
 - [Brand identity and art direction](${url('/about/')}): A new identity or a refresh (logo, typography, colour, guidelines) for a sports, fitness or lifestyle brand, followed through into social media.
 - [Campaign series in Arabic, French or English](${url('/work/maalem/')}): Carousels and posters for brands that publish in Arabic and other languages, such as MAALEM (Arabic) and AQLUMA (French).
+- [Motion graphics and video ads](${url('/#motion')}): Reels and paid social ads with motion graphics and typography in Arabic, French or English, such as the Vanysis reels and the AQLUMA ads.
+- [Real estate films](${url('/#motion')}): Location maps, motion graphics and AI-rendered architecture that sell a project before it is built.
 - [AI-assisted imagery and films](${url('/work/vanysis/')}): Cinematic visuals and short films produced with AI-assisted workflows, while keeping a consistent art direction.
 - [Starting a project](${url('/contact/')}): How to contact Mohamed and what to put in a brief.
 
 ## Selected work
 
 ${work}
+
+## Motion & video
+
+${films}
 
 ## About this site
 

@@ -1,0 +1,46 @@
+/* Motion & video: vertical film cards and the full-screen player. Tokens only. */
+
+.motion-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--stack-m) var(--card-gap); margin: 0; padding: 0; list-style: none; }
+@media (min-width: 40rem) { .motion-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 64rem) { .motion-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.motion-card { display: flex; flex-direction: column; min-width: 0; }
+.motion-open { display: block; border-radius: var(--radius-card); color: inherit; text-decoration: none; }
+.motion-frame { position: relative; display: block; aspect-ratio: 9 / 16; overflow: hidden; border-radius: var(--radius-card); background: var(--video-frame); isolation: isolate; }
+.motion-frame img, .motion-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.motion-preview { opacity: 0; transition: opacity var(--poster-fade) ease; }
+.motion-card.is-previewing .motion-preview { opacity: 1; }
+
+.motion-play { position: absolute; left: 50%; top: 50%; display: grid; place-items: center; width: 3.25rem; height: 3.25rem; border-radius: 50%; background: var(--white); color: var(--blue); transform: translate(-50%, -50%) scale(.92); opacity: .92; box-shadow: 0 8px 24px var(--video-overlay); transition: transform var(--motion-hover) var(--motion-ease), opacity var(--motion-hover) ease; }
+.motion-play svg { margin-left: 3px; }
+.motion-duration { position: absolute; right: .6rem; bottom: .6rem; padding: .2rem .45rem; border-radius: var(--radius-pill); background: var(--video-overlay); color: var(--white); font-family: var(--font-mono); font-size: var(--size-label); letter-spacing: .04em; }
+@media (hover: hover) {
+  .motion-open:hover .motion-play, .motion-open:focus-visible .motion-play { transform: translate(-50%, -50%) scale(1); opacity: 1; background: var(--blue); color: var(--white); }
+}
+
+.motion-title { margin: .7rem 0 0; color: var(--ink); font-family: var(--font-body); font-size: clamp(.95rem, 1.2vw, 1.05rem); font-weight: 600; letter-spacing: -.02em; line-height: 1.25; }
+.motion-meta { margin: .2rem 0 0; color: var(--ink-soft); font-family: var(--font-mono); font-size: var(--size-label); letter-spacing: .06em; text-transform: uppercase; }
+
+/* Group headings inside the Motion tab. */
+.motion-group + .motion-group { margin-top: var(--section-space); }
+.motion-group-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--stack-s); margin-bottom: var(--stack-m); }
+.motion-group-heading h3 { margin: 0; color: var(--ink); font-family: var(--font-display); font-size: clamp(1.4rem, 2.4vw, 2rem); font-weight: 600; letter-spacing: -.04em; line-height: 1.1; }
+.motion-group-heading p { margin: 0; max-width: 34ch; color: var(--ink-soft); font-size: var(--size-ui); }
+
+/* Player */
+.motion-dialog { width: 100%; max-width: 100%; height: 100%; max-height: 100%; margin: 0; padding: var(--gutter); border: 0; background: transparent; color: var(--white); }
+.motion-dialog::backdrop { background: var(--video-overlay); }
+.motion-dialog[open] { display: grid; place-items: center; }
+.motion-dialog-inner { display: flex; flex-direction: column; gap: var(--stack-s); width: min(100%, calc((100dvh - 7rem) * 9 / 16)); }
+.motion-dialog-video { display: block; width: 100%; aspect-ratio: 9 / 16; max-height: calc(100dvh - 7rem); border-radius: var(--radius-card); background: var(--video-frame); object-fit: contain; }
+.motion-dialog-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--stack-s); }
+.motion-dialog-caption { display: grid; gap: .15rem; margin: 0; min-width: 0; }
+.motion-dialog-caption strong { overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.motion-dialog-caption span { font-family: var(--font-mono); font-size: var(--size-label); letter-spacing: .06em; text-transform: uppercase; opacity: .75; }
+.motion-dialog-actions { display: flex; flex: none; gap: .4rem; }
+.motion-dialog-actions button { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid currentColor; border-radius: 50%; background: transparent; color: var(--white); cursor: pointer; opacity: .85; }
+.motion-dialog-actions button:hover, .motion-dialog-actions button:focus-visible { opacity: 1; background: var(--blue); border-color: var(--blue); }
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-preview, .motion-play { transition: none; }
+}

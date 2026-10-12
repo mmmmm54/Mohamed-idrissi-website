@@ -1,0 +1,78 @@
+---
+/*
+  One video player per page, in a native <dialog>: Escape closes it, focus stays
+  inside, and the page behind is inert. Every .motion-open link on the page opens
+  here; previous / next follow the order of the cards on the page.
+*/
+import '../styles/motion.css';
+---
+
+<dialog class="motion-dialog" aria-label="Video player">
+  <div class="motion-dialog-inner">
+    <video class="motion-dialog-video" controls playsinline preload="none"></video>
+    <div class="motion-dialog-bar">
+      <p class="motion-dialog-caption"><strong></strong><span></span></p>
+      <div class="motion-dialog-actions">
+        <button type="button" data-motion-step="-1" aria-label="Previous video"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7" /></svg></button>
+        <button type="button" data-motion-step="1" aria-label="Next video"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 5l7 7-7 7" /></svg></button>
+        <button type="button" data-motion-close aria-label="Close video"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('.motion-dialog');
+  const video = dialog?.querySelector<HTMLVideoElement>('video');
+  const titleEl = dialog?.querySelector('.motion-dialog-caption strong');
+  const metaEl = dialog?.querySelector('.motion-dialog-caption span');
+  if (dialog && video && titleEl && metaEl && typeof dialog.showModal === 'function') {
+    /* Only cards that are currently shown, so the Design tab's hidden panel is skipped. */
+    const cards = () => Array.from(document.querySelectorAll<HTMLAnchorElement>('.motion-open')).filter((card) => card.offsetParent !== null);
+    let current: HTMLAnchorElement | null = null;
+
+    const show = (card: HTMLAnchorElement) => {
+      current = card;
+      titleEl.textContent = card.dataset.motionTitle || '';
+      metaEl.textContent = card.dataset.motionMeta || '';
+      video.src = card.dataset.motionSrc || card.href;
+      if (!dialog.open) dialog.showModal();
+      video.play().catch(() => {});
+    };
+    const step = (direction: number) => {
+      const list = cards();
+      if (!current || list.length < 2) return;
+      const index = list.indexOf(current);
+      show(list[(index + direction + list.length) % list.length]);
+    };
+    /* Stop the film and hand focus back to its card. Runs on every way of closing,
+       because some browsers never fire the dialog's "close" event. */
+    const cleanup = () => {
+      if (!video.getAttribute('src')) return;
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+      setTimeout(() => current?.focus(), 0);
+    };
+    const close = () => { dialog.close(); cleanup(); };
+
+    document.addEventListener('click', (event) => {
+      const card = (event.target as Element).closest<HTMLAnchorElement>('.motion-open');
+      if (!card || event.metaKey || event.ctrlKey || event.shiftKey) return;
+      event.preventDefault();
+      show(card);
+    });
+    dialog.querySelectorAll<HTMLButtonElement>('[data-motion-step]').forEach((button) =>
+      button.addEventListener('click', () => step(Number(button.dataset.motionStep))));
+    dialog.querySelector('[data-motion-close]')?.addEventListener('click', close);
+    /* A click on the dark backdrop, outside the player, closes it. */
+    dialog.addEventListener('click', (event) => { if (event.target === dialog) close(); });
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') step(1);
+      if (event.key === 'ArrowLeft') step(-1);
+    });
+    /* Escape fires "cancel" right away; "close" is a backstop for any other way the dialog shuts. */
+    dialog.addEventListener('cancel', cleanup);
+    dialog.addEventListener('close', cleanup);
+  }
+</script>

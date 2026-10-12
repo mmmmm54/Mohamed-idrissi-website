@@ -1,0 +1,273 @@
+[
+  {
+    "id": "vanysis-reel-01",
+    "title": "Vanysis — Reel 01",
+    "client": "Vanysis",
+    "project": "vanysis",
+    "group": "reels",
+    "posterAt": 0.15,
+    "source": "%USERPROFILE%/Downloads/Vanysis_Month01_Reels-20261012T125612Z-1-001/Vanysis_Month01_Reels/VNS_R01.mp4",
+    "duration": 40.1,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 5027,
+      "preview.mp4": 169,
+      "poster.webp": 37
+    }
+  },
+  {
+    "id": "vanysis-reel-02",
+    "title": "Vanysis — Reel 02",
+    "client": "Vanysis",
+    "project": "vanysis",
+    "group": "reels",
+    "posterAt": 0.15,
+    "source": "%USERPROFILE%/Downloads/Vanysis_Month01_Reels-20261012T125612Z-1-001/Vanysis_Month01_Reels/VNS_R02.mp4",
+    "duration": 61.3,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 9835,
+      "preview.mp4": 184,
+      "poster.webp": 25
+    }
+  },
+  {
+    "id": "vanysis-reel-03",
+    "title": "Vanysis — Reel 03",
+    "client": "Vanysis",
+    "project": "vanysis",
+    "group": "reels",
+    "posterAt": 0.85,
+    "source": "%USERPROFILE%/Downloads/Vanysis_Month01_Reels-20261012T125612Z-1-001/Vanysis_Month01_Reels/VNS_R03.mp4",
+    "duration": 61.1,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 9141,
+      "preview.mp4": 261,
+      "poster.webp": 13
+    }
+  },
+  {
+    "id": "vanysis-reel-04",
+    "title": "Vanysis — Reel 04",
+    "client": "Vanysis",
+    "project": "vanysis",
+    "group": "reels",
+    "posterAt": 0.15,
+    "source": "%USERPROFILE%/Downloads/Vanysis_Month01_Reels-20261012T125612Z-1-001/Vanysis_Month01_Reels/VNS_R04.mp4",
+    "duration": 76.7,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 10682,
+      "preview.mp4": 274,
+      "poster.webp": 36
+    }
+  },
+  {
+    "id": "aqluma-ad-free-courses",
+    "title": "AQLUMA — Free AI courses",
+    "client": "AQLUMA",
+    "project": "aqluma",
+    "group": "ads",
+    "posterAt": 0.15,
+    "source": "%USERPROFILE%/Downloads/drive-download-20261012T130136Z-1-001/Ads videos/Ad03_V.FR.mp4",
+    "duration": 34.9,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 2724,
+      "preview.mp4": 98,
+      "poster.webp": 28
+    }
+  },
+  {
+    "id": "aqluma-ad-learn-with-ai",
+    "title": "AQLUMA — Learn with AI",
+    "client": "AQLUMA",
+    "project": "aqluma",
+    "group": "ads",
+    "posterAt": 0.15,
+    "source": "%USERPROFILE%/Downloads/drive-download-20261012T130136Z-1-001/Ads videos/Ad_04.mp4",
+    "duration": 36.2,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 2491,
+      "preview.mp4": 54,
+      "poster.webp": 25
+    }
+  },
+  {
+    "id": "aqluma-ad-answer",
+    "title": "AQLUMA — The answer",
+    "client": "AQLUMA",
+    "project": "aqluma",
+    "group": "ads",
+    "posterAt": 0.15,
+    "source": "%USERPROFILE%/Downloads/drive-download-20261012T130136Z-1-001/Ads videos/Ad_05_.mp4",
+    "duration": 50.6,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 5364,
+      "preview.mp4": 168,
+      "poster.webp": 22
+    }
+  },
+  {
+    "id": "student-center-ad-01",
+    "title": "Student Center — Study abroad",
+    "client": "Student Center",
+    "group": "ads",
+    "posterAt": 0.5,
+    "source": "%USERPROFILE%/Downloads/drive-download-20261012T130136Z-1-001/Ads videos/StudentCenter.5-2026",
+    "duration": 37.7,
+    "width": 720,
+    "height": 1284,
+    "sizeKB": {
+      "full.mp4": 4713,
+      "preview.mp4": 150,
+      "poster.webp": 16
+    }
+  },
+  {
+    "id": "student-center-ad-02",
+    "title": "Student Center — Step by step",
+    "client": "Student Center",
+    "group": "ads",
+    "posterAt": 0.5,
+    "source": "%USERPROFILE%/Downloads/drive-download-20261012T130136Z-1-001/Ads videos/StudentCenter.6-2026",
+    "duration": 23.4,
+    "width": 720,
+    "height": 1284,
+    "sizeKB": {
+      "full.mp4": 3202,
+      "preview.mp4": 136,
+      "poster.webp": 22
+    }
+  },
+  {
+    "id": "fes-villas-cinematic",
+    "title": "Fès villas — Cinematic cut",
+    "group": "real-estate",
+    "posterAt": 0.5,
+    "source": "%USERPROFILE%/Downloads/drive-download-20261012T130136Z-1-001/Real Estate/Fes_Villas.Cinematic.mp4",
+    "duration": 169.6,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 23590,
+      "preview.mp4": 198,
+      "poster.webp": 25
+    }
+  },
+  {
+    "id": "fes-villas",
+    "title": "Fès villas",
+    "group": "real-estate",
+    "posterAt": 0.85,
+    "source": "%USERPROFILE%/Downloads/drive-download-20261012T130136Z-1-001/Real Estate/Fes_Villas.mp4",
+    "duration": 89.7,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 13530,
+      "preview.mp4": 173,
+      "poster.webp": 47
+    }
+  },
+  {
+    "id": "maarif-apartments",
+    "title": "Maarif apartments",
+    "group": "real-estate",
+    "posterAt": 0.85,
+    "source": "%USERPROFILE%/Downloads/drive-download-20261012T130136Z-1-001/Real Estate/Maarif_Apartment.mp4",
+    "duration": 42.4,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 7207,
+      "preview.mp4": 101,
+      "poster.webp": 29
+    }
+  },
+  {
+    "id": "neo-square",
+    "title": "Neo Square",
+    "group": "real-estate",
+    "posterAt": 0.85,
+    "source": "%USERPROFILE%/Downloads/drive-download-20261012T130136Z-1-001/Real Estate/Neo_Square_Terrain.mp4",
+    "duration": 75.2,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 13281,
+      "preview.mp4": 260,
+      "poster.webp": 35
+    }
+  },
+  {
+    "id": "manara",
+    "title": "Manara",
+    "group": "real-estate",
+    "posterAt": 0.15,
+    "source": "%USERPROFILE%/Downloads/drive-download-20261012T130136Z-1-001/Real Estate/Manara_v3.mp4",
+    "duration": 60.6,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 8372,
+      "preview.mp4": 102,
+      "poster.webp": 80
+    }
+  },
+  {
+    "id": "casablanca-apartments",
+    "title": "Casablanca apartments",
+    "group": "real-estate",
+    "posterAt": 0.5,
+    "source": "%USERPROFILE%/Downloads/drive-download-20261012T130136Z-1-001/Real Estate/Apartement_Casablanca.mp4",
+    "duration": 38.0,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 6714,
+      "preview.mp4": 223,
+      "poster.webp": 89
+    }
+  },
+  {
+    "id": "casablanca-school-site",
+    "title": "Casablanca school site",
+    "group": "real-estate",
+    "posterAt": 0.15,
+    "source": "%USERPROFILE%/Downloads/drive-download-20261012T130136Z-1-001/Real Estate/Ecole_Casablanca.mp4",
+    "duration": 43.4,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 7628,
+      "preview.mp4": 208,
+      "poster.webp": 76
+    }
+  },
+  {
+    "id": "land-for-sale",
+    "title": "Land for sale, 10,000 m²",
+    "group": "real-estate",
+    "posterAt": 0.15,
+    "source": "%USERPROFILE%/Downloads/drive-download-20261012T130136Z-1-001/Ads videos/AD.02.v1.mp4",
+    "duration": 55.1,
+    "width": 720,
+    "height": 1280,
+    "sizeKB": {
+      "full.mp4": 6185,
+      "preview.mp4": 133,
+      "poster.webp": 30
+    }
+  }
+]

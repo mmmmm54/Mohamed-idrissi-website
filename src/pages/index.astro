@@ -9,8 +9,11 @@ import SketchArrow from '../components/SketchArrow.astro';
 import FooterLinks from '../components/FooterLinks.astro';
 import ProjectCover from '../components/ProjectCover.astro';
 import Testimonials from '../components/Testimonials.astro';
+import MotionGrid from '../components/MotionGrid.astro';
+import MotionPlayer from '../components/MotionPlayer.astro';
+import { motion, motionGroups } from '../lib/motion';
 import projectCovers from '../data/project-covers.json';
-import { collaborators } from '../lib/site';
+import { collaborators, services, aboutParagraphs } from '../lib/site';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
 const coverPicks = projectCovers as Record<string, string[]>;
@@ -18,7 +21,7 @@ const coverPicks = projectCovers as Record<string, string[]>;
 const business = {
   '@context': 'https://schema.org',
   '@type': 'ProfessionalService',
-  name: 'Mohamed Idrissi — Graphic Designer & Creative Director',
+  name: 'Mohamed Idrissi — Graphic & Motion Designer',
   url: new URL('/', Astro.site).href,
   image: new URL('/og-image.png', Astro.site).href,
   logo: new URL('/apple-touch-icon.png', Astro.site).href,
@@ -27,7 +30,7 @@ const business = {
   address: { '@type': 'PostalAddress', addressLocality: 'Tétouan', addressRegion: 'Tanger-Tétouan-Al Hoceïma', addressCountry: 'MA' },
   areaServed: [{ '@type': 'City', name: 'Tétouan' }, { '@type': 'Country', name: 'Morocco' }],
   founder: { '@type': 'Person', name: 'Mohamed Idrissi' },
-  knowsAbout: ['Brand identity', 'Graphic design', 'Art direction', 'Social media design', 'Video editing'],
+  knowsAbout: ['Brand identity', 'Graphic design', 'Motion graphics', 'Video editing', 'Art direction', 'Social media design'],
   sameAs: ['https://www.behance.net/Mohamed_Idrissi'],
 };
 const email = 'mohamedidrissi205@gmail.com';
@@ -36,18 +39,26 @@ const email = 'mohamedidrissi205@gmail.com';
 <BaseLayout schema={[business]} markdown="/index.md">
   <!-- Blue ink mapping: black → #2a37dd, white → white (for the JPEG logo). -->
   <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute"><defs><filter id="brand-blue-ink" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.835294 0 0 0 0.164706 0 0.784314 0 0 0.215686 0 0 0.133333 0 0.866667 0 0 0 1 0" /></filter><filter id="brand-blue-channel" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1 0" /></filter></defs></svg>
-  <nav class="portfolio-nav page-width" aria-label="Main navigation"><a href="/" aria-label="Mohamed Idrissi home"><img src="/images/brand-icon.svg" width="64" height="44" alt="" /></a><div><a href="#work">Work</a><a href="#services">Services</a><a href="#contact">Let’s talk ↗</a></div></nav>
+  <nav class="portfolio-nav page-width" aria-label="Main navigation"><a href="/" aria-label="Mohamed Idrissi home"><img src="/images/brand-icon.svg" width="64" height="44" alt="" /></a><div><a href="#work">Work</a><a href="#motion">Motion</a><a href="#services">Services</a><a href="#contact">Let’s talk ↗</a></div></nav>
   <main id="top">
     <section class="hero page-width reveal" aria-labelledby="hero-title">
       <img class="hero-logo" src="/images/brand-mark.svg" alt="" aria-hidden="true" />
       <h1 id="hero-title"><span>Brand identity for</span><span class="sketch-word">brands that move.<svg class="sketch-underline" viewBox="0 0 620 25" fill="none" aria-hidden="true" focusable="false"><path d="M5 14C132 3 312 21 610 7M84 21C257 9 413 17 575 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg></span></h1>
-      <p class="hero-copy">I’m Mohamed. Graphic designer & creative director in Tétouan, Morocco.<br />Identities, campaigns and films for sports, fitness and lifestyle.</p>
-      <div class="hero-actions"><a class="round-link" href="#work">Selected work <span aria-hidden="true">↓</span></a></div>
+      <p class="hero-copy">I’m Mohamed. Graphic & motion designer in Tétouan, Morocco.<br />Identities, campaigns, reels and films for brands that want to be seen.</p>
+      <div class="hero-actions"><a class="round-link" href="#work">Selected work <span aria-hidden="true">↓</span></a><a class="hero-secondary" href="#motion"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>Motion & video</a></div>
     </section>
 
     <section class="work page-width" id="work" aria-labelledby="work-title">
-      <div class="section-heading"><h2 id="work-title">Selected work</h2></div>
+      <div class="section-heading work-heading">
+        <h2 id="work-title">Selected work</h2>
+        <!-- Shown by the script below. Without JavaScript both lists simply follow each other. -->
+        <div class="work-tabs" role="tablist" aria-label="Type of work" hidden>
+          <button type="button" role="tab" id="tab-design" aria-controls="design" aria-selected="true">Design <span>{projects.length}</span></button>
+          <button type="button" role="tab" id="tab-motion" aria-controls="motion" aria-selected="false" tabindex="-1">Motion & video <span>{motion.length}</span></button>
+        </div>
+      </div>
 
+      <div class="work-panel" id="design">
       <div class="work-mosaic">
         {projects.map((project, index) => {
           const slug = slugOf(project.id);
@@ -74,7 +85,20 @@ const email = 'mohamedidrissi205@gmail.com';
           );
         })}
       </div>
+      </div>
 
+      <div class="work-panel work-panel--motion" id="motion">
+        <p class="work-panel-label">Motion & video</p>
+        {motionGroups.map((group) => {
+          const items = motion.filter((item) => item.group === group.key);
+          return items.length > 0 && (
+            <section class="motion-group" aria-labelledby={`motion-${group.key}`}>
+              <div class="motion-group-heading"><h3 id={`motion-${group.key}`}>{group.title}</h3><p>{group.note}</p></div>
+              <MotionGrid items={items} />
+            </section>
+          );
+        })}
+      </div>
     </section>
 
     <section class="collaborations page-width reveal" id="brands" aria-labelledby="collaborations-title">
@@ -91,7 +115,7 @@ const email = 'mohamedidrissi205@gmail.com';
 
     <section class="services page-width" id="services" aria-labelledby="services-title">
       <div class="section-heading"><h2 id="services-title">What I do</h2><p>From the first idea to the final files.</p></div>
-      <div class="service-grid"><article><ServiceIcon kind="identity" /><h3>Brand identity</h3><p>Strategy, logos, typography, colour and guidelines.</p></article><article><ServiceIcon kind="direction" /><h3>Art direction</h3><p>Campaign concepts, editorial direction and social media systems.</p></article><article><ServiceIcon kind="production" /><h3>Creative production</h3><p>AI-assisted imagery, cinematic films and video editing.</p></article></div>
+      <div class="service-grid">{services.map((service, index) => <article><ServiceIcon kind={(['identity', 'direction', 'production'] as const)[index % 3]} /><h3>{service.title}</h3><p>{service.text}</p></article>)}</div>
       <div class="process-note"><h3>From conversation to creation.</h3><ol class="process-line"><li>Find the idea</li><li>Explore the direction</li><li>Make it work</li></ol></div>
     </section>
     <section class="about page-width" id="about" aria-labelledby="about-title">
@@ -106,8 +130,7 @@ const email = 'mohamedidrissi205@gmail.com';
 
       <div class="about-copy reveal">
         <p class="about-lead">I think in systems.<br />I care about the details.</p>
-        <p>I’m a graphic designer and creative director from Tétouan, with 4 years of experience in sports, fitness and lifestyle branding. I design brand identities, social campaigns and videos, from the first idea to the final files.</p>
-        <p>Today I pair brand strategy with AI-assisted production to deliver identities, campaigns and films faster, without losing the craft.</p>
+        {aboutParagraphs.map((paragraph) => <p>{paragraph}</p>)}
         <div class="secondary-links" aria-label="Professional profiles">
           <a href="https://www.behance.net/Mohamed_Idrissi" target="_blank" rel="noreferrer">Behance <span aria-hidden="true">↗</span></a>
           <a href="https://wa.me/212691865970" target="_blank" rel="noreferrer">WhatsApp <span aria-hidden="true">↗</span></a>
@@ -130,6 +153,8 @@ const email = 'mohamedidrissi205@gmail.com';
     </section>
   </main>
 
+  <MotionPlayer />
+
   <footer class="site-footer page-width">
     <a class="footer-mark" href="#top" aria-label="Back to the top"><img src="/images/brand-icon.svg" alt="" /></a>
     <p class="footer-signoff">From Tétouan,<br /><span>with a little ink.</span></p>
@@ -141,6 +166,49 @@ const email = 'mohamedidrissi205@gmail.com';
   <a class="whatsapp-float" href="https://wa.me/212691865970" target="_blank" rel="noreferrer" aria-label="Message Mohamed on WhatsApp"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true" focusable="false" fill="currentColor"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3Zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4a10.4 10.4 0 0 1-1.7-5.7C5.1 10 10 5.3 16 5.3s10.9 4.7 10.9 10.5S22 26.4 16 26.4Zm6-7.8c-.3-.2-1.9-.9-2.2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1a8.7 8.7 0 0 1-4.4-3.8c-.3-.6.3-.5.9-1.7.1-.2 0-.4 0-.5l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5 1.9.8 2.6.9 3.6.7.6-.1 1.9-.8 2.1-1.5.3-.7.3-1.3.2-1.5-.1-.1-.3-.2-.6-.3Z"/></svg></a>
 
   <script>
+    /* Work tabs: Design and Motion & video. "#motion" in the address opens the Motion tab, so it can be linked. */
+    const tabList = document.querySelector<HTMLElement>('.work-tabs');
+    const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('.work-tabs [role="tab"]'));
+    const panels = tabs.map((tab) => document.getElementById(tab.getAttribute('aria-controls') || ''));
+    if (tabList && tabs.length && panels.every(Boolean)) {
+      tabList.hidden = false;
+      document.querySelector('.work')?.classList.add('has-tabs');
+      panels.forEach((panel, index) => {
+        panel!.setAttribute('role', 'tabpanel');
+        panel!.setAttribute('aria-labelledby', tabs[index].id);
+      });
+      const select = (index: number, focus = false) => {
+        tabs.forEach((tab, i) => {
+          const active = i === index;
+          tab.setAttribute('aria-selected', String(active));
+          tab.tabIndex = active ? 0 : -1;
+          panels[i]!.hidden = !active;
+        });
+        if (focus) tabs[index].focus();
+      };
+      const fromHash = () => (location.hash === '#motion' ? 1 : 0);
+      select(fromHash());
+      tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => {
+          select(index);
+          history.replaceState(null, '', index === 1 ? '#motion' : '#work');
+        });
+        tab.addEventListener('keydown', (event) => {
+          const keys: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1 };
+          if (event.key in keys) { event.preventDefault(); select((index + keys[event.key] + tabs.length) % tabs.length, true); }
+          if (event.key === 'Home') { event.preventDefault(); select(0, true); }
+          if (event.key === 'End') { event.preventDefault(); select(tabs.length - 1, true); }
+        });
+      });
+      /* Links to #motion (nav, hero) switch the tab, then bring the work section into view. */
+      window.addEventListener('hashchange', () => {
+        if (location.hash !== '#motion' && location.hash !== '#work') return;
+        select(fromHash());
+        document.getElementById('work')?.scrollIntoView({ block: 'start' });
+      });
+      if (location.hash === '#motion') requestAnimationFrame(() => document.getElementById('work')?.scrollIntoView({ block: 'start' }));
+    }
+
     /* Floating WhatsApp: visible between the hero and the contact section. */
     const whatsappFloat = document.querySelector<HTMLElement>('.whatsapp-float');
     const heroSection = document.querySelector('.hero');

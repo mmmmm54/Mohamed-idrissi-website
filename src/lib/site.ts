@@ -8,7 +8,7 @@ export const SITE_URL = 'https://www.mohamedidrissi.site';
 
 export const person = {
   name: 'Mohamed Idrissi',
-  role: 'Graphic designer & creative director',
+  role: 'Graphic & motion designer',
   city: 'Tétouan',
   country: 'Morocco',
   experienceYears: 4,
@@ -21,11 +21,11 @@ export const person = {
 
 /* One sentence, reused as the Person description in JSON-LD and the llms.txt summary. */
 export const shortBio =
-  'Graphic designer and creative director in Tétouan, Morocco, with 4 years of experience in sports, fitness and lifestyle branding: brand identity, social media campaigns and video.';
+  'Graphic and motion designer in Tétouan, Morocco, with 4 years of experience: brand identity, social media campaigns, motion graphics, reels and video.';
 
 /* Same wording as the About section on the homepage. */
 export const aboutParagraphs = [
-  'I’m a graphic designer and creative director from Tétouan, with 4 years of experience in sports, fitness and lifestyle branding. I design brand identities, social campaigns and videos, from the first idea to the final files.',
+  'I’m a graphic and motion designer from Tétouan, with 4 years of experience. I design brand identities and social campaigns, and I animate them: motion graphics, reels, ads and films, from the first idea to the final files.',
   'Today I pair brand strategy with AI-assisted production to deliver identities, campaigns and films faster, without losing the craft.',
 ];
 
@@ -33,7 +33,7 @@ export const aboutParagraphs = [
 export const services = [
   { title: 'Brand identity', text: 'Strategy, logos, typography, colour and guidelines.' },
   { title: 'Art direction', text: 'Campaign concepts, editorial direction and social media systems.' },
-  { title: 'Creative production', text: 'AI-assisted imagery, cinematic films and video editing.' },
+  { title: 'Motion & video', text: 'Motion graphics, reels, ads and real estate films, with AI-assisted imagery where it helps.' },
 ];
 
 export const process = ['Find the idea', 'Explore the direction', 'Make it work'];

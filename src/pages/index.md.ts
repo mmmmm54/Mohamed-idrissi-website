@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { slugOf } from '../lib/projects';
 import { person, aboutParagraphs, services, process, SITE_URL } from '../lib/site';
+import { motion, motionGroups, motionFile, formatDuration } from '../lib/motion';
 
 /*
   The homepage as Markdown, for agents that send "Accept: text/markdown".
@@ -20,13 +21,29 @@ export const GET: APIRoute = async ({ site }) => {
     })
     .join('\n\n');
 
+  const films = motionGroups
+    .map((group) => {
+      const items = motion.filter((item) => item.group === group.key);
+      if (!items.length) return '';
+      const list = items
+        .map((item) => `- [${item.title}](${url(motionFile(item, 'full.mp4'))}): ${[item.client, formatDuration(item.duration)].filter(Boolean).join(', ')}`)
+        .join('\n');
+      return `### ${group.title}\n\n${group.note}\n\n${list}`;
+    })
+    .filter(Boolean)
+    .join('\n\n');
+
   const body = `# ${person.name} — Brand identity for brands that move
 
-I’m Mohamed. ${person.role} in ${person.city}, ${person.country}. Identities, campaigns and films for sports, fitness and lifestyle.
+I’m Mohamed. ${person.role} in ${person.city}, ${person.country}. Identities, campaigns, reels and films for brands that want to be seen.
 
-## Selected work
+## Selected work: design
 
 ${work}
+
+## Selected work: motion & video
+
+${films}
 
 ## What I do
 

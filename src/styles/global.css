@@ -38,6 +38,10 @@
   --vanysis-fg: #131f3d;
   --vanysis-accent: #131f3d;
 
+  /* Video: the dark stage behind a playing film, and the frame colour before a poster loads. */
+  --video-overlay: rgba(10, 14, 30, 0.94);
+  --video-frame: #0f1729;
+
   /* WhatsApp's own green, used only on the floating chat button. */
   --whatsapp: #25d366;
   --whatsapp-shadow: rgba(20, 33, 61, 0.22);

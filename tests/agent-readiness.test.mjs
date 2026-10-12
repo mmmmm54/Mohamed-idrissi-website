@@ -107,7 +107,7 @@ test('Homepage Markdown is substantial and matches the HTML homepage', () => {
   for (const slug of fs.readdirSync(path.join(dist, 'work'))) {
     assert.ok(md.includes(`/work/${slug}/`), `index.md is missing project ${slug}`);
   }
-  const about = 'I design brand identities, social campaigns and videos, from the first idea to the final files.';
+  const about = 'motion graphics, reels, ads and films, from the first idea to the final files.';
   assert.ok(md.includes(about) && html.includes(about), 'About text differs between Markdown and HTML');
 });
 
@@ -213,4 +213,61 @@ test('Analytics loader stays off until Vercel Analytics is enabled, and Privacy 
   const html = read('index.html');
   assert.doesNotMatch(html, /_vercel\/insights/, 'analytics script would 404 until enabled on Vercel');
   assert.match(read('privacy/index.html'), /No analytics or tracking/);
+});
+
+/* ---------- Motion & video ---------- */
+const motionItems = JSON.parse(fs.readFileSync(path.join(root, 'src/data/motion.json'), 'utf8'));
+
+test('Every video has its three web files, in H.264 and small enough to serve', () => {
+  assert.ok(motionItems.length >= 17);
+  const ids = new Set();
+  for (const item of motionItems) {
+    assert.ok(!ids.has(item.id), `duplicate id ${item.id}`);
+    ids.add(item.id);
+    assert.ok(['reels', 'ads', 'real-estate'].includes(item.group), `${item.id}: unknown group`);
+    for (const file of ['full.mp4', 'preview.mp4', 'poster.webp']) assert.ok(exists(`motion/${item.id}/${file}`), `${item.id}: missing ${file}`);
+    const full = fs.readFileSync(path.join(dist, 'motion', item.id, 'full.mp4'));
+    const head = full.subarray(0, 4096).toString('latin1');
+    assert.ok(full.includes('avc1'), `${item.id}: full.mp4 is not H.264`);
+    assert.ok(!full.includes('hvc1') && !full.includes('hev1'), `${item.id}: full.mp4 is HEVC`);
+    assert.ok(head.includes('moov'), `${item.id}: full.mp4 is not faststart (moov must come first)`);
+    assert.ok(full.length < 40 * 1024 * 1024, `${item.id}: full.mp4 is ${(full.length / 1048576).toFixed(1)} MB`);
+    assert.ok(fs.statSync(path.join(dist, 'motion', item.id, 'preview.mp4')).size < 600 * 1024, `${item.id}: preview too heavy`);
+    assert.ok(item.duration > 0 && item.width > 0 && item.height > 0, `${item.id}: metadata missing, run scripts/encode-motion.py`);
+  }
+});
+
+test('Homepage has Design and Motion tabs, and both lists are in the HTML without JavaScript', () => {
+  const html = read('index.html');
+  assert.match(html, /role="tablist"[^>]*hidden/, 'tabs start hidden, shown by script');
+  assert.match(html, /<div class="work-panel" id="design">/);
+  assert.match(html, /<div class="work-panel work-panel--motion" id="motion">/);
+  assert.ok(html.includes('href="#motion"'), 'nav links to the motion tab');
+  for (const item of motionItems) assert.ok(html.includes(`/motion/${item.id}/full.mp4`), `homepage misses ${item.id}`);
+  assert.equal((html.match(/<dialog class="motion-dialog"/g) || []).length, 1, 'exactly one player');
+  assert.doesNotMatch(html, /<video[^>]*class="motion-preview"[^>]*\ssrc=/, 'previews must not load before they are on screen');
+});
+
+test('Project pages show their own videos with one player, others none', () => {
+  for (const slug of fs.readdirSync(path.join(dist, 'work'))) {
+    const html = read(`work/${slug}/index.html`);
+    const own = motionItems.filter((item) => item.project === slug);
+    if (own.length) {
+      assert.match(html, /id="motion-label"/, `${slug}: missing In motion section`);
+      for (const item of own) assert.ok(html.includes(`/motion/${item.id}/full.mp4`), `${slug}: misses ${item.id}`);
+      assert.equal((html.match(/<dialog class="motion-dialog"/g) || []).length, 1, `${slug}: one player`);
+    } else {
+      assert.doesNotMatch(html, /<dialog class="motion-dialog"/, `${slug}: player without videos`);
+    }
+  }
+});
+
+test('Markdown homepage and llms.txt list every video', () => {
+  const md = read('index.md');
+  const llms = read('llms.txt');
+  for (const item of motionItems) {
+    const link = `https://www.mohamedidrissi.site/motion/${item.id}/full.mp4`;
+    assert.ok(md.includes(link), `index.md misses ${item.id}`);
+    assert.ok(llms.includes(link), `llms.txt misses ${item.id}`);
+  }
 });

@@ -325,3 +325,28 @@
   .whatsapp-float:focus-visible { outline:3px solid var(--blue); outline-offset:3px; }
 }
 @media(prefers-reduced-motion:reduce) { .whatsapp-float { transition:none; } }
+
+/* ---------------------------------------------------------------
+   WORK TABS: Design / Motion & video
+--------------------------------------------------------------- */
+.work-heading { align-items:center; }
+.work-tabs { display:inline-flex; gap:.25rem; padding:.25rem; border:1px solid var(--line); border-radius:var(--radius-pill); }
+.work-tabs[hidden] { display:none; }
+.work-tabs [role="tab"] { display:inline-flex; align-items:center; gap:.45rem; min-height:40px; padding:.45rem 1rem; border:0; border-radius:var(--radius-pill); background:transparent; color:var(--ink-soft); font:inherit; font-family:var(--font-ui); font-size:var(--size-ui); font-weight:600; cursor:pointer; }
+.work-tabs [role="tab"] span { font-family:var(--font-mono); font-size:var(--size-label); opacity:.7; }
+.work-tabs [role="tab"][aria-selected="true"] { background:var(--blue); color:var(--white); }
+.work-tabs [role="tab"]:not([aria-selected="true"]):hover { color:var(--blue); }
+.work-panel:focus-visible { outline-offset:8px; }
+/* Without tabs (no JavaScript) the motion list follows the design list under its own label. */
+.work-panel--motion { margin-top:var(--section-space); }
+.work-panel-label { margin:0 0 var(--stack-m); padding-top:var(--stack-m); border-top:var(--editorial-rule); font-family:var(--font-body); font-size:1rem; font-weight:500; color:var(--ink); }
+.work.has-tabs .work-panel--motion { margin-top:0; }
+.work.has-tabs .work-panel-label { display:none; }
+.hero-secondary { display:inline-flex; align-items:center; gap:.5rem; min-height:44px; margin-top:1.8rem; padding:.85rem 1.1rem; color:var(--ink); font-family:var(--font-ui); font-size:.95rem; font-weight:600; text-decoration:none; }
+.hero-secondary svg { color:var(--blue); }
+.hero-secondary:hover { color:var(--blue); }
+@media(max-width:39.99rem) {
+  .work-heading { flex-direction:column; align-items:flex-start; }
+  .work-tabs { width:100%; }
+  .work-tabs [role="tab"] { flex:1; justify-content:center; padding-inline:.6rem; }
+}

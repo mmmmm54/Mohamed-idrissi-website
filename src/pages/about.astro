@@ -11,13 +11,13 @@ const schema = [{
   name: `About ${person.name}`,
   url: new URL('/about/', Astro.site).href,
   description: shortBio,
-  mainEntity: { '@type': 'Person', name: person.name, jobTitle: 'Graphic Designer & Creative Director', url: new URL('/', Astro.site).href },
+  mainEntity: { '@type': 'Person', name: person.name, jobTitle: 'Graphic & Motion Designer', url: new URL('/', Astro.site).href },
 }];
 ---
 
 <InfoLayout
-  title="About Mohamed Idrissi | Graphic Designer in Tétouan, Morocco"
-  description="Mohamed Idrissi is a graphic designer and creative director in Tétouan, Morocco: brand identity, social campaigns and video for sports, fitness and lifestyle brands."
+  title="About Mohamed Idrissi | Graphic & Motion Designer in Tétouan"
+  description="Mohamed Idrissi is a graphic and motion designer in Tétouan, Morocco: brand identity, social campaigns, motion graphics, reels and video."
   eyebrow="About"
   heading={`${person.name}. Mind & hand.`}
   schema={schema}
