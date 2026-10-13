@@ -242,8 +242,12 @@ for name, reg in [("tennis", Polygon([(47958, 290393), (47980, 290402), (47998, 
                   ("minifoot", Polygon([(47980, 290340), (48008, 290348), (48012, 290305), (47985, 290298)]))]:
     sg = segs_in(reg)
     longest = max(math.dist(a, b) for a, b in sg)
-    encl = MultiPoint([p for a, b in sg if math.dist(a, b) > 15 for p in (a, b)]).minimum_rotated_rectangle
-    courts[name] = {"surface": poly_loc(encl)[0], "lines": [loc([a, b]) for a, b in sg if math.dist(a, b) > 0.5 and math.dist(a, b) < longest - 1.0]}
+    if name == "tennis":
+        encl = MultiPoint([p for a, b in sg if math.dist(a, b) > 15 for p in (a, b)]).minimum_rotated_rectangle
+    else:   # the two pitches (18.5 m lines) + 1 m run-off; the enclosure line also takes in parking bays
+        encl = MultiPoint([p for a, b in sg if 18.0 < math.dist(a, b) < 19.0 for p in (a, b)]).minimum_rotated_rectangle.buffer(1.0, join_style=2)
+    courts[name] = {"surface": poly_loc(encl)[0], "lines": [loc([a, b]) for a, b in sg if math.dist(a, b) > 0.5 and math.dist(a, b) < longest - 1.0
+                                                         and encl.buffer(0.05).contains(LineString([a, b]))]}
 site["courts"] = courts
 
 two = [(a, b) for a, b in segs_in(AB) if 2.2 < math.dist(a, b) < 4.6]
