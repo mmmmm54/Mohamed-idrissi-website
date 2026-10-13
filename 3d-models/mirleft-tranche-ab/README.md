@@ -6,7 +6,7 @@ This is a Blender model of the south-east end of the Mirleft project, the area c
 - the two boutique/restaurant buildings
 - the club des résidents
 - the courts, canal and pools
-- the parking and the entrance
+- the roads, parking and the entrance
 
 The rest of the site is empty land, with the exact site boundary and the natural slope from the architect's contours. Everything is exterior only (no interiors).
 
@@ -14,7 +14,7 @@ The rest of the site is empty land, with the exact site boundary and the natural
 |---|---|
 | `Mirleft_Tranche_AB_PACKED.blend` | The same scene with every texture packed inside (71.8 MB): open it on any computer, no other folder needed. |
 | `Mirleft_Tranche_AB_PACKED_2K.blend` | Same scene, textures packed at 2K (13.9 MiB): the light copy to send or open anywhere. |
-| `Mirleft_Tranche_AB.blend` | The scene: terrain, ground surfaces, 17 duplexes, public buildings, trees, cars and 11 cameras. Its textures are linked from `../mirleft-bay/assets/textures`, so keep the two folders side by side. |
+| `Mirleft_Tranche_AB.blend` | The scene: terrain, ground surfaces, 17 duplexes, public buildings, trees and 11 cameras. Its textures are linked from `../mirleft-bay/assets/textures`, so keep the two folders side by side. |
 | `renders/` | 11 views at 1920 × 1080 (see the list below). |
 | `blender/01_extract_site.py` | Reads the plan de masse (DWG exploded to primitives by `tools/`) and writes `data/site.json`. |
 | `blender/02_duplex.py` | The "duplex jumelée", from its permit drawings. |
@@ -29,10 +29,10 @@ The rest of the site is empty land, with the exact site boundary and the natural
   - Coordinates: in metres. The model origin is DWG (47900, 290320). z = altitude − 50 m.
   - Contents read from the plan:
     - the plots and the 17 duplex positions and orientations (access side to the east);
-    - the pavements, parking bays, zebra crossings and courts;
+    - the pavements, plot gardens, parking bays and courts;
     - the canal, the bassins and the kids' pools;
     - the outlines of the public buildings;
-    - the 101 parked cars and the 12 street trees.
+    - the 12 street trees.
 - **2-DUPLEX.DWG (permis de construire, duplex jumelée)**
   - Used for: the plans RDC / étage / terrasse, the three façades and the coupes A-A / B-B.
 - **3-PLAN_RESTAURANT_PAVILLON.DWG**
@@ -88,6 +88,12 @@ The rest of the site is empty land, with the exact site boundary and the natural
   - The canal, the fountain and the jardin aquatique with its pergola slats.
   - The tennis court and the two mini-foot pitches (lines from the plan), the espace enfant and the kids' pools.
 
+## Ground: roads, pavements, gardens (client review, 13-10)
+- **Roads and parking bays:** grey asphalt. The bays are the parallelograms between the sawtooth pavements and the road.
+- **Pavements and plot paths:** light concrete paving (the plan's ANSI37 hatch). The herringbone patches are paved the same way.
+- **Gardens:** the areas the plan's lines enclose inside each of the 17 plots, as lawn.
+- **Removed, at the client's request:** zebra crossings, direction arrows and cars.
+
 ## Not on the drawings (to confirm)
 - **Boutique / restaurant**
   - The plan de masse draws the same block cluster twice (RESTAURANT and EQUIPEMENT DE COMMERCE), larger than the permit drawing. The permit building is placed at true size on both spots, with its towers towards the plaza.
@@ -103,7 +109,6 @@ The rest of the site is empty land, with the exact site boundary and the natural
 - **Planting**
   - Only the 12 street trees are on the plan.
   - Added for the renders: palms along the canal, two trees in each duplex rear garden, and a few trees on the club and public lawns.
-- **Cars:** positions and headings are from the plan; the cars themselves are placeholders.
 - **Not modelled**
   - Interiors and the sous-sols.
   - The villas of the other tranches.

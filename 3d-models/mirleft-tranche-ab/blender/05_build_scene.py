@@ -139,7 +139,7 @@ def build_terrain(M, col, site, ab):
 
 # ---------------------------------------------------------------------------------------------
 OFFS = {"asphalt": (0.00, "asphalt"), "plaza": (0.12, "pavers"), "lawn": (0.10, "lawn"), "deck": (0.15, "terrace"),
-        "play": (0.10, "play"), "court": (0.05, None), "hbone": (0.14, "brick"), "paving": (0.15, "kerb_paving")}
+        "play": (0.10, "play"), "court": (0.05, None), "paving": (0.15, "kerb_paving")}
 
 
 def build_ground(M, col, cut):
@@ -149,8 +149,6 @@ def build_ground(M, col, cut):
     S = SITE["surfaces"]
     for key, (off, mat) in OFFS.items():
         g = P(S.get(key, []))
-        if key == "hbone":
-            g = g.difference(P(SITE["duplex_blocks"]).buffer(0.5))
         g = g.difference(cut)
         if g.is_empty or key == "court":
             continue
@@ -176,13 +174,6 @@ def build_ground(M, col, cut):
             L.prism(mb, "pool_tile", g.buffer(-0.01).difference(g.buffer(-0.07)), -0.62, 0.02, zf=zf)
             L.prism(mb, "pool_water", g.buffer(-0.01), -0.14, -0.12, zf=zf, sides=False)
     out += mb.build("GROUND_WATER", col, M)
-    # zebra crossings
-    mb = C.MeshBuilder()
-    for z in SITE["zebra"]:
-        q = Polygon(z)
-        if not cut.intersects(q):
-            mb.poly("paint_line", [(x, y, hg(x, y) + 0.008) for x, y in q.exterior.coords[:4]])
-    out += mb.build("ROAD_MARKINGS", col, M)
     return out
 
 
@@ -364,24 +355,6 @@ def main():
             if g.buffer(-2.0).contains(Point(p)):
                 plant(RNG.choice(["date", "olive", "pink"]), p, RNG.uniform(0.8, 1.05), 0.15)
                 k -= 1
-
-    # ---- cars (drawn on the plan) ---------------------------------------------------------------
-    paints = ["#E9E8E4", "#B9BDC1", "#1D1F22", "#5B1E22", "#2E3B4E", "#CFC4AE"]
-    srcc = []
-    for i, hx in enumerate(paints):
-        mat = M["car"].copy()
-        mat.name = f"A08_Car_Paint_{i}"
-        mat.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = L.srgb(hx)
-        mm = dict(M)
-        mm["car"] = mat
-        srcc.append(LS.make_source(f"CAR_{i}", car_mesh(200 + i), mm, cols["SRC"]))
-    for k, c in enumerate(SITE["cars"]):
-        if cutp.contains(Point(c["c"])):
-            continue
-        ob = bpy.data.objects.new(f"CAR_{k:03d}", srcc[k % len(srcc)].data)
-        ob.location = (c["c"][0], c["c"][1], hg(*c["c"]) + 0.01)
-        ob.rotation_euler = (0, 0, math.radians(c["deg"]))
-        cols["06_VEHICLES"].objects.link(ob)
 
     # ---- light, cameras, render settings --------------------------------------------------------
     lt = L.bay("14_build_lighting.py")

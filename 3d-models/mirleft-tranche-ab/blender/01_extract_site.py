@@ -273,6 +273,10 @@ F = [g for g in F if g.intersects(AB_BOX) and g.length > 0.3]
 faces2 = [f for f in polygonize(unary_union(F)) if f.area > 1.0]
 
 
+def L_as_polys(g):
+    return [g] if g.geom_type == "Polygon" else [q for q in getattr(g, "geoms", []) if q.geom_type == "Polygon"]
+
+
 def face_at(x, y):
     c = [f for f in faces2 if f.contains(Point(x, y))]
     return min(c, key=lambda f: f.area)
@@ -283,9 +287,21 @@ picked = {k: unary_union([face_at(*p) for p in v]) for k, v in pick.items()}
 water_u = unary_union(water).intersection(AB)
 hb_u = unary_union(hb).intersection(AB)
 court_u = unary_union([Polygon([(x + O[0], y + O[1]) for x, y in c["surface"]["ext"]]).buffer(0) for c in courts.values()])
-order = [("water", water_u), ("paving", pav_u), ("hbone", hb_u), ("court", court_u), ("play", picked["play"]),
-         ("deck", picked["deck"]), ("lawn", unary_union([blocks, picked["lawn"]])),
-         ("asphalt", unary_union([picked["asphalt"], AB.difference(unary_union([blocks, equip]))])),
+# plot gardens = the areas the plan encloses with paving inside the duplex blocks (the parking
+# bays along the streets are inside the zoning blocks too, but they are not enclosed: asphalt)
+gardens = []
+bl = blocks.buffer(1.0)
+for pt in [(47912, 290380), (47922, 290356)]:          # the two plots inside the equipment zoning
+    gardens += [f.difference(pav_u) for f in faces2 if f.contains(Point(pt))]
+for f in faces2:
+    if f.area > 40 and bl.contains(f.representative_point()) and f.intersection(pav_u).area < 0.5 * f.area:
+        gardens.append(f.difference(pav_u))
+gardens = unary_union(gardens + [picked["lawn"]])
+# the road face of the equipment zone: direction arrows were drawn as closed triangles, fill them
+asph = unary_union([Polygon(g.exterior, [h for h in g.interiors if Polygon(h).area > 40]) for g in L_as_polys(picked["asphalt"])])
+order = [("water", water_u), ("paving", unary_union([pav_u, hb_u])), ("court", court_u), ("play", picked["play"]),
+         ("deck", picked["deck"]), ("lawn", gardens),
+         ("asphalt", unary_union([asph, AB.difference(equip)])),
          ("plaza", equip)]
 taken = Polygon()
 surf = {}
