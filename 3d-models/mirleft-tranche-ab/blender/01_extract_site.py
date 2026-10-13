@@ -302,7 +302,10 @@ asph = unary_union([Polygon(g.exterior, [h for h in g.interiors if Polygon(h).ar
 order = [("water", water_u), ("paving", unary_union([pav_u, hb_u])), ("court", court_u), ("play", picked["play"]),
          ("deck", picked["deck"]), ("lawn", gardens),
          ("asphalt", unary_union([asph, AB.difference(equip)])),
-         ("plaza", equip)]
+         ("plaza", equip.intersection(unary_union([Polygon([(x + O[0], y + O[1]) for x, y in pb[k]["outline"][0]["ext"]]).buffer(2.0)
+                                                    for k in ("restaurant", "commerce")]
+                                       + [Polygon(g.exterior) for g in L_as_polys(unary_union([picked["deck"], picked["lawn"]]))] + [court_u.buffer(3.0, join_style=2)])))]
+# whatever is left in the equipment zone (parking bays between the sawtooth pavements) is road
 taken = Polygon()
 surf = {}
 for k, g in order:
