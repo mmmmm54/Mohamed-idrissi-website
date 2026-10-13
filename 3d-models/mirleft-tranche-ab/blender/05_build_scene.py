@@ -142,16 +142,34 @@ OFFS = {"asphalt": (0.00, "asphalt"), "plaza": (0.12, "pavers"), "lawn": (0.10, 
         "play": (0.10, "play"), "court": (0.05, None), "paving": (0.15, "kerb_paving")}
 
 
-def build_ground(M, col, cut):
-    """A+B surfaces from the plan (disjoint polygons), extruded on the grading plane."""
+MIN_AREA = {"plaza": 3.0, "deck": 7.0, "lawn": 4.0, "play": 3.0, "paving": 1.0}
+
+
+def build_ground(M, col, cut, ab, island_at=None):
+    """A+B surfaces from the plan, extruded on the grading plane. One continuous asphalt base
+    under everything (client, 13-10: no gaps at the tips of the parking teeth); the other
+    surfaces sit 5-15 cm above it; leftover slivers under MIN_AREA are dropped (road)."""
     zf = lambda x, y: hg(x, y)
     out = []
     S = SITE["surfaces"]
+    water = P(S.get("water", []))
+    mb = C.MeshBuilder()
+    L.prism(mb, "asphalt", ab.difference(water).difference(cut), -0.65, 0.0, zf=zf)
+    out += mb.build("GROUND_ASPHALT_BASE", col, M)
     for key, (off, mat) in OFFS.items():
-        g = P(S.get(key, []))
-        g = g.difference(cut)
-        if g.is_empty or key == "court":
+        if key in ("asphalt", "court"):
             continue
+        keep = [g for g in polys(S.get(key, [])) if g.area >= MIN_AREA.get(key, 0)]
+        g = unary_union(keep).difference(cut) if keep else Polygon()
+        if g.is_empty:
+            continue
+        if key == "paving" and island_at is not None:
+            isl = unary_union([q for q in L.as_polys(g) if q.buffer(0.5).contains(Point(island_at))])
+            if not isl.is_empty:
+                mbi = C.MeshBuilder()
+                L.prism(mbi, "island", isl, -0.65, off, zf=zf)
+                out += mbi.build("GROUND_ENTRANCE_ISLAND", col, M)
+                g = g.difference(isl.buffer(0.01))
         mb = C.MeshBuilder()
         L.prism(mb, mat, g, -0.65, off, zf=zf)
         out += mb.build(f"GROUND_{key.upper()}", col, M)
@@ -227,7 +245,7 @@ def main():
     DPX = load("02_duplex.py")
     PUB = load("03_public.py")
     src_dpx = DPX.build(M, cols["SRC"])
-    src_adm = PUB.pavilion(M, cols["SRC"])
+    src_adm = PUB.pavilion(M, cols["SRC"], rear_bassin=False)
     src_mkt = PUB.market(M, cols["SRC"])
     pb = SITE["public"]
     for i, d in enumerate(SITE["duplexes"]):
@@ -237,7 +255,7 @@ def main():
     acc = np.array([47960.5 - 47900, 290339.5 - 290320]) - np.array(a["c"])
     front = snap_axis(a["long_deg"], acc)
     adm = place(src_adm, "ADMINISTRATION", a["c"], front + 90, cols["04_PUBLIC"])
-    cut = [Polygon([tuple(adm.matrix_world @ Vector((x, y, 0)))[:2] for x, y in PUB.PLATFORM.buffer(0.2, join_style=2).exterior.coords])]
+    cut = [Polygon([tuple(adm.matrix_world @ Vector((x, y, 0)))[:2] for x, y in PUB.PLATFORM_FULL.buffer(0.2, join_style=2).exterior.coords])]
     # boutique / restaurant at both clusters drawn on the plan de masse (same building type)
     for key in ("restaurant", "commerce"):
         r = pb[key]
@@ -249,10 +267,11 @@ def main():
     st = Polygon(pb["station_epuration"]["outline"][0]["ext"])
     so = PUB.station(M, cols["04_PUBLIC"], "STATION_EPURATION", st)
     so.location.z = hg(*st.centroid.coords[0])
-    # gatehouse at the entrance island (square on the plan)
+    # gatehouse on the entrance island (flat-roofed square on the plan), door towards the entrance (east)
     g = pb["gatehouse"]
-    gh = PUB.hipped(M, cols["04_PUBLIC"], "GATEHOUSE", Polygon(g["rect"]), wall_h=3.0)
-    gh.location.z = hg(*g["c"])
+    gh = PUB.kiosk(M, cols["04_PUBLIC"], "GATEHOUSE", min(g["size"]), h=3.20)
+    gh.location = (g["c"][0], g["c"][1], hg(*g["c"]) + 0.15)
+    gh.rotation_euler = (0, 0, math.radians(snap_axis(g["long_deg"], (1.0, 0.0)) + 90))
     # club des résidents and kiosks: hipped roofs drawn on the plan (slopes grouped per building)
     roofs = unary_union([Polygon(r["ext"]).buffer(0.25) for r in SITE["roofs"]])
     for k, rp in enumerate(sorted(L.as_polys(roofs), key=lambda p: -p.area)):
@@ -265,7 +284,7 @@ def main():
     cutp = unary_union(cut)
 
     # ---- ground ---------------------------------------------------------------------------------
-    build_ground(M, cols["02_GROUND"], cutp)
+    build_ground(M, cols["02_GROUND"], cutp, ab, island_at=tuple(pb["gatehouse"]["c"]))
 
     # ---- pergolas of the jardin aquatique / plaza (Menuiserie Bois slats on the plan) ---------
     adm_zone = cut[0].buffer(1.0)
@@ -323,19 +342,15 @@ def main():
 
     for t in SITE["trees"]:                                   # street trees drawn on the plan
         plant("green" if RNG.random() < 0.6 else "pink", t["c"], RNG.uniform(0.9, 1.1), 0.15)
-    canal = [Polygon(w["ext"]) for w in SITE["surfaces"]["water"] if Polygon(w["ext"]).minimum_rotated_rectangle.length > 60]
-    for cw in canal:                                          # palms along the canal (INFERRED)
-        r = cw.minimum_rotated_rectangle
-        q = list(r.exterior.coords)[:4]
-        e = sorted([(q[0], q[1]), (q[1], q[2]), (q[2], q[3]), (q[3], q[0])], key=lambda ab_: -math.dist(*ab_))
-        for (a, b) in e[:2]:
-            n = int(math.dist(a, b) / 9)
-            for i in range(1, n):
-                p = np.array(a) + (np.array(b) - np.array(a)) * i / n
-                c = np.array(r.centroid.coords[0])
-                p = p + (p - c) / (np.linalg.norm(p - c) + 1e-9) * 1.6 * 0
-                off = np.array(p) - np.array(cw.exterior.interpolate(cw.exterior.project(Point(p))).coords[0])
-                plant("wash", tuple(p + (off / (np.linalg.norm(off) + 1e-9)) * 1.4), RNG.uniform(0.85, 1.1), 0.15)
+    walk = unary_union([P(SITE["surfaces"].get(k, [])) for k in ("paving", "lawn", "plaza", "deck")]).buffer(-0.6)
+    for w in polys(SITE["surfaces"]["water"]):                # palms along the canal (INFERRED), never on the road
+        if w.area < 200:
+            continue
+        ring = w.buffer(1.6, join_style=2).exterior
+        for k in range(int(ring.length / 9)):
+            p = ring.interpolate(k * 9.0)
+            if walk.contains(p) and not cutp.buffer(1.0).contains(p):
+                plant("wash", (p.x, p.y), RNG.uniform(0.85, 1.1), 0.15)
     # duplex gardens: two trees in each rear garden (INFERRED planting, not on the drawings)
     for i, d in enumerate(SITE["duplexes"]):
         th = math.radians(d["front_deg"] + 90)
@@ -529,6 +544,7 @@ def make_cameras(col):
         "CAM_08_CLUB_POOLS": ((35, -31, 7.0), (8, -4, 0.5), 24),
         "CAM_09_BIRDSEYE_DUPLEX": ((-60, 70, 45), (-20, 20, 0), 32),
         "CAM_10_TOP_PLAN": ((15, 10, 400), (15, 10.001, 0), 0),
+        "CAM_12_ENTRANCE_ISLAND": ((126, 27, 6.5), (108.5, 40.1, 1.5), 26),
     }
     cams = {}
     for n, (e, t, lens) in shots.items():

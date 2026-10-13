@@ -98,13 +98,19 @@ def lattice_mat(name, hexcol, png, scale):
     return m
 
 
-def uv_tiles(m):
+def uv_tiles(m, rot_deg=0.0):
     """Drive the brick texture of a tiles() material with UV (metres) instead of Object coords,
-    so vertical cladding reads as tiles on every face."""
+    so vertical cladding reads as tiles on every face. rot_deg turns the pattern (45 = diagonal)."""
     nt = m.node_tree
     br = [n for n in nt.nodes if n.type == "TEX_BRICK"][0]
     tc = [n for n in nt.nodes if n.type == "TEX_COORD"][0]
-    nt.links.new(tc.outputs["UV"], br.inputs["Vector"])
+    if rot_deg:
+        mp = nt.nodes.new("ShaderNodeMapping")
+        mp.inputs["Rotation"].default_value = (0.0, 0.0, math.radians(rot_deg))
+        nt.links.new(tc.outputs["UV"], mp.inputs["Vector"])
+        nt.links.new(mp.outputs["Vector"], br.inputs["Vector"])
+    else:
+        nt.links.new(tc.outputs["UV"], br.inputs["Vector"])
     return m
 
 
@@ -123,6 +129,7 @@ def materials():
     M["deck"] = M["timber"]
     M["sienna"] = mod.render_plaster("D10_Render_Terre_De_Sienne", "#B9774C", "#A5633D")
     M["roof_tiles"] = uv_tiles(mod.tiles("D11_Roof_Tiles_Terracotta", "#A9573A", "#8E452D", 0.30, 0.20, "#6B3B2A", 0.006, 0.7, 0.4, 0.5))
+    M["island"] = uv_tiles(mod.tiles("D12_Island_Diagonal_Pavers", "#DCD1BD", "#CDBFA6", 0.50, 0.50, "#9C9080", 0.006, 0.7, 0.25, 0.0), 45.0)
     M["mod"] = mod
     return M
 

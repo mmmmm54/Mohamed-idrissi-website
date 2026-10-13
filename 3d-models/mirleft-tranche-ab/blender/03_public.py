@@ -232,13 +232,17 @@ RT = (3.03, 7.37)            # rear towers y
 BODY = box(-8.60, -3.18, 8.60, 3.22)
 REAR = box(-4.20, 3.22, 4.20, 6.22)
 PLATFORM = box(-14.775, -12.18, 14.775, 11.32)
+PLATFORM_FULL = box(-14.775, -12.18, 14.775, 13.62)   # platform + the rear bassin strip
 PORTAL = box(-2.875, -12.18, 2.875, -6.88)
 PASSAGE = box(-2.50, -7.18, 2.50, -3.18)
 COUR = box(-12.70, -3.10, -8.62, 3.20)
 
 
-def pavilion(M, col):
+def pavilion(M, col, rear_bassin=True):
+    """rear_bassin=False (client, 13-10): the plan de masse already draws a bassin on that side,
+    so the strip behind the rear terrace is paved instead of a second bassin."""
     mb = C.MeshBuilder()
+    plat = PLATFORM if rear_bassin else PLATFORM_FULL
     towers = [(-TX1, FT[0], -TX0, FT[1], ("front", "left")), (TX0, FT[0], TX1, FT[1], ("front", "right")),
               (-TX1, RT[0], -TX0, RT[1], ("rear", "left")), (TX0, RT[0], TX1, RT[1], ("rear", "right"))]
     # ---- ground: platform, bassins, bridge, cour anglaise --------------------------------------
@@ -247,16 +251,17 @@ def pavilion(M, col):
     bridge = box(-1.10, -12.18, 1.10, -3.18)
     planters = [box(-8.90, -8.58, -5.40, -7.48), box(5.40, -8.58, 8.90, -7.48)]
     water = water.difference(solids.buffer(0.0)).difference(bridge).difference(unary_union(planters))
-    deck = PLATFORM.difference(water).difference(COUR).difference(solids.buffer(-0.02))
+    deck = plat.difference(water).difference(COUR).difference(solids.buffer(-0.02))
     L.prism(mb, "terrace", deck, -1.80, 0.20)
     L.prism(mb, "slate", bridge.difference(PORTAL.buffer(-0.40)), 0.20, 0.22, sides=False)
     for w in L.as_polys(water):
         L.prism(mb, "pool_tile", w, -0.60, -0.55, sides=False)
         L.prism(mb, "pool_water", w, -0.12, -0.10, sides=False)
-    L.prism(mb, "pool_tile", box(-14.775, 11.32, 14.775, 13.62).difference(box(-14.575, 11.32, 14.575, 13.42)), -1.80, 0.25)
-    L.prism(mb, "pool_tile", box(-14.575, 11.32, 14.575, 13.42), -0.60, -0.55, sides=False)
-    L.prism(mb, "pool_water", box(-14.575, 11.32, 14.575, 13.42), -0.12, -0.10, sides=False)
-    L.prism(mb, "terrace", PLATFORM.exterior.buffer(0.15, join_style=2).intersection(PLATFORM.buffer(0.15, join_style=2)).difference(PLATFORM.buffer(-0.15)), -1.80, 0.25)
+    if rear_bassin:
+        L.prism(mb, "pool_tile", box(-14.775, 11.32, 14.775, 13.62).difference(box(-14.575, 11.32, 14.575, 13.42)), -1.80, 0.25)
+        L.prism(mb, "pool_tile", box(-14.575, 11.32, 14.575, 13.42), -0.60, -0.55, sides=False)
+        L.prism(mb, "pool_water", box(-14.575, 11.32, 14.575, 13.42), -0.12, -0.10, sides=False)
+    L.prism(mb, "terrace", plat.buffer(0.15, join_style=2).difference(plat.buffer(-0.15, join_style=2)), -1.80, 0.25)
     for p in planters:
         L.prism(mb, "render_dark", p, -0.60, 0.65)
         L.prism(mb, "lawn", p.buffer(-0.12, join_style=2), 0.60, 0.62, sides=False)
@@ -465,6 +470,28 @@ def hipped(M, col, name, poly, wall_h=3.40, pitch=30.0, wall_mat="render"):
     ob.location = (cx, cy, 0.0)
     ob.rotation_euler = (0, 0, ang)
     return ob
+
+
+def kiosk(M, col, name, size, h=3.20):
+    """Flat-roofed square kiosk (gatehouse): the plan draws a plain square with a double outline,
+    like the other flat-roofed blocks, no hips. Door on local -y, windows on the other faces,
+    cornice, crown with corner horns. Height INFERRED (3.20 m)."""
+    mb = C.MeshBuilder()
+    a = size / 2
+    E = rect_edges(-a, -a, a, a)
+    for k, (p, q) in E.items():
+        if k == "front":
+            hs = [{"s0": -0.50, "s1": 0.50, "z0": 0.15, "z1": 2.30, "kind": "door", "surround": 0.12}]
+        else:
+            hs = [{"s0": -0.45, "s1": 0.45, "z0": 1.05, "z1": 2.30, "surround": 0.12}]
+        X = face(mb, "render", p, q, 0.0, h, hs)
+        squares(mb, X, [-1.2, -0.6, 0.0, 0.6, 1.2], h - 0.55)
+    sq = box(-a, -a, a, a)
+    L.prism(mb, "roof", sq.buffer(-0.2, join_style=2), h - 0.01, h, sides=False)
+    cornice(mb, sq, h - 0.30, h - 0.15, 0.08)
+    crown(mb, sq, h, h + 0.45, t=0.20)
+    obs = mb.build(name, col, M)
+    return L.join(obs, name)
 
 
 def station(M, col, name, poly, h=3.00):

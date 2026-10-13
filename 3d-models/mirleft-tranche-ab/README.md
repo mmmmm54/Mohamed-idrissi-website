@@ -14,8 +14,8 @@ The rest of the site is empty land, with the exact site boundary and the natural
 |---|---|
 | `Mirleft_Tranche_AB_PACKED.blend` | The same scene with every texture packed inside (72.4 MB): open it on any computer, no other folder needed. |
 | `Mirleft_Tranche_AB_PACKED_2K.blend` | Same scene, textures packed at 2K (14.5 MiB): the light copy to send or open anywhere. |
-| `Mirleft_Tranche_AB.blend` | The scene: terrain, ground surfaces, 17 duplexes, public buildings, trees and 11 cameras. Its textures are linked from `../mirleft-bay/assets/textures`, so keep the two folders side by side. |
-| `renders/` | 11 views at 1920 × 1080 (see the list below). |
+| `Mirleft_Tranche_AB.blend` | The scene: terrain, ground surfaces, 17 duplexes, public buildings, trees and 12 cameras. Its textures are linked from `../mirleft-bay/assets/textures`, so keep the two folders side by side. |
+| `renders/` | 12 views at 1920 × 1080 (see the list below). |
 | `blender/01_extract_site.py` | Reads the plan de masse (DWG exploded to primitives by `tools/`) and writes `data/site.json`. |
 | `blender/02_duplex.py` | The "duplex jumelée", from its permit drawings. |
 | `blender/03_public.py` | The administration pavilion, the boutique/restaurant, and the hipped-roof club, kiosks and station. |
@@ -80,7 +80,8 @@ The rest of the site is empty land, with the exact site boundary and the natural
     - A portal to +7.70 (beam +6.50) with a horseshoe arch and a bejmat surround.
     - A passage (+5.60) with the "mur d'eau".
     - A bridge across the front bassin.
-  - **Outside:** the rear bassin and terrace, the cour anglaise with its railing, timber pergolas at the rear corners, and planters in the bassin.
+  - **Outside:** the rear terrace, the cour anglaise with its railing, timber pergolas at the rear corners, and planters in the front bassin.
+  - **Rear bassin:** the permit draws one behind the rear terrace. It is paved over at the client's request, because the plan de masse already draws a bassin on that side.
 - **Boutique / restaurant**
   - The roof plan has six square blocks in two rows. The two at one end are towers to +12.00; the others reach +8.70, and the links between them +6.20 (the niveaux on the façades).
   - It also has shopfront glazing, windows with surrounds and two pyramid skylights.
@@ -92,15 +93,20 @@ The rest of the site is empty land, with the exact site boundary and the natural
 - **Roads and parking bays:** grey asphalt. The bays are the parallelograms between the sawtooth pavements and the road.
 - **Pavements and plot paths:** light concrete paving (the plan's ANSI37 hatch). The herringbone patches are paved the same way.
 - **Gardens:** the areas the plan's lines enclose inside each of the 17 plots, as lawn.
+- **Asphalt base:** one continuous asphalt base runs under the whole area; the other surfaces sit 5–15 cm above it. Leftover slivers under 1–7 m² are left as road. This means there are no gaps at the tips of the parking teeth.
+- **Entrance island:** the rounded 8 × 8 m island is paved with diagonal pavers (the plan's 45° crosshatch) and carries the gatehouse.
 - **Removed, at the client's request:** zebra crossings, direction arrows and cars.
 
 ## Not on the drawings (to confirm)
 - **Boutique / restaurant**
   - The plan de masse draws the same block cluster twice (RESTAURANT and EQUIPEMENT DE COMMERCE), larger than the permit drawing. The permit building is placed at true size on both spots, with its towers towards the plaza.
   - Its roof plan and façades do not line up one to one, so heights are assigned per block from the roof plan.
-- **Club des résidents, kiosks and gatehouse**
+- **Club des résidents and kiosks**
   - Only their hipped roofs are on the plan de masse.
-  - Modelled as single storeys: 3.40 m walls, 30° terracotta roofs (gatehouse 3.00 m).
+  - Modelled as single storeys: 3.40 m walls, 30° terracotta roofs.
+- **Gatehouse**
+  - The plan draws a 4.30 m square with a double outline and no hips, like the other flat-roofed blocks.
+  - Modelled with a flat roof, 3.20 m walls and a crown, with its door facing the entrance road (height inferred).
 - **Station d'épuration:** its outline is from the plan; the 3.00 m enclosure height is inferred.
 - **Pergolas of the jardin aquatique:** the slats are from the plan; the posts and the 3.05 m height are inferred.
 - **Colours**
@@ -129,5 +135,6 @@ The rest of the site is empty land, with the exact site boundary and the natural
 | CAM_09_BIRDSEYE_DUPLEX | Bird's-eye view of the duplex blocks |
 | CAM_10_TOP_PLAN | Orthographic top view, to compare with the plan de masse |
 | CAM_11_DUPLEX_HERO | One duplex from its access side |
+| CAM_12_ENTRANCE_ISLAND | Entrance island with the gatehouse |
 
 Light: sun at 10:15 on 15 October, at the site's latitude and longitude, through a Nishita sky. The view transform is AgX Punchy.
