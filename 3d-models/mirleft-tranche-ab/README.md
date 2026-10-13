@@ -94,6 +94,9 @@ The rest of the site is empty land, with the exact site boundary and the natural
 - **Pavements and plot paths:** light concrete paving (the plan's ANSI37 hatch). The herringbone patches are paved the same way.
 - **Gardens:** the areas the plan's lines enclose inside each of the 17 plots, as lawn.
 - **Asphalt base:** one continuous asphalt base runs under the whole area; the other surfaces sit 5–15 cm above it. Leftover slivers under 1–7 m² are left as road. This means there are no gaps at the tips of the parking teeth.
+- **Canal median at the entrance:** a raised paved strip, 6.8 m wide, around the east canal, from the roundabout crossing to the gatehouse island (the plan's lines 1.4 m outside each canal edge).
+- **Mini-foot:** the pitch surface follows the two fields' outer lines (+0.3 m), so it no longer covers the parking bays or adds a strip on the south side.
+- **Renders:** the renders date from before the median and mini-foot fixes; the .blend files include them.
 - **Entrance island:** the rounded 8 × 8 m island is paved with diagonal pavers (the plan's 45° crosshatch) and carries the gatehouse.
 - **Removed, at the client's request:** zebra crossings, direction arrows and cars.
 

@@ -139,7 +139,7 @@ def build_terrain(M, col, site, ab):
 
 # ---------------------------------------------------------------------------------------------
 OFFS = {"asphalt": (0.00, "asphalt"), "plaza": (0.12, "pavers"), "lawn": (0.10, "lawn"), "deck": (0.15, "terrace"),
-        "play": (0.10, "play"), "court": (0.05, None), "paving": (0.15, "kerb_paving")}
+        "play": (0.10, "play"), "court": (0.05, None), "paving": (0.15, "kerb_paving"), "median": (0.15, "kerb_paving")}
 
 
 MIN_AREA = {"plaza": 3.0, "deck": 7.0, "lawn": 4.0, "play": 3.0, "paving": 1.0}

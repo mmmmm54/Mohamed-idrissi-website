@@ -245,7 +245,7 @@ for name, reg in [("tennis", Polygon([(47958, 290393), (47980, 290402), (47998, 
     if name == "tennis":
         encl = MultiPoint([p for a, b in sg if math.dist(a, b) > 15 for p in (a, b)]).minimum_rotated_rectangle
     else:   # the two pitches (18.5 m lines) + 1 m run-off; the enclosure line also takes in parking bays
-        encl = MultiPoint([p for a, b in sg if 18.0 < math.dist(a, b) < 19.0 for p in (a, b)]).minimum_rotated_rectangle.buffer(1.0, join_style=2)
+        encl = MultiPoint([p for a, b in sg if 18.0 < math.dist(a, b) < 19.0 for p in (a, b)]).minimum_rotated_rectangle.buffer(0.3, join_style=2)
     courts[name] = {"surface": poly_loc(encl)[0], "lines": [loc([a, b]) for a, b in sg if math.dist(a, b) > 0.5 and math.dist(a, b) < longest - 1.0
                                                          and encl.buffer(0.05).contains(LineString([a, b]))]}
 site["courts"] = courts
@@ -303,7 +303,14 @@ for f in faces2:
 gardens = unary_union(gardens + [picked["lawn"]])
 # the road face of the equipment zone: direction arrows were drawn as closed triangles, fill them
 asph = unary_union([Polygon(g.exterior, [h for h in g.interiors if Polygon(h).area > 40]) for g in L_as_polys(picked["asphalt"])])
-order = [("water", water_u), ("paving", unary_union([pav_u, hb_u])), ("court", court_u), ("play", picked["play"]),
+# canal median at the entrance (client, 13-10): raised paved strip 6.8 m wide around the east canal,
+# from the roundabout crossing to the gatehouse island (plan: lines 1.4 m outside each canal edge)
+_ca, _cc = math.radians(22.41), (47986.1, 290350.9)
+_U, _N = (math.cos(_ca), math.sin(_ca)), (-math.sin(_ca), math.cos(_ca))
+_uv = lambda u, v: (_cc[0] + _U[0] * u + _N[0] * v, _cc[1] + _U[1] * u + _N[1] * v)
+island = unary_union([q for q in L_as_polys(pav_u) if q.buffer(0.5).contains(Point(48008.5, 290360.1))])
+median = Polygon([_uv(-15.2, -3.4), _uv(20.6, -3.4), _uv(20.6, 3.4), _uv(-15.2, 3.4)]).difference(island.buffer(0.02))
+order = [("water", water_u), ("median", median), ("paving", unary_union([pav_u, hb_u])), ("court", court_u), ("play", picked["play"]),
          ("deck", picked["deck"]), ("lawn", gardens),
          ("asphalt", unary_union([asph, AB.difference(equip)])),
          ("plaza", equip.intersection(unary_union([Polygon([(x + O[0], y + O[1]) for x, y in pb[k]["outline"][0]["ext"]]).buffer(2.0)
