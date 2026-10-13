@@ -13,6 +13,7 @@ The rest of the site is empty land, with the exact site boundary and the natural
 | File | Contents |
 |---|---|
 | `Mirleft_Tranche_AB_PACKED.blend` | The same scene with every texture packed inside (71.8 MB): open it on any computer, no other folder needed. |
+| `Mirleft_Tranche_AB_PACKED_2K.blend` | Same scene, textures packed at 2K (13.9 MiB): the light copy to send or open anywhere. |
 | `Mirleft_Tranche_AB.blend` | The scene: terrain, ground surfaces, 17 duplexes, public buildings, trees, cars and 11 cameras. Its textures are linked from `../mirleft-bay/assets/textures`, so keep the two folders side by side. |
 | `renders/` | 11 views at 1920 × 1080 (see the list below). |
 | `blender/01_extract_site.py` | Reads the plan de masse (DWG exploded to primitives by `tools/`) and writes `data/site.json`. |
