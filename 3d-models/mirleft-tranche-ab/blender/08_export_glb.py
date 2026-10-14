@@ -206,10 +206,74 @@ def main():
                 o.location.y -= cy
                 o.location.z -= cz
         out = os.path.join(ROOT, "Mirleft_Tranche_AB_AE_centred.glb")
+    if "--ae-safe" in sys.argv:
+        out = ae_safe(vl)
     bpy.ops.export_scene.gltf(filepath=out, export_format="GLB", use_visible=True, export_cameras=False,
-                              export_lights=False, export_apply=True, export_image_format="AUTO",
+                              export_lights=False, export_apply=True, export_image_format="JPEG" if "--ae-safe" in sys.argv else "AUTO",
                               export_materials="EXPORT", export_yup=True, export_draco_mesh_compression_enable=False)
     print("GLB", round(os.path.getsize(out) / 2 ** 20, 1), "MiB", "materials", len(swapped), "meshes", len(done))
+    if "--ae-safe" in sys.argv:
+        export_obj(out)
+
+
+def ae_safe(vl):
+    """Most compatible variant (After Effects): Tranche A+B only (no empty-land terrain, the
+    satellite photo is the ground), no alpha-card trees, every instance made real and joined
+    into ONE mesh, centred on A+B with its ground at height 0. Plain JPEG textures and colours."""
+    src = bpy.data.collections.get("SRC")
+    if src is not None:
+        for o in list(src.objects):
+            bpy.data.objects.remove(o, do_unlink=True)
+    for o in list(vl.objects):
+        if o.type != "MESH" or o.name.startswith(("TERRAIN", "VEG_")) or o.hide_render:
+            bpy.data.objects.remove(o, do_unlink=True)
+    vl.update()
+    for o in list(bpy.data.objects):
+        if o.type in ("CAMERA", "LIGHT"):
+            bpy.data.objects.remove(o, do_unlink=True)
+    mats = [m for m in bpy.data.materials if m.name.endswith("_GLB") and m.node_tree and
+            any(n.type == "TEX_IMAGE" and n.image and n.image.filepath.lower().endswith(".png") for n in m.node_tree.nodes)]
+    for m in mats:                     # mashrabiya: opaque dark timber instead of the alpha lattice
+        nt = m.node_tree
+        for n in [n for n in nt.nodes if n.type == "TEX_IMAGE"]:
+            nt.nodes.remove(n)
+        m.blend_method = "OPAQUE"
+        b = nt.nodes["Principled BSDF"]
+        b.inputs["Base Color"].default_value = (*lin("#3B2414"), 1.0)
+        b.inputs["Alpha"].default_value = 1.0
+    vl.update()
+    obs = [o for o in vl.objects if o is not None and o.type == "MESH"]
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in obs:
+        o.select_set(True)
+    vl.objects.active = obs[0]
+    bpy.ops.object.make_single_user(object=True, obdata=True)
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    bpy.ops.object.join()
+    ob = vl.objects.active
+    ob.name = ob.data.name = "MIRLEFT_TRANCHE_AB"
+    cx, cy = 17.3, 19.6
+    cz = 0.03653 * cx + 0.04115 * cy + 59.41131 - 50.0
+    ob.data.transform(__import__("mathutils").Matrix.Translation((-cx, -cy, -cz)))
+    tris = sum(len(p.vertices) - 2 for p in ob.data.polygons)
+    print("AE_SAFE one mesh", tris, "triangles", len(ob.data.materials), "materials")
+    return os.path.join(ROOT, "Mirleft_Tranche_AB_AE_SAFE.glb")
+
+
+def export_obj(glb):
+    """OBJ + MTL + JPEG textures of the same single mesh, zipped (After Effects also reads OBJ)."""
+    import shutil
+    import zipfile
+    d = os.path.join(TMP, "Mirleft_Tranche_AB_OBJ")
+    os.makedirs(d, exist_ok=True)
+    objp = os.path.join(d, "Mirleft_Tranche_AB.obj")
+    bpy.ops.wm.obj_export(filepath=objp, export_selected_objects=False, forward_axis="NEGATIVE_Z", up_axis="Y",
+                          export_materials=True, path_mode="COPY", export_uv=True, export_normals=True)
+    z = os.path.join(ROOT, "Mirleft_Tranche_AB_OBJ.zip")
+    with zipfile.ZipFile(z, "w", zipfile.ZIP_DEFLATED) as zf:
+        for f in os.listdir(d):
+            zf.write(os.path.join(d, f), f)
+    print("OBJ_ZIP", round(os.path.getsize(z) / 2 ** 20, 1), "MiB", len(os.listdir(d)), "files")
 
 
 if __name__ == "__main__":

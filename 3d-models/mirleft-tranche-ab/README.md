@@ -15,6 +15,9 @@ The rest of the site is empty land, with the exact site boundary and the natural
 | `Mirleft_Tranche_AB_PACKED.blend` | The same scene with every texture packed inside (71.7 MB): open it on any computer, no other folder needed. |
 | `Mirleft_Tranche_AB_PACKED_2K.blend` | Same scene, textures packed at 2K (13.8 MiB): the light copy to send or open anywhere. |
 | `Mirleft_Tranche_AB.glb` | Light GLB (10 MiB) for After Effects or web viewers. It has the textures and colours embedded (JPEG, 1024 px max; PNG with alpha for the leaves and mashrabiya). The duplex mesh is shared 17 times and the boutique/restaurant mesh twice. No cameras or lights. Metres, Y up. Built by `blender/08_export_glb.py`. |
+| `Mirleft_Tranche_AB_AE_SAFE.glb` | The most compatible version for After Effects: Tranche A+B only (no empty-land terrain, no alpha-card trees), joined into one mesh, centred with its ground at 0. JPEG textures and colours. `08_export_glb.py --ae-safe` |
+| `Mirleft_Tranche_AB_OBJ.zip` | The same single mesh as OBJ + MTL + JPEG textures. |
+| `Mirleft_Tranche_AB_AE_centred.glb` | The full GLB, centred on Tranche A+B (`--ae`). |
 | `Mirleft_Tranche_AB.blend` | The scene: terrain, ground surfaces, 17 duplexes, public buildings, trees and 12 cameras. Its textures are linked from `../mirleft-bay/assets/textures`, so keep the two folders side by side. |
 | `renders/` | 12 views at 1920 × 1080 (see the list below). |
 | `blender/01_extract_site.py` | Reads the plan de masse (DWG exploded to primitives by `tools/`) and writes `data/site.json`. |
