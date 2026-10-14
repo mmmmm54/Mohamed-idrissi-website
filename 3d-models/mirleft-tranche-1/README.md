@@ -18,6 +18,7 @@ The rest of the site is empty land: the exact site boundary and the natural slop
 | `Mirleft_Tranche_1_AE_SAFE.glb` | The most compatible version for After Effects (16 MB): the tranche only, one mesh of 187k triangles, centred with its ground at 0, JPEG only, no alpha, no trees. `08_export_glb.py --ae-safe` |
 | `Mirleft_Tranche_1_OBJ.zip` | The same single mesh as OBJ + MTL + JPEG textures (6 MB), written by the same command. |
 | `renders/` | 12 views at 1920 × 1080 (see the list below). |
+| `Mirleft_Tranche_1_views.jpg` | The 12 views on one sheet. |
 | `blender/01_extract_site.py` | Reads the plan (DWG made into primitives by `tools/`) and writes `data/site.json`. |
 | `blender/02_duplex.py` | The duplex pair, in the two variants the plan draws. |
 | `blender/03_public.py` | Restaurant, commerces, toilet block, technical block, pétanque. |
@@ -132,7 +133,7 @@ Zebra crossings, direction arrows and cars.
 | CAM_07_DUPLEX_A_HERO | A D-5…D-24 pair from its lane (D-17 / D-18) |
 | CAM_08_DUPLEX_B_D1_D2 | D-1 / D-2 from their access side |
 | CAM_09_PETANQUE | Pétanque courts and pergola |
-| CAM_10_ENTRANCE_FOUNTAIN | Entrance, median bassins and fountain |
+| CAM_10_ENTRANCE_FOUNTAIN | Entrance from the ring road: median bassin, fountain, restaurant and commerces |
 | CAM_11_GARDENS_BIRDSEYE | Bird's-eye view of the gardens and roofs |
 | CAM_12_TOP_PLAN | Orthographic top view, to compare with the plan de masse |
 
