@@ -12,6 +12,7 @@ file stays small. No cameras or lights. Units metres, +Y up (glTF). Writes
 Mirleft_Tranche_AB.glb next to the .blend.
 """
 import os
+import sys
 import tempfile
 
 import bpy  # noqa: I001
@@ -195,6 +196,16 @@ def main():
             box_uv(me, face_tiles)
         done.add(me.name)
     out = os.path.join(ROOT, "Mirleft_Tranche_AB.glb")
+    if "--ae" in sys.argv:
+        # After Effects: origin at the centre of Tranche A+B, its ground at height 0
+        cx, cy = 17.3, 19.6
+        cz = 0.03653 * cx + 0.04115 * cy + 59.41131 - 50.0
+        for o in vl.objects:
+            if o.parent is None:
+                o.location.x -= cx
+                o.location.y -= cy
+                o.location.z -= cz
+        out = os.path.join(ROOT, "Mirleft_Tranche_AB_AE_centred.glb")
     bpy.ops.export_scene.gltf(filepath=out, export_format="GLB", use_visible=True, export_cameras=False,
                               export_lights=False, export_apply=True, export_image_format="AUTO",
                               export_materials="EXPORT", export_yup=True, export_draco_mesh_compression_enable=False)
