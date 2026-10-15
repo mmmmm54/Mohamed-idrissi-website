@@ -103,10 +103,13 @@ The rest of the site is empty land: the exact site boundary and the natural slop
 - **Ground**: the 1er TRANCHE is graded on one plane fitted to the contours, 5.5 % rising to the east.
 - **Buildings**
   - Each duplex pair sits at the plane height of its centre.
-  - The commerces sit at the level of their entrance side (east). The restaurant's platform deck is level with the highest ground at its edge. On the downhill side their plinths show.
-- **Pool court**: sunk 1.70 m below the top of its gradins (four risers of 0.425 m, and the ten 0.17 m steps of the stairs).
-  - The strip behind the gradins is levelled at that height and blends back into the slope over 10 m.
+  - The commerces sit at the level of their entrance side (east). On the downhill side their plinth shows.
+  - The restaurant's platform deck is level with the highest ground at its edge. Its plinth goes down to the lower ground on the pool side.
+- **Pool court**: 1.70 m from the deck to the top of its gradins (four risers of 0.425 m, and the ten 0.17 m steps of the stairs).
+  - Revision 15-10: the whole pool area is 1.00 m lower. The deck is now 2.70 m below the ground at the top of the gradins.
+  - The strip behind the gradins sits 1.00 m below the ground around it and grades back over 10 m.
   - The other sides are retaining walls with a 1.00 m guard. The ramp climbs from the deck to the upper level.
+  - The north wall is the guard of the long stair beside it. It has an opening where that stair lands on the deck.
 - **Stairs** (revision 15-10): built stairs, filled wall to wall. Each step has a level tread, a vertical riser and a dark stone nosing. A handrail runs on the centre line over each flight.
   - The flights are where the plan draws them: 'ESC 16-17' and 'ESC V4' across the rows, and the long stair north of the pool.
   - The plan gives no levels. Each stair climbs the height the ground gives between its two ends, in risers of about 15 cm:
@@ -115,9 +118,11 @@ The rest of the site is empty land: the exact site boundary and the natural slop
     |---|---|---|---|
     | ESC 16-17 | 0.79 m | 5 × 0.158 m | 9 + 9 |
     | ESC V4 | 0.65 m | 4 × 0.163 m | 9 + 12 |
-    | North of the pool | 0.58 m | 4 × 0.145 m | 10 + 11 |
+    | North of the pool | 2.47 m down | 16 × 0.154 m | 10 + 11 |
 
   - The level walk between the flights takes the rest of the length.
+  - The long stair north of the pool goes down from the row C lane into the pool court (revision 15-10). It lands on the deck at the court's north-east corner, by the showers.
+    - Retaining walls hold the higher ground on its north side and at its end.
 
 ## Removed (client, 13-10)
 Direction arrows and cars. The zebra crossings were put back as paint (15-10).
@@ -130,9 +135,10 @@ Direction arrows and cars. The zebra crossings were put back as paint (15-10).
 - **Commerce stairs**: modelled going down to the sous-sol, which the light wells point to.
 - **Walls**: garden walls 1.80 m; pétanque and boundary walls 1.20 m.
 - **Ground between the pool and the restaurant terrace**: not hatched on the plan; modelled as lawn.
-- **Stair heights**: the risers the plan draws (18 to 21 per stair) would need about 2.7 to 3.4 m of height. The contours show 0.6 to 0.8 m.
-  - So the stairs follow the ground.
-  - With the platform levels of the rows, the drawn risers can be built instead.
+- **Stair heights**: the plan gives no levels.
+  - 'ESC 16-17' and 'ESC V4' follow the ground (0.65 to 0.79 m). Their drawn risers (18 and 21) would need about 2.7 to 3.4 m.
+  - The extra 1.00 m for the pool area is a choice. With it, the stair north of the pool goes down 2.47 m in 16 risers. Its 21 drawn risers would need about 3.3 m.
+  - With the platform levels, the drawn risers can be built instead.
 - **Median paving**: the material of the two beds is read from the plan's hatch.
 - **Planting**
   - The plan gives tree positions, not species.

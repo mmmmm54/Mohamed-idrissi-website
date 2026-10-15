@@ -69,9 +69,11 @@ def wall_strip(mb, mat, a, b, t, z0, ztop, side=1.0, seg=1.5):
         L.prism(mb, "trim", pg.buffer(0.03, join_style=2), zt, zt + 0.05)
 
 
-def build(M, col, ground, water_polys, name="POOL_COURT"):
+def build(M, col, ground, water_polys, name="POOL_COURT", north_top=None, north_gap=None):
     """ground(u, v): height of the natural (graded) ground above the deck at a pool-local point.
-    water_polys: {'pool': Polygon, 'kids_pool': Polygon} in pool-local coordinates."""
+    water_polys: {'pool': Polygon, 'kids_pool': Polygon} in pool-local coordinates.
+    north_top(u): top of the north wall above the deck, when the long north stair runs along it (the
+    wall is then its 1 m guard over the court); north_gap (u0, u1): opening where that stair lands."""
     mb = C.MeshBuilder()
     pool = water_polys["pool"]
     kids = water_polys["kids_pool"]
@@ -134,6 +136,12 @@ def build(M, col, ground, water_polys, name="POOL_COURT"):
             continue                                         # south-west: the local technique
         if abs(a[0] + 7.00) < 0.01 and abs(b[0] + 7.00) < 0.01:
             continue                                         # foot of the ramp
+        if north_top is not None and abs(a[1] - 20.20) < 0.01 and abs(b[1] - 20.20) < 0.01:
+            g0, g1 = north_gap if north_gap else (b[0], b[0])
+            for p_, q_ in (((max(a[0], b[0]), 20.20), (g1, 20.20)), ((g0, 20.20), (min(a[0], b[0]), 20.20))):
+                if p_[0] - q_[0] > 0.05:                     # north: guard of the stair, minus the opening
+                    wall_strip(mb, "render", p_, q_, 0.25, -0.60, lambda x, y: north_top(x), side=-1.0)
+            continue
         wall_strip(mb, "render", a, b, 0.25, -0.60, lambda x, y: max(ground(x, y), 0.0) + 1.00, side=-1.0)
     # north-east: short wall from the court corner to the stair, and the stair cheeks
     wall_strip(mb, "render", (8.70, 20.20), (8.70, 17.40), 0.25, -0.60, lambda x, y: max(ground(x, y), 0.0) + 1.00, side=1.0)

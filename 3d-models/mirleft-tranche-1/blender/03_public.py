@@ -300,9 +300,10 @@ PASSAGE = box(-2.50, -7.18, 2.50, -3.18)
 COUR = box(-12.70, -3.10, -8.62, 3.20)
 
 
-def pavilion(M, col, rear_bassin=True, name="SRC_RESTAURANT"):
+def pavilion(M, col, rear_bassin=True, name="SRC_RESTAURANT", plinth=-1.80):
     """The pavilion with its platform: front bassins and planters, bridge, cour anglaise, rear terrace
-    and (rear_bassin) the bassin strip behind it, timber pergolas at the rear corners."""
+    and (rear_bassin) the bassin strip behind it, timber pergolas at the rear corners. plinth: depth
+    of the platform's base below the pad, down to the lowest ground under its edge."""
     mb = C.MeshBuilder()
     plat = PLATFORM if rear_bassin else PLATFORM_FULL
     towers = [(-TX1, FT[0], -TX0, FT[1], ("front", "left")), (TX0, FT[0], TX1, FT[1], ("front", "right")),
@@ -314,16 +315,16 @@ def pavilion(M, col, rear_bassin=True, name="SRC_RESTAURANT"):
     planters = [box(-8.90, -8.58, -5.40, -7.48), box(5.40, -8.58, 8.90, -7.48)]
     water = water.difference(solids.buffer(0.0)).difference(bridge).difference(unary_union(planters))
     deck = plat.difference(water).difference(COUR).difference(solids.buffer(-0.02))
-    L.prism(mb, "terrace", deck, -1.80, 0.20)
+    L.prism(mb, "terrace", deck, plinth, 0.20)
     L.prism(mb, "slate", bridge.difference(PORTAL.buffer(-0.40)), 0.20, 0.22, sides=False)
     for w in L.as_polys(water):
         L.prism(mb, "pool_tile", w, -0.60, -0.55, sides=False)
         L.prism(mb, "pool_water", w, -0.12, -0.10, sides=False)
     if rear_bassin:
-        L.prism(mb, "pool_tile", box(-14.775, 11.32, 14.775, 13.62).difference(box(-14.575, 11.32, 14.575, 13.42)), -1.80, 0.25)
+        L.prism(mb, "pool_tile", box(-14.775, 11.32, 14.775, 13.62).difference(box(-14.575, 11.32, 14.575, 13.42)), plinth, 0.25)
         L.prism(mb, "pool_tile", box(-14.575, 11.32, 14.575, 13.42), -0.60, -0.55, sides=False)
         L.prism(mb, "pool_water", box(-14.575, 11.32, 14.575, 13.42), -0.12, -0.10, sides=False)
-    L.prism(mb, "terrace", plat.buffer(0.15, join_style=2).difference(plat.buffer(-0.15, join_style=2)), -1.80, 0.25)
+    L.prism(mb, "terrace", plat.buffer(0.15, join_style=2).difference(plat.buffer(-0.15, join_style=2)), plinth, 0.25)
     for p in planters:
         L.prism(mb, "render_dark", p, -0.60, 0.65)
         L.prism(mb, "lawn", p.buffer(-0.12, join_style=2), 0.60, 0.62, sides=False)

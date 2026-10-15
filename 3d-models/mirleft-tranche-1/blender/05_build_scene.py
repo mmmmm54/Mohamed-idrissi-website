@@ -6,13 +6,15 @@
 World frame: metres, x east, y north (the plan's north arrow), origin = DWG (252000, 119430),
 z = altitude - 50 m. The 1er TRANCHE is graded on the plane fitted to the plan's contours (the 2013
 contours brought over, 5.5 % rising to the east); duplex pads, the restaurant and the commerces sit
-at the plane height of their centre; the pool court is sunk 1.70 m below the top of its gradins.
+at the plane height of their centre; the pool court is sunk 2.70 m below the ground at the top of
+its gradins (1.70 m of gradins, the gradins top 1.00 m below the ground around it).
 The rest of the site keeps the natural terrain of the contours, blended over 25 m.
 
 Revision 15-10: the restaurant is the pavilion of its own plan (3-PLAN_RESTAURANT_PAVILLON) on the
 12-10 axis; the stairs are built (level treads, risers of about 15 cm for the height the ground
 gives, flights where the plan draws them); the entrance median is paved, not water; the pedestrian
-crossings are painted on the road; no garden wall along the paved band round D-3/D-4.
+crossings are painted on the road; no garden wall along the paved band round D-3/D-4. The pool area
+is 1.00 m lower; the long stair north of it goes down from the row C lane to its deck.
 """
 import importlib.util
 import json
@@ -319,30 +321,44 @@ def ground_top(x, y):
 
 
 RISER = 0.15
+POOL_DROP = 1.00       # the pool court lowered 1.00 m more (15-10 request), its gradins top with it
 PAV_DY = 1.30          # restaurant pavilion: its centre on the 12-10 axis, 1.30 m behind the block's centre
 
 
-def solid_stair(mb, eA, eB, width, flights, pad=0.15):
-    """A built stair from end A to end B (the two ground levels there), wall to wall: level treads,
-    vertical risers. Flights where the plan draws them, each with its share of the risers; their
-    number comes from the height to climb (risers of about RISER m), the long walk between is level.
-    A slim handrail on the centre line over each flight (the plan's centre line)."""
+def stair_plan(eA, eB, flights, zB=None):
+    """Levels of a built stair from end A to end B: the ground there (or zB, a fixed level at B).
+    Flights where the plan draws them, each with its share of the risers; their number comes from
+    the height to climb (risers of about RISER m), the walk between the flights is level."""
     eA, eB = np.array(eA, float), np.array(eB, float)
     Lt = float(np.linalg.norm(eB - eA))
     ax = (eB - eA) / Lt
-    nr = np.array([-ax[1], ax[0]])
     zA = ground_top(*(eA - ax * 0.4))
-    zB = ground_top(*(eB + ax * 0.4))
+    zB = ground_top(*(eB + ax * 0.4)) if zB is None else zB
     dz = zB - zA
     n_tot = max(len(flights), int(round(abs(dz) / RISER)))
     drawn = sum(f[2] for f in flights)
     ns = [max(1, int(round(n_tot * f[2] / drawn))) for f in flights]
     ns[-1] = max(1, n_tot - sum(ns[:-1]))
-    h = dz / sum(ns)
     risers = []
     for (t0, t1, _), n in zip(flights, ns):
         risers += [0.5 * (t0 + t1)] if n == 1 else [t0 + (t1 - t0) * j / (n - 1) for j in range(n)]
-    risers.sort()
+    return {"eA": eA, "ax": ax, "nr": np.array([-ax[1], ax[0]]), "Lt": Lt, "zA": zA, "zB": zB, "dz": dz,
+            "h": dz / sum(ns), "risers": sorted(risers), "flights": flights, "n": sum(ns)}
+
+
+def stair_level(sp, t):
+    """Tread level of the stair at distance t from end A."""
+    return sp["zA"] + sp["h"] * sum(1 for r in sp["risers"] if r <= t)
+
+
+def solid_stair(mb, sp, width, pad=0.15, cheeks=()):
+    """The stair of stair_plan(), wall to wall: level treads, vertical risers, a dark stone nosing at
+    each step, a slim handrail on the centre line over each flight (the plan's centre line).
+    cheeks: sides (+1 left of A->B, -1 right) that get a retaining wall where the ground beside the
+    stair is higher than its treads; an end wall closes B the same way."""
+    eA, ax, nr, Lt, zA, zB, h = sp["eA"], sp["ax"], sp["nr"], sp["Lt"], sp["zA"], sp["zB"], sp["h"]
+    flights, risers = sp["flights"], sp["risers"]
+    ns = [sum(1 for r in risers if f[0] - 1e-6 <= r <= f[1] + 1e-6) for f in flights]
     W = lambda t, s: tuple(eA + ax * t + nr * s)
     quad = lambda t0, t1, s0, s1: Polygon([W(t0, s0), W(t1, s0), W(t1, s1), W(t0, s1)])
     zb = min(zA, zB) - 0.60
@@ -374,7 +390,25 @@ def solid_stair(mb, eA, eB, width, flights, pad=0.15):
             z0_, z1_ = za + (zb_ - za) * u0 + 0.90, za + (zb_ - za) * u1 + 0.90
             mb.poly("bronze", [(q0[0] - nr[0] * 0.025, q0[1] - nr[1] * 0.025, z0_), (q1[0] - nr[0] * 0.025, q1[1] - nr[1] * 0.025, z1_),
                                (q1[0] + nr[0] * 0.025, q1[1] + nr[1] * 0.025, z1_), (q0[0] + nr[0] * 0.025, q0[1] + nr[1] * 0.025, z0_)])
-    return quad(0.0, Lt, -width / 2 - pad, width / 2 + pad), dz, sum(ns), h
+    e_ = width / 2 + pad
+    for side in cheeks:                                   # retaining cheeks where the ground is higher
+        for k in range(len(edges) - 1):
+            t0, t1 = edges[k], edges[k + 1]
+            m = max(1, int((t1 - t0) / 1.5 + 0.999))
+            for j in range(m):
+                a_, b_ = t0 + (t1 - t0) * j / m, t0 + (t1 - t0) * (j + 1) / m
+                g = ground_top(*W(0.5 * (a_ + b_), side * (e_ + 0.45)))
+                z = zA + h * k
+                if g > z + 0.05:
+                    s0, s1 = sorted((side * e_, side * (e_ + 0.20)))
+                    L.prism(mb, "render", quad(a_, b_, s0, s1), zb, g + 0.05)
+                    L.prism(mb, "trim", quad(a_, b_, s0, s1).buffer(0.03, join_style=2), g + 0.05, g + 0.10)
+    if cheeks:
+        g = ground_top(*(eA + ax * (Lt + 0.45)))
+        if g > zB + 0.05:
+            L.prism(mb, "render", quad(Lt, Lt + 0.20, -e_ - 0.20, e_ + 0.20), zb, g + 0.05)
+            L.prism(mb, "trim", quad(Lt, Lt + 0.20, -e_ - 0.20, e_ + 0.20).buffer(0.03, join_style=2), g + 0.05, g + 0.10)
+    return quad(0.0, Lt, -width / 2 - pad, width / 2 + pad)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -403,7 +437,7 @@ def main():
     POOL = load("04_pool.py")
     pc = SITE["pool"]
     fw = frame(pc["c"], pc["rot_deg"])
-    z_deck = hg(*fw(POOL.GRADINS_U[3], 0.0)) - POOL.RISE
+    z_deck = hg(*fw(POOL.GRADINS_U[3], 0.0)) - POOL.RISE - POOL_DROP
     PAD["poly"] = to_world(POOL.upper_pad(), pc["c"], pc["rot_deg"])
     PAD["z"] = z_deck + POOL.RISE
     build_terrain(M, cols["01_TERRAIN"], site, t1)
@@ -426,7 +460,11 @@ def main():
     pav_c = fr_(0.0, PAV_DY)
     plat = PUB.PLATFORM_FULL.buffer(0.15, join_style=2)
     z_pav = max(hz(*fr_(x, y + PAV_DY)) for x, y in plat.exterior.coords[:-1]) - 0.20
-    place(PUB.pavilion(M, cols["SRC"]), "RESTAURANT", pav_c, r["rot_deg"], cols["04_PUBLIC"], z=z_pav)
+    edge = plat.exterior
+    z_low = min(hz(*fr_(*edge.interpolate(d).coords[0][:2] + np.array([0.0, PAV_DY]))) for d in np.linspace(0, edge.length, 80))
+    plinth = min(-1.80, z_low - z_pav - 0.30)          # its base below the lowest ground at its edge
+    place(PUB.pavilion(M, cols["SRC"], plinth=plinth), "RESTAURANT", pav_c, r["rot_deg"], cols["04_PUBLIC"], z=z_pav)
+    print(f"  restaurant platform: deck {z_pav + 0.20 + Z0:.2f} m, base {plinth:.2f} m below the pad")
     cut.append(to_world(plat, pav_c, r["rot_deg"]))
     # pads of the commerces: the entrance side at the ground level (the slope rises to the east)
     c = SITE["commerces"]
@@ -452,7 +490,12 @@ def main():
     for kind in ("pool", "kids_pool"):
         g = unary_union([Polygon(w["poly"]["ext"], w["poly"]["holes"]) for w in SITE["water"] if w["kind"] == kind])
         wp[kind] = to_local(g, pc["c"], pc["rot_deg"])
-    pool_ob = POOL.build(M, cols["SRC"], ground, wp)
+    # the long stair north of the court ('ESCALIERS' 1-10 and 11-21): from the row C lane down into the
+    # sunken court, landing on the deck at its north-east corner through an opening in the north wall;
+    # that wall is its 1 m guard over the court
+    sp_n = stair_plan(fw(-12.40, 22.175), fw(8.70, 22.175), [(0.0, 5.50, 10), (14.30, 19.80, 11)], zB=z_deck)
+    north_top = lambda u: stair_level(sp_n, u + 12.40) - z_deck + 1.00
+    pool_ob = POOL.build(M, cols["SRC"], ground, wp, north_top=north_top, north_gap=(7.40, 8.70))
     place(pool_ob, "POOL_COURT", pc["c"], pc["rot_deg"], cols["05_POOL"], z=z_deck)
     pool_ob.users_collection[0].objects.unlink(pool_ob)
     cut.append(to_world(POOL.footprint(), pc["c"], pc["rot_deg"]))
@@ -478,13 +521,12 @@ def main():
     cut.extend(pits)
     # stairs: across the rows ('ESC 16-17', 'ESC V4', flights read from the plan) and the long stair
     # north of the pool court ('ESCALIERS' 1-10 and 11-21, landing between)
-    stair_specs = [(s["name"], s["axis"][0], s["axis"][1], s["width"], s["flights"]) for s in SITE["stairs"]]
-    stair_specs.append(("ESCALIERS NORD PISCINE", fw(-12.40, 22.175), fw(7.40, 22.175), 3.45, [(0.0, 5.50, 10), (14.30, 19.80, 11)]))
+    stair_specs = [(s["name"], stair_plan(s["axis"][0], s["axis"][1], s["flights"]), s["width"], ()) for s in SITE["stairs"]]
+    stair_specs.append(("ESCALIERS NORD PISCINE", sp_n, 3.45, (1,)))
     mb_st = C.MeshBuilder()
-    for name, a_, b_, w_, fl in stair_specs:
-        foot, dz, n_r, h_r = solid_stair(mb_st, a_, b_, w_, fl)
-        cut.append(foot)
-        print(f"  stair {name}: rise {dz:+.2f} m, {n_r} risers of {abs(h_r):.3f} m")
+    for name, sp, w_, cheeks in stair_specs:
+        cut.append(solid_stair(mb_st, sp, w_, cheeks=cheeks))
+        print(f"  stair {name}: rise {sp['dz']:+.2f} m, {sp['n']} risers of {abs(sp['h']):.3f} m")
     mb_st.build("STAIRS", cols["02_GROUND"], M)
     cutp = unary_union(cut)
 
