@@ -140,6 +140,7 @@ def materials():
     M["coping"] = mod.simple("T07_Coping_White_Stone", "#EEE8DC", 0.45, 0.0, 12.0, 0.1, 0.1)
     M["soil"] = mod.simple("T08_Planter_Soil", "#6B5240", 0.95, 0.0, 25.0, 0.3, 0.4)
     M["pool_cover"] = mod.simple("T09_Pool_Cover_Blue", "#2C5E8C", 0.5, 0.0, 0.0, 0.0, 0.0)
+    M["paint"] = mod.simple("T11_Road_Paint_White", "#E9E7E0", 0.6, 0.0, 40.0, 0.12, 0.1)
     M["mod"] = mod
     return M
 

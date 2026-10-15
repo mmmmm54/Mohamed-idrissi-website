@@ -119,7 +119,7 @@ FLAT = {   # plain colours (hex), roughness, metallic
     "A01_Cushion_White": ("#EDE7DA", 0.8, 0.0), "A02_Metal_Dark": ("#2E2E30", 0.4, 0.7),
     "V05_Hedge": ("#4E6B34", 0.85, 0.0), "T07_Coping_White_Stone": ("#EEE8DC", 0.5, 0.0),
     "T08_Planter_Soil": ("#6B5240", 0.95, 0.0), "T09_Pool_Cover_Blue": ("#2C5E8C", 0.5, 0.0),
-    "T10_Terrain_Cut_Soil": ("#8C6E52", 0.95, 0.0),
+    "T10_Terrain_Cut_Soil": ("#8C6E52", 0.95, 0.0), "T11_Road_Paint_White": ("#E9E7E0", 0.6, 0.0),
 }
 ALPHA = {"D01_Mashrabiya_Wood": "#3B2414", "V01_Palm_Fan": None, "V03_Olive_Foliage": None,
          "V07_Pink_Blossom_Tree": None, "V08_Green_Shade_Tree": None}

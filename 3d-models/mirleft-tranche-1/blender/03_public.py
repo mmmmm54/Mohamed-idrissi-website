@@ -1,13 +1,13 @@
 """
 03_public — public buildings of the 1er TRANCHE (plan de masse 12-10), exterior only.
 
-RESTAURANT   block 'dfhgfdjjj' in 'RESTAURANT MIRLEFT': the restaurant pavilion of
-             3-PLAN_RESTAURANT_PAVILLON.DWG redrawn more compact on the 12-10 plan. Footprint read
-             from the block: four battered corner towers (5.56 x 3.9 m), central body with the roof
-             terrace at +8.10 ('TERRASSE'), passage and portal at +5.70, rear block, two timber
-             pergolas at the rear corners; the two front bassins with planters come from the plan
-             hatches (scene script). Tower height (+12.20), crowns, arches, bejmat panels and
-             mashrabiya screens from the pavilion permit; the rear block height (+5.70) is INFERRED.
+RESTAURANT   the pavilion of 3-PLAN_RESTAURANT_PAVILLON.DWG (15-10 request), as modelled for Tranche
+             A+B: plans RDC / ETAGE / TERRASSE-MASSE, four facades, coupes A-A, B-B, C-C. Four
+             tapered corner towers to +12.20 (terre de sienne, bejmat panels), body to +9.20 (etage
+             +4.40, roof +7.85), portal with a horseshoe arch to +7.70, passage with water walls
+             (+5.60), skylight, front and rear bassins, bridge, planters, cour anglaise, timber
+             pergolas at the rear corners. Placed on the axis of the 12-10 block 'dfhgfdjjj', its
+             platform inside the plan's TERRASSE RESTAURANT (scene script).
 COMMERCES    'COMMERCES MIRLEFT': Commerce 1 (superette) and Commerce 2 (glacier), towers ('départ
              tours'), bodies, light wells to the sous-sol ('vide d'aération sous sol'), the stair down
              on the south and the external stair of Commerce 2. Heights are not on the drawings:
@@ -285,78 +285,145 @@ def windows(Lg, z0, z1, w=0.70, gap=1.60, n_max=6, surround=0.12):
 
 
 # ---------------------------------------------------------------------------------------------
-# RESTAURANT (12-10 block 'dfhgfdjjj'; local x = X - 2327.925, y = Y - 1443.41, front = bassins = -y)
+# RESTAURANT: the pavilion of 3-PLAN_RESTAURANT_PAVILLON.DWG (plans RDC / ETAGE / TERRASSE, facades,
+# coupes), as built for Tranche A+B; placed on the axis of the 12-10 block 'dfhgfdjjj' (scene script)
 # ---------------------------------------------------------------------------------------------
-R_TOWERS = [(-8.315, -6.06, -2.755, -2.12, ("front", "left")), (2.765, -6.06, 8.315, -2.12, ("front", "right")),
-            (-8.315, 2.12, -2.755, 5.97, ("rear", "left")), (2.765, 2.12, 8.315, 5.97, ("rear", "right"))]
-R_BODY = unary_union([box(-7.395, -2.12, 7.395, 2.12), box(-2.755, -2.12, 2.765, 5.05)])
-R_PASSAGE = box(-2.755, -5.21, 2.765, -2.12)
-R_PORTAL = box(-2.20, -10.01, 2.20, -5.21)
-R_REAR = box(-2.725, 5.05, 2.775, 10.89)
-R_PERGOLAS = [(-8.525, 6.49, -3.325, 10.79), (3.475, 6.49, 8.675, 10.79)]
-R_FOOT = unary_union([box(*t[:4]).buffer(0.25, join_style=2) for t in R_TOWERS] + [R_BODY, R_PASSAGE, R_PORTAL, R_REAR])
+TX0, TX1 = 3.755, 9.785
+FT = (-7.38, -3.13)          # front towers y
+RT = (3.03, 7.37)            # rear towers y
+BODY = box(-8.60, -3.18, 8.60, 3.22)
+REAR = box(-4.20, 3.22, 4.20, 6.22)
+PLATFORM = box(-14.775, -12.18, 14.775, 11.32)
+PLATFORM_FULL = box(-14.775, -12.18, 14.775, 13.62)   # platform + the rear bassin strip
+PORTAL = box(-2.875, -12.18, 2.875, -6.88)
+PASSAGE = box(-2.50, -7.18, 2.50, -3.18)
+COUR = box(-12.70, -3.10, -8.62, 3.20)
 
 
-def restaurant(M, col, name="SRC_RESTAURANT"):
+def pavilion(M, col, rear_bassin=True, name="SRC_RESTAURANT"):
+    """The pavilion with its platform: front bassins and planters, bridge, cour anglaise, rear terrace
+    and (rear_bassin) the bassin strip behind it, timber pergolas at the rear corners."""
     mb = C.MeshBuilder()
-    L.prism(mb, "terrace", R_FOOT.buffer(0.30, join_style=2), -1.20, 0.20)
-    # ---- body: RDC + etage, roof terrace +8.10 ('TERRASSE'), crown to +9.20 ----------------------
-    def body_rule(p, q, nx, ny, Lg):
-        if abs(nx) > 0.9 and Lg > 3.0:                      # side faces between front and rear towers
-            return windows(Lg, 0.90, 2.70, w=0.60, gap=1.30, n_max=2) + windows(Lg, 5.20, 6.95, w=0.60, gap=1.30, n_max=2)
-        if ny < -0.9:                                       # entrance at the back of the passage
-            return [{"s0": -1.40, "s1": 1.40, "z0": 0.20, "z1": 3.60, "n": 4}]
-        return []
-    block(mb, R_BODY, 8.10, body_rule, crown_h=1.10, squares_z=8.55)
-    # ---- passage (+5.70) with the 'murs d'eau' -----------------------------------------------------
-    x0, y0, x1, y1 = R_PASSAGE.bounds
-    mb.box("render", x0, x1, y0, y1, 5.30, 5.70)
-    mb.box("trim", x0 - 0.06, x1 + 0.06, y0 - 0.06, y1, 5.70, 5.78)
-    for xa in (x0 + 0.02, x1 - 0.32):
-        mb.box("pool_tile", xa, xa + 0.30, y0 + 0.25, y1 - 0.30, 0.20, 2.40)
-    # ---- portal (+5.70): horseshoe arch front and back, bejmat surround ---------------------------
-    x0, y0, x1, y1 = R_PORTAL.bounds
-    arch = {"s0": -1.25, "s1": 1.25, "z0": 0.20, "z1": 4.35, "shape": "horseshoe", "kind": "open"}
-    Xf = face(mb, "render", (x0, y0), (x1, y0), 0.0, 5.70, [arch], rev=0.40)
-    Xb = face(mb, "render", (x1, y1), (x0, y1), 0.0, 5.70, [dict(arch)], rev=0.40)
+    plat = PLATFORM if rear_bassin else PLATFORM_FULL
+    towers = [(-TX1, FT[0], -TX0, FT[1], ("front", "left")), (TX0, FT[0], TX1, FT[1], ("front", "right")),
+              (-TX1, RT[0], -TX0, RT[1], ("rear", "left")), (TX0, RT[0], TX1, RT[1], ("rear", "right"))]
+    # ---- ground: platform, bassins, bridge, cour anglaise --------------------------------------
+    water = unary_union([box(-14.775, -12.18, 14.775, -3.18), box(-14.775, 7.82, -13.815, 11.32), box(13.815, 7.82, 14.775, 11.32)])
+    solids = unary_union([box(t[0], t[1], t[2], t[3]) for t in towers] + [PORTAL, PASSAGE, BODY])
+    bridge = box(-1.10, -12.18, 1.10, -3.18)
+    planters = [box(-8.90, -8.58, -5.40, -7.48), box(5.40, -8.58, 8.90, -7.48)]
+    water = water.difference(solids.buffer(0.0)).difference(bridge).difference(unary_union(planters))
+    deck = plat.difference(water).difference(COUR).difference(solids.buffer(-0.02))
+    L.prism(mb, "terrace", deck, -1.80, 0.20)
+    L.prism(mb, "slate", bridge.difference(PORTAL.buffer(-0.40)), 0.20, 0.22, sides=False)
+    for w in L.as_polys(water):
+        L.prism(mb, "pool_tile", w, -0.60, -0.55, sides=False)
+        L.prism(mb, "pool_water", w, -0.12, -0.10, sides=False)
+    if rear_bassin:
+        L.prism(mb, "pool_tile", box(-14.775, 11.32, 14.775, 13.62).difference(box(-14.575, 11.32, 14.575, 13.42)), -1.80, 0.25)
+        L.prism(mb, "pool_tile", box(-14.575, 11.32, 14.575, 13.42), -0.60, -0.55, sides=False)
+        L.prism(mb, "pool_water", box(-14.575, 11.32, 14.575, 13.42), -0.12, -0.10, sides=False)
+    L.prism(mb, "terrace", plat.buffer(0.15, join_style=2).difference(plat.buffer(-0.15, join_style=2)), -1.80, 0.25)
+    for p in planters:
+        L.prism(mb, "render_dark", p, -0.60, 0.65)
+        L.prism(mb, "lawn", p.buffer(-0.12, join_style=2), 0.60, 0.62, sides=False)
+    # cour anglaise: walls down to the sous-sol and a bronze railing
+    L.prism(mb, "render", L.ring_poly(COUR, 0.01), -3.20, 0.20)
+    L.prism(mb, "terrace", COUR, -3.21, -3.20, sides=False)
+    for (a, b) in [((-12.70, -3.10), (-8.62, -3.10)), ((-12.70, 3.20), (-8.62, 3.20)), ((-12.70, -3.10), (-12.70, 3.20))]:
+        n = int(math.dist(a, b) / 0.15)
+        for i in range(n + 1):
+            x = a[0] + (b[0] - a[0]) * i / n
+            y = a[1] + (b[1] - a[1]) * i / n
+            mb.box("bronze", x - 0.015, x + 0.015, y - 0.015, y + 0.015, 0.20, 1.20)
+        mb.box("bronze", min(a[0], b[0]) - 0.03, max(a[0], b[0]) + 0.03, min(a[1], b[1]) - 0.03, max(a[1], b[1]) + 0.03, 1.20, 1.25)
+
+    # ---- body: RDC +0.20..+4.40, etage to +7.85, parapet to +9.20 ----------------------------
+    body = unary_union([BODY, REAR])
+    holes = {}
+    for side, x in (("right", 8.60), ("left", -8.60)):
+        p, q = ((8.60, -3.18), (8.60, 3.22)) if side == "right" else ((-8.60, 3.22), (-8.60, -3.18))
+        holes[edge_index(body, p, q)] = [
+            {"s0": -1.90, "s1": -0.70, "z0": 0.90, "z1": 2.70, "n": 2, "surround": 0.12},
+            {"s0": 0.40, "s1": 0.95, "z0": 0.90, "z1": 2.70, "surround": 0.12},
+            {"s0": 1.40, "s1": 1.95, "z0": 0.90, "z1": 2.70, "surround": 0.12},
+            {"s0": -1.90, "s1": -0.70, "z0": 5.20, "z1": 6.95, "n": 2, "surround": 0.12},
+            {"s0": 0.40, "s1": 0.95, "z0": 5.20, "z1": 6.95, "surround": 0.12},
+            {"s0": 1.40, "s1": 1.95, "z0": 5.20, "z1": 6.95, "surround": 0.12}]
+    holes[edge_index(body, (4.20, 6.22), (-4.20, 6.22))] = [
+        {"s0": -2.80, "s1": 2.80, "z0": 0.20, "z1": 3.80, "n": 4},
+        {"s0": -2.65, "s1": 2.65, "z0": 5.20, "z1": 7.10, "n": 4}]
+    Xs = body_walls(mb, body, 0.0, 7.85, holes)
+    rear_X = Xs[edge_index(body, (4.20, 6.22), (-4.20, 6.22))]
+    screen(mb, rear_X, -2.65, 2.65, 4.55, 5.20, 0.30)
+    for X in Xs:
+        squares(mb, X, [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0], 8.45)
+    L.prism(mb, "roof", body.buffer(-0.24, join_style=2), 7.84, 7.85, sides=False)
+    cornice(mb, body, 7.75, 7.90, 0.10)
+    crown(mb, body, 7.85, 9.20, t=0.25)
+    # skylight pyramid over the hall (TERRASSE plan, x 47673.7-47677.1)
+    sk = box(-1.70, -1.60, 1.70, 1.70)
+    L.prism(mb, "trim", L.ring_poly(sk.buffer(0.15, join_style=2), 0.15), 7.85, 8.15)
+    cx, cy = 0.0, 0.05
+    pts = [(-1.70, -1.60), (1.70, -1.60), (1.70, 1.70), (-1.70, 1.70)]
+    for (a, b) in zip(pts, pts[1:] + pts[:1]):
+        mb.poly("glass", [(a[0], a[1], 8.15), (b[0], b[1], 8.15), (cx, cy, 9.05)])
+        mb.box("bronze", min(a[0], b[0]) - 0.03, max(a[0], b[0]) + 0.03, min(a[1], b[1]) - 0.03, max(a[1], b[1]) + 0.03, 8.12, 8.18)
+
+    # ---- passage (+5.60) and portal (+7.70, beam +6.50, horseshoe arch) ----------------------
+    for x0 in (-2.50, 2.20):
+        mb.box("render", x0, x0 + 0.30, -6.87, -3.19, 0.0, 5.30)
+    mb.box("render", -2.50, 2.50, -6.87, -3.19, 5.30, 5.60)
+    mb.box("trim", -2.58, 2.58, -6.87, -3.20, 5.60, 5.68)
+    for x0 in (-2.20, 1.90):        # 'mur d'eau' water walls inside the passage
+        mb.box("pool_tile", x0, x0 + 0.30, -6.60, -3.60, 0.20, 2.40)
+    arch = {"s0": -1.45, "s1": 1.45, "z0": 0.20, "z1": 5.20, "shape": "horseshoe", "kind": "open"}
+    Xf = face(mb, "render", (-2.875, -12.18), (2.875, -12.18), 0.0, 7.70, [arch], rev=0.40)
+    Xb = face(mb, "render", (2.875, -6.88), (-2.875, -6.88), 0.0, 7.70, [dict(arch)], rev=0.40)
     for X in (Xf, Xb):
         sh = hole_shape(arch)
-        fr = sh.buffer(0.34).difference(sh).intersection(box(-3, 0.21, 3, 6))
+        fr = sh.buffer(0.38).difference(sh).intersection(box(-3, 0.21, 3, 8))
         for t in L.tri_poly(fr):
             mb.poly("bejmat", [X(s, z, -0.05) for s, z in t])
-        squares(mb, X, [-1.6, -0.8, 0.0, 0.8, 1.6], 5.05)
-    for xa in (x0, x1 - 0.40):
-        face(mb, "render", (xa, y1) if xa < 0 else (xa + 0.40, y0), (xa, y0) if xa < 0 else (xa + 0.40, y1), 0.0, 5.70)
-        mb.box("render", xa + 0.01, xa + 0.39, y0 + 0.40, y1 - 0.40, 0.0, 5.20)
-    mb.box("render", x0 + 0.01, x1 - 0.01, y0 + 0.01, y1 - 0.01, 5.20, 5.69)
-    crown(mb, R_PORTAL.buffer(-0.001, join_style=2), 5.69, 6.10, t=0.25)
-    cornice(mb, R_PORTAL, 5.45, 5.60, 0.10)
-    # ---- rear block (+5.70, INFERRED height): rear glazing, side windows -------------------------
-    def rear_rule(p, q, nx, ny, Lg):
-        if ny > 0.9:
-            return [{"s0": -1.80, "s1": 1.80, "z0": 0.20, "z1": 3.40, "n": 4}]
-        if abs(nx) > 0.9:
-            return windows(Lg, 0.90, 2.90, w=0.70, gap=1.70, n_max=3)
-        return []
-    block(mb, R_REAR, 5.70, rear_rule, crown_h=0.55, squares_z=5.10)
-    # ---- towers (+12.20) ----------------------------------------------------------------------------
-    for x0, y0, x1, y1, outer in R_TOWERS:
-        tower(mb, x0 - 0.25, y0 - 0.25, x1 + 0.25, y1 + 0.25, 10.90, 12.20, outer, taper=0.45)
-    # ---- timber pergolas at the rear corners (slats every 0.55 m as drawn) -----------------------
-    for x0, y0, x1, y1 in R_PERGOLAS:
-        for y in (y0 + 0.10, y1 - 0.40):
-            mb.box("timber", x0, x1, y - 0.10, y + 0.10, 4.30, 4.55)
-        n = int((x1 - x0) / 0.55)
+        squares(mb, X, [-2.0, -1.33, -0.67, 0.0, 0.67, 1.33, 2.0], 6.95)
+        for s in (-2.45, 2.25):       # stacked blocks on the pilasters
+            for k in range(7):
+                z = 0.6 + k * 0.78
+                mb.poly("trim", [X(s, z, -0.06), X(s + 0.2, z, -0.06), X(s + 0.2, z + 0.5, -0.06), X(s, z + 0.5, -0.06)])
+    for x0 in (-2.875, 2.475):
+        face(mb, "render", (x0, -6.88) if x0 < 0 else (x0 + 0.40, -12.18), (x0, -12.18) if x0 < 0 else (x0 + 0.40, -6.88), 0.0, 7.70)
+        mb.box("render", x0 + 0.01, x0 + 0.39, -11.78, -7.28, 0.0, 6.50)
+    mb.box("render", -2.865, 2.865, -12.17, -6.89, 6.50, 7.69)
+    crown(mb, PORTAL.buffer(-0.001, join_style=2), 7.69, 8.10, t=0.25)
+    cornice(mb, PORTAL, 7.45, 7.60, 0.10)
+
+    # ---- towers ---------------------------------------------------------------------------------
+    for x0, y0, x1, y1, outer in towers:
+        tower(mb, x0, y0, x1, y1, 10.90, 12.20, outer)
+
+    # ---- pergolas en bois at the rear corners ---------------------------------------------------
+    for s in (-1, 1):
+        a, b = sorted((s * 14.40, s * TX1))
+        mb.box("timber", a, b, 7.85, 8.05, 4.30, 4.55)
+        mb.box("timber", a, b, 11.05, 11.25, 4.30, 4.55)
+        n = int((b - a) / 0.30)
         for i in range(n + 1):
-            x = x0 + (x1 - x0 - 0.08) * i / n
-            mb.box("timber", x, x + 0.08, y0, y1, 4.55, 4.65)
-        for px in (x0 + 0.15, x1 - 0.15):
-            for py in (y0 + 0.10, y1 - 0.40):
-                mb.box("timber", px - 0.08, px + 0.08, py - 0.08, py + 0.08, -1.50, 4.30)
-    obs = mb.build("RST", col, M)
+            x = a + (b - a - 0.08) * i / n
+            mb.box("timber", x, x + 0.08, 7.85, 11.25, 4.55, 4.65)
+        px = s * 14.25
+        for y in (7.95, 11.15):
+            mb.box("timber", px - 0.08, px + 0.08, y - 0.08, y + 0.08, 0.20, 4.30)
+
+    obs = mb.build("PAV", col, M)
     ob = L.join(obs, name)
     L.weld(ob, 0.0003)
     return ob
+
+
+PAV_TOWERS = [box(-TX1, FT[0], -TX0, FT[1]), box(TX0, FT[0], TX1, FT[1]), box(-TX1, RT[0], -TX0, RT[1]), box(TX0, RT[0], TX1, RT[1])]
+PAV_SOLIDS = unary_union(PAV_TOWERS + [BODY, REAR, PORTAL, PASSAGE])
+PAV_WATER = unary_union([box(-14.775, -12.18, 14.775, -3.18), box(-14.775, 11.32, 14.775, 13.62)]).difference(PAV_SOLIDS)
+PAV_PERGOLAS = [box(-14.40, 7.85, -TX1, 11.25), box(TX1, 7.85, 14.40, 11.25)]
 
 
 # ---------------------------------------------------------------------------------------------

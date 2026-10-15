@@ -8,6 +8,11 @@ z = altitude - 50 m. The 1er TRANCHE is graded on the plane fitted to the plan's
 contours brought over, 5.5 % rising to the east); duplex pads, the restaurant and the commerces sit
 at the plane height of their centre; the pool court is sunk 1.70 m below the top of its gradins.
 The rest of the site keeps the natural terrain of the contours, blended over 25 m.
+
+Revision 15-10: the restaurant is the pavilion of its own plan (3-PLAN_RESTAURANT_PAVILLON) on the
+12-10 axis; the stairs are built (level treads, risers of about 15 cm for the height the ground
+gives, flights where the plan draws them); the entrance median is paved, not water; the pedestrian
+crossings are painted on the road; no garden wall along the paved band round D-3/D-4.
 """
 import importlib.util
 import json
@@ -243,6 +248,40 @@ def build_water(M, col, cut):
     return mb.build("GROUND_BASSINS_FOUNTAIN", col, M)
 
 
+def build_median(M, col):
+    """Entrance median: no water (15-10 request). The two beds the plan hatches are paved flush with the
+    median's border, in diagonal stripes of dark slate and light travertine like the hatch."""
+    mb = C.MeshBuilder()
+    for w in SITE["water"]:
+        if w["kind"] != "median":
+            continue
+        g = Polygon(w["poly"]["ext"], w["poly"]["holes"]).buffer(0)
+        rr = list(g.minimum_rotated_rectangle.exterior.coords)
+        e = max(((rr[i], rr[i + 1]) for i in range(2)), key=lambda ab: math.dist(*ab))
+        ang = math.degrees(math.atan2(e[1][1] - e[0][1], e[1][0] - e[0][0])) + 45.0
+        c = g.centroid
+        gl = affinity.rotate(g, -ang, origin=c)
+        x0, y0, x1, y1 = gl.bounds
+        k, y = 0, y0
+        while y < y1:
+            strip = affinity.rotate(gl.intersection(box(x0 - 1, y, x1 + 1, y + 0.25)), ang, origin=c)
+            for q in L.as_polys(strip):
+                L.prism(mb, "slate" if k % 2 == 0 else "deck_stone", q, -0.65, 0.15, zf=hz)
+            k, y = k + 1, y + 0.25
+    return mb.build("GROUND_MEDIAN_PAVING", col, M)
+
+
+def build_road_paint(M, col):
+    """Pedestrian crossings from the plan (15-10 request): white paint on the road, no thickness."""
+    mb = C.MeshBuilder()
+    for r in SITE.get("road_paint", []):
+        g = Polygon(r["poly"]["ext"], r["poly"]["holes"]).buffer(0)
+        cx, cy = g.centroid.coords[0]
+        off = ground_top(cx, cy) - hz(cx, cy) + 0.006
+        L.prism(mb, "paint", g, off - 0.002, off, zf=hz, sides=False)
+    return mb.build("ROAD_PAINT_CROSSINGS", col, M)
+
+
 def build_walls(M, col):
     mb = C.MeshBuilder()
     zf = hz
@@ -262,21 +301,80 @@ def build_walls(M, col):
     return mb.build("WALLS_PLANTERS", col, M)
 
 
-def nosings(mb, rect, n, along_long=False):
-    """Step nosings across a stair band (thin stone strips), following the ground plane."""
-    r = rect.minimum_rotated_rectangle
-    q = list(r.exterior.coords)[:4]
-    e0 = np.array(q[1]) - np.array(q[0])
-    e1 = np.array(q[2]) - np.array(q[1])
-    run, width, o = (e0, e1, np.array(q[0])) if (np.linalg.norm(e0) > np.linalg.norm(e1)) != along_long else (e1, e0, np.array(q[1]))
-    if along_long:
-        run, width = width, run
-    for k in range(n + 1):
-        a = o + run * k / n
-        b = a + width
-        t = run / np.linalg.norm(run) * 0.06
-        pg = Polygon([tuple(a), tuple(b), tuple(b + t), tuple(a + t)])
-        L.prism(mb, "stone", pg, -0.10, 0.19, zf=hz)
+_TOPS = {}
+
+
+def ground_top(x, y):
+    """Height of the finished ground at (x, y): the graded plane plus the offset of the surface there."""
+    if not _TOPS:
+        from shapely.prepared import prep
+        for key, off, _ in OFFS:
+            g = P(SITE["surfaces"].get(key, []))
+            _TOPS[key] = (prep(g), off)
+    p = Point(x, y)
+    for key, (g, off) in _TOPS.items():
+        if g.contains(p):
+            return hz(x, y) + off
+    return hz(x, y)
+
+
+RISER = 0.15
+PAV_DY = 1.30          # restaurant pavilion: its centre on the 12-10 axis, 1.30 m behind the block's centre
+
+
+def solid_stair(mb, eA, eB, width, flights, pad=0.15):
+    """A built stair from end A to end B (the two ground levels there), wall to wall: level treads,
+    vertical risers. Flights where the plan draws them, each with its share of the risers; their
+    number comes from the height to climb (risers of about RISER m), the long walk between is level.
+    A slim handrail on the centre line over each flight (the plan's centre line)."""
+    eA, eB = np.array(eA, float), np.array(eB, float)
+    Lt = float(np.linalg.norm(eB - eA))
+    ax = (eB - eA) / Lt
+    nr = np.array([-ax[1], ax[0]])
+    zA = ground_top(*(eA - ax * 0.4))
+    zB = ground_top(*(eB + ax * 0.4))
+    dz = zB - zA
+    n_tot = max(len(flights), int(round(abs(dz) / RISER)))
+    drawn = sum(f[2] for f in flights)
+    ns = [max(1, int(round(n_tot * f[2] / drawn))) for f in flights]
+    ns[-1] = max(1, n_tot - sum(ns[:-1]))
+    h = dz / sum(ns)
+    risers = []
+    for (t0, t1, _), n in zip(flights, ns):
+        risers += [0.5 * (t0 + t1)] if n == 1 else [t0 + (t1 - t0) * j / (n - 1) for j in range(n)]
+    risers.sort()
+    W = lambda t, s: tuple(eA + ax * t + nr * s)
+    quad = lambda t0, t1, s0, s1: Polygon([W(t0, s0), W(t1, s0), W(t1, s1), W(t0, s1)])
+    zb = min(zA, zB) - 0.60
+    edges = [0.0] + risers + [Lt]
+    for k in range(len(edges) - 1):
+        z = zA + h * k
+        L.prism(mb, "terrace", quad(edges[k], edges[k + 1], -width / 2 - pad, width / 2 + pad), zb, z)
+    for k, t in enumerate(risers):                        # dark stone nosing band at each step edge
+        z = zA + h * (k + 1) if h > 0 else zA + h * k
+        t0, t1 = (t, t + 0.30) if h > 0 else (t - 0.30, t)
+        L.prism(mb, "slate", quad(t0, t1, -width / 2, width / 2), z - 0.02, z + 0.005, sides=False)
+        L.prism(mb, "slate", quad(t - 0.004, t + 0.004, -width / 2, width / 2), z - abs(h), z)
+    for (t0, t1, _), n in zip(flights, ns):              # centre handrail over the flight
+        a, b = max(0.0, t0 - 0.40), min(Lt, t1 + 0.40)
+        za = zA + h * sum(1 for r in risers if r < a)
+        zb_ = zA + h * sum(1 for r in risers if r < b)
+        m = max(2, int((b - a) / 1.4) + 1)
+        for j in range(m):                                # posts from the tread up to the sloping rail
+            t = a + (b - a) * j / (m - 1)
+            zt = zA + h * sum(1 for r in risers if r <= t)
+            zr = za + (zb_ - za) * (t - a) / (b - a) + 0.90
+            p = W(t, 0.0)
+            L.prism(mb, "bronze", Point(p).buffer(0.025, 6), zt, zr)
+        pa, pb = np.array(W(a, 0.0)), np.array(W(b, 0.0))
+        seg = 12
+        for j in range(seg):
+            u0, u1 = j / seg, (j + 1) / seg
+            q0, q1 = pa + (pb - pa) * u0, pa + (pb - pa) * u1
+            z0_, z1_ = za + (zb_ - za) * u0 + 0.90, za + (zb_ - za) * u1 + 0.90
+            mb.poly("bronze", [(q0[0] - nr[0] * 0.025, q0[1] - nr[1] * 0.025, z0_), (q1[0] - nr[0] * 0.025, q1[1] - nr[1] * 0.025, z1_),
+                               (q1[0] + nr[0] * 0.025, q1[1] + nr[1] * 0.025, z1_), (q0[0] + nr[0] * 0.025, q0[1] + nr[1] * 0.025, z0_)])
+    return quad(0.0, Lt, -width / 2 - pad, width / 2 + pad), dz, sum(ns), h
 
 
 # ---------------------------------------------------------------------------------------------
@@ -321,9 +419,16 @@ def main():
     # ---- public buildings -----------------------------------------------------------------------
     cut = []
     r = SITE["restaurant"]
-    # pads: the entrance side at the ground level (the slope rises to the east, where both entrances are)
-    place(PUB.restaurant(M, cols["SRC"]), "RESTAURANT", r["c"], r["rot_deg"], cols["04_PUBLIC"], z=hz(*frame(r["c"], r["rot_deg"])(0.0, -10.0)))
-    cut.append(to_world(PUB.R_FOOT.buffer(0.30, join_style=2), r["c"], r["rot_deg"]))
+    # restaurant = the pavilion of its own plan (15-10 request), on the axis of the 12-10 block, moved
+    # 1.30 m back so that its platform (rear bassin included) lies inside the plan's TERRASSE RESTAURANT;
+    # its deck (+0.20) level with the highest ground at the platform edge, the plinth showing downhill
+    fr_ = frame(r["c"], r["rot_deg"])
+    pav_c = fr_(0.0, PAV_DY)
+    plat = PUB.PLATFORM_FULL.buffer(0.15, join_style=2)
+    z_pav = max(hz(*fr_(x, y + PAV_DY)) for x, y in plat.exterior.coords[:-1]) - 0.20
+    place(PUB.pavilion(M, cols["SRC"]), "RESTAURANT", pav_c, r["rot_deg"], cols["04_PUBLIC"], z=z_pav)
+    cut.append(to_world(plat, pav_c, r["rot_deg"]))
+    # pads of the commerces: the entrance side at the ground level (the slope rises to the east)
     c = SITE["commerces"]
     place(PUB.commerces(M, cols["SRC"]), "COMMERCES_1_2", c["c"], c["rot_deg"], cols["04_PUBLIC"], z=hz(*frame(c["c"], c["rot_deg"])(6.0, -4.0)))
     cut.append(to_world(PUB.C_FOOT.buffer(0.15, join_style=2), c["c"], c["rot_deg"]))
@@ -371,18 +476,24 @@ def main():
             cols["05_POOL"].objects.link(ob)
     pits = [Point(t["c"]).buffer(0.60, 6) for t in SITE["trees"] if t["kind"] == "pit"]
     cut.extend(pits)
+    # stairs: across the rows ('ESC 16-17', 'ESC V4', flights read from the plan) and the long stair
+    # north of the pool court ('ESCALIERS' 1-10 and 11-21, landing between)
+    stair_specs = [(s["name"], s["axis"][0], s["axis"][1], s["width"], s["flights"]) for s in SITE["stairs"]]
+    stair_specs.append(("ESCALIERS NORD PISCINE", fw(-12.40, 22.175), fw(7.40, 22.175), 3.45, [(0.0, 5.50, 10), (14.30, 19.80, 11)]))
+    mb_st = C.MeshBuilder()
+    for name, a_, b_, w_, fl in stair_specs:
+        foot, dz, n_r, h_r = solid_stair(mb_st, a_, b_, w_, fl)
+        cut.append(foot)
+        print(f"  stair {name}: rise {dz:+.2f} m, {n_r} risers of {abs(h_r):.3f} m")
+    mb_st.build("STAIRS", cols["02_GROUND"], M)
     cutp = unary_union(cut)
 
-    # ---- ground, water, walls, stairs -------------------------------------------------------------
+    # ---- ground, water, walls, road paint ---------------------------------------------------------
     build_ground(M, cols["02_GROUND"], t1, cutp)
     build_water(M, cols["02_GROUND"], cutp)
+    build_median(M, cols["02_GROUND"])
     build_walls(M, cols["02_GROUND"])
-    mb = C.MeshBuilder()
-    for st in SITE["stairs"]:
-        nosings(mb, Polygon(st["poly"]["ext"]), 12)
-    for u0, u1, n in ((-12.40, -6.90, 10), (1.90, 7.40, 11)):     # long stair along the north of the pool court
-        nosings(mb, to_world(box(u0, 20.45, u1, 23.90), pc["c"], pc["rot_deg"]), n, along_long=True)
-    mb.build("STAIRS_NOSINGS", cols["02_GROUND"], M)
+    build_road_paint(M, cols["02_GROUND"])
 
     # ---- street furniture: meter cabinets ('Emplacement compteur') and bin enclosures ------------
     mb = C.MeshBuilder()
@@ -427,9 +538,18 @@ def main():
     court = to_world(POOL.COURT, pc["c"], pc["rot_deg"])
     rdc = unary_union([box(-8.10, -3.47, 8.10, 5.35), box(-3.52, -7.27, 3.52, -3.47)])   # permit ground floor, as in 01
     bld = unary_union([to_world(rdc, d["c"], d["rot_deg"]) for d in SITE["duplexes"]])
+    n_skip = 0
     for t in SITE["trees"]:
         xy = t["c"]
+        q = to_local(Point(xy), pav_c, r["rot_deg"])            # trees of the 12-10 layout on the pavilion:
+        if PUB.PLATFORM_FULL.contains(q) and (PUB.PAV_WATER.contains(q) or PUB.COUR.buffer(0.5).contains(q)
+                                              or PUB.PAV_SOLIDS.distance(q) < (1.8 if t["kind"] == "palm" else 2.6)
+                                              or any(pg.buffer(0.6).contains(q) for pg in PUB.PAV_PERGOLAS)):
+            n_skip += 1                                          # in its bassins, pergolas or against its walls
+            continue
         z = z_deck + 0.45 if court.buffer(0.5).contains(Point(xy)) else None
+        if PUB.PLATFORM_FULL.contains(q):
+            z = z_pav + 0.20                                     # on the pavilion's deck
         if t["kind"] == "palm":                                 # symbol 0.23-0.68 m radius on the plan: young palms
             plant("date", xy, 0.38 + 0.45 * min(t["r"], 0.7), z)
         elif t["kind"] == "olive":
@@ -442,6 +562,7 @@ def main():
             plant("standard", xy, min(0.5, 0.5 * (bld.distance(Point(xy)) - 0.02) / 0.59), hz(*xy) + 0.09, sz=1.0)
         else:
             plant("pit", xy, RNG.uniform(0.85, 1.0), hz(*xy) + 0.09)
+    print("  trees of the 12-10 layout left out on the pavilion:", n_skip)
     for p in polys(SITE["planters"]):                                # shrubs in the raised beds (INFERRED planting)
         if p.area < 1.5:
             continue
@@ -604,6 +725,7 @@ def make_cameras(col, z_deck):
         "CAM_10_ENTRANCE_FOUNTAIN": ((99.0, -19.0), 2.0, (58.0, -20.0), 3.0, 22),
         "CAM_11_GARDENS_BIRDSEYE": ((-115.0, 20.0), 45, (-40.0, 20.0), 0, 32),
         "CAM_12_TOP_PLAN": ((5.0, 5.0), 400, (5.0, 5.001), 0, 0),
+        "CAM_13_STAIR_ESC_V4": ((-6.5, 3.0), 1.75, (-20.0, 14.0), 0.6, 24),
     }
     cams = {}
     for n, (e, eh, t, th, lens) in shots.items():

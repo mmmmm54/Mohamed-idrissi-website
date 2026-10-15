@@ -16,6 +16,9 @@ are brought over with that transform for the ground levels.
 Surfaces: hatches of the plan (lawn, herringbone lanes, terraces, stabilisé, water ...) are used as
 drawn (even-odd loops). The unhatched areas are the regions the plan's lines enclose (found on a
 5 cm raster); roads are listed by seed points, the other unhatched regions are paving.
+
+Road paint: the pedestrian crossings (blocks 'DFGW' / 'xwdfrg' and the stripes of 'TRACAGE VOIRIE').
+Stairs: outline, axis and flights (the plan's riser lines) of 'ESC 16-17' and 'ESC V4'.
 """
 import json
 import math
@@ -296,6 +299,10 @@ site["surfaces"] = surf
 wb = []
 for h in water_h:
     kind = {"PR": "pool", "VERDURE": "fountain", "bassin": "bassin"}[h["layer"]]
+    if kind == "bassin" and h["path"] and h["path"][0] == "RVT 01":
+        kind = "median"            # entrance median: no water (15-10 request), paved like the plan's hatch
+    elif kind == "bassin" and h["path"] and h["path"][0] == "RESTAURANT MIRLEFT":
+        kind = "resto_bassin"      # the restaurant is built from its own plan, bassins included
     for pg in as_polys(h["geom"]):
         wb.append({"kind": kind, "poly": poly_out(gloc(pg))[0]})
 for pg in as_polys(REG["water"]):
@@ -338,21 +345,54 @@ for h in HCLS["lawn"]:
             gardens.append(pg)                       # plot garden: walled
         elif pg.area < 40:
             planters.append(pg)                      # 'Jardin' beds on the pavements: raised planters
-cut = house_u.buffer(0.55, join_style=2)
-wl = [pg.exterior.difference(cut) for pg in gardens]
-garden_walls = unary_union([l.buffer(0.10, cap_style=2, join_style=2) for l in wl if not l.is_empty])
-garden_walls = unary_union([p for p in as_polys(garden_walls.difference(house_u)) if p.area > 0.08])
 SOLID_WALLS = {("01-murs ext", (255, 0, 0), "SOLID"): ("garden", 1.80),             # rear wall of row B along the 8.5 m road
                ("08-hachures", (205, 105, 40), "SOLID"): ("garden", 1.80),          # walls of the small gardens south of D-3/4
                ("-id-structure jardin", (255, 255, 255), "ANSI37"): ("enclosure", 1.20),   # pétanque, east boundary
                ("08-hachures", (212, 186, 43), "SOLID"): ("pool", 1.10)}            # pool terrace enclosure (north / west)
+solid = [(h, SOLID_WALLS[(h["layer"], h["rgb"], h["pat"])]) for h in HATCH
+         if (h["layer"], h["rgb"], h["pat"]) in SOLID_WALLS and T1.intersects(h["geom"])]
+solid_u = unary_union([h["geom"] for h, _ in solid])
+# Walls run along the garden edges, except where the edge faces the house: the plan draws lawn up to the
+# house, or (D-3/D-4) a 1 m paved band round it, and no wall there. An edge segment running along a house
+# wholly within 2 m of it is that edge; one within 0.7 m of a wall the plan draws is that wall, not a second one.
+cut = house_u.buffer(0.55, join_style=2)
+near_h = house_u.buffer(2.0, join_style=2)
+near_w = solid_u.buffer(0.7)
+segs_w = []
+for pg in gardens:
+    edge = pg.exterior.difference(cut)
+    for ln in getattr(edge, "geoms", [edge]):
+        if ln.is_empty:
+            continue
+        c_ = list(ln.coords)
+        for a_, b_ in zip(c_, c_[1:]):
+            pts3 = [Point(a_), Point(b_), Point(((a_[0] + b_[0]) / 2, (a_[1] + b_[1]) / 2))]
+            along = abs(house_u.distance(pts3[0]) - house_u.distance(pts3[1])) < 0.5 * math.dist(a_, b_)
+            if (along and all(near_h.contains(q) for q in pts3)) or all(near_w.contains(q) for q in pts3):
+                continue                     # (a short piece joining a wall to the house is kept)
+            segs_w.append(LineString([a_, b_]))
+garden_walls = unary_union([l.buffer(0.10, cap_style=2, join_style=2) for l in segs_w])
+garden_walls = unary_union([p for p in as_polys(garden_walls.difference(house_u)) if p.area > 0.08])
 walls = [{"kind": "garden", "h": 1.80, "poly": q} for q in poly_out(gloc(garden_walls))]
-for h in HATCH:
-    k = (h["layer"], h["rgb"], h["pat"])
-    if k in SOLID_WALLS and T1.intersects(h["geom"]):
-        kind, hh = SOLID_WALLS[k]
-        for q in poly_out(gloc(h["geom"])):
-            walls.append({"kind": kind, "h": hh, "poly": q})
+band = house_u.buffer(1.10, join_style=2)          # the 1 m band round D-3/D-4 stays clear of the plot walls
+for h, (kind, hh) in solid:
+    g = h["geom"].difference(band) if kind == "garden" else h["geom"]
+    for q in poly_out(gloc(g)):
+        walls.append({"kind": kind, "h": hh, "poly": q})
+# the 'JARDIN' plots beside D-4 (PISCINE block) are drawn 0.6 m into the band: closed by a wall on the
+# band edge, their lawn stops there and the band is paved
+plots = unary_union([h["geom"] for h in HCLS["lawn"] if h["path"] and h["path"][0] == "PISCINE"])
+over = band.intersection(plots.buffer(0.05))
+if not over.is_empty:
+    closing = band.buffer(0.20, join_style=2).difference(band).intersection(plots.buffer(0.05))
+    for q in poly_out(gloc(closing)):
+        walls.append({"kind": "garden", "h": 1.80, "poly": q})
+    sl = unary_union([Polygon(p["ext"], p["holes"]).buffer(0) for p in site["surfaces"]["lawn"]])
+    sp = unary_union([Polygon(p["ext"], p["holes"]).buffer(0) for p in site["surfaces"]["paving"]])
+    ov = gloc(over)
+    site["surfaces"]["lawn"] = poly_out(sl.difference(ov))
+    site["surfaces"]["paving"] = poly_out(sp.union(ov.intersection(sl)))
+    print("  band beside D-4: plot lawn trimmed", round(ov.intersection(sl).area, 1), "m2")
 # '03-vue' grey solid: walls of the local technique block (building) and the retaining wall along the south road
 LT_BOX = box(251970, 119383, 251990, 119412)
 lt_walls = []
@@ -451,8 +491,55 @@ stairs = []
 for name in ("ESC 16-17", "ESC V4"):
     ls = [LineString(pts2(p)) for p in P if p["path"] and p["path"][0] == name and p["k"] == "line" and len(p["pts"]) > 1]
     rr = unary_union(ls).minimum_rotated_rectangle
-    stairs.append({"name": name, "poly": poly_out(gloc(rr))[0], "n_lines": len(ls)})
+    cc = [np.array(q) for q in list(rr.exterior.coords)[:4]]
+    if np.linalg.norm(cc[1] - cc[0]) >= np.linalg.norm(cc[2] - cc[1]):
+        eA, eB, wd = (cc[3] + cc[0]) / 2, (cc[1] + cc[2]) / 2, np.linalg.norm(cc[2] - cc[1])
+    else:
+        eA, eB, wd = (cc[0] + cc[1]) / 2, (cc[2] + cc[3]) / 2, np.linalg.norm(cc[1] - cc[0])
+    ax = (eB - eA) / np.linalg.norm(eB - eA)
+    ts = []                                   # riser lines: across the stair (each half of it, split by the centre rail)
+    for l_ in ls:
+        q = np.array(l_.coords)
+        for a_, b_ in zip(q, q[1:]):
+            v_ = b_ - a_
+            n_ = np.linalg.norm(v_)
+            if n_ >= 0.3 * wd and abs(np.dot(v_ / n_, ax)) < 0.2:
+                t_ = float(np.dot((a_ + b_) / 2 - eA, ax))
+                if all(abs(t_ - u_) > 0.15 for u_ in ts):
+                    ts.append(t_)
+    ts.sort()
+    flights, cur = [], [ts[0]]
+    for t_ in ts[1:]:
+        if t_ - cur[-1] > 1.2:
+            flights.append(cur)
+            cur = [t_]
+        else:
+            cur.append(t_)
+    flights.append(cur)
+    flights = [[round(f[0], 3), round(f[-1], 3), len(f)] for f in flights if len(f) >= 3]
+    stairs.append({"name": name, "poly": poly_out(gloc(rr))[0], "n_lines": len(ls),
+                   "axis": [list(np.round(loc(eA), 3)), list(np.round(loc(eB), 3))], "width": round(float(wd), 3),
+                   "flights": flights})
+    print("stair", name, "length", round(float(np.linalg.norm(eB - eA)), 2), "width", round(float(wd), 2), "flights", flights)
 site["stairs"] = stairs
+
+# road paint: the pedestrian crossings the plan draws, as flat paint (15-10 request). Entrance and median:
+# blocks 'DFGW' / 'xwdfrg' (solid stripes); the 8.5 m road at the stair exits: 'TRACAGE VOIRIE' stripes
+# drawn as open outlines. Direction arrows and parking marks stay out.
+zeb = [h["geom"] for h in HATCH if any(n in h["path"] for n in ("DFGW", "xwdfrg")) and h["geom"].area < 2.0]
+for p in P:
+    if "TRACAGE VOIRIE" in p["path"] and p["layer"] == "-id-structure jardin" and p["k"] == "line" and 4 <= len(p["pts"]) <= 5:
+        g = Polygon(pts2(p)).buffer(0)
+        if g.is_empty:
+            continue
+        rr = g.minimum_rotated_rectangle
+        cc = list(rr.exterior.coords)
+        e = sorted(math.dist(cc[i], cc[i + 1]) for i in range(2))
+        if 0.25 <= e[0] <= 0.7 and 2.0 <= e[1] <= 4.0 and g.area > 0.8 * e[0] * e[1]:
+            zeb.append(g)
+zeb = [g for g in as_polys(unary_union(zeb)) if T1.intersects(g)]
+site["road_paint"] = [{"kind": "zebra", "poly": q} for g in zeb for q in poly_out(gloc(g))]
+print("road paint: zebra stripes", len(site["road_paint"]))
 
 json.dump(site, open(os.path.join(ROOT, "data", "site.json"), "w"))
 print("wrote", os.path.join(ROOT, "data", "site.json"))
