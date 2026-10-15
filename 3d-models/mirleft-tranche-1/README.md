@@ -17,6 +17,7 @@ The rest of the site is empty land: the exact site boundary and the natural slop
 | `Mirleft_Tranche_1.glb` | Light GLB with JPEG textures and colours (14 MB; shared meshes; no cameras or lights). Metres, Y up. `blender/08_export_glb.py` |
 | `Mirleft_Tranche_1_AE_SAFE.glb` | The most compatible version for After Effects (16 MB): the tranche only, one mesh of 187k triangles, centred with its ground at 0, JPEG only, no alpha, no trees. `08_export_glb.py --ae-safe` |
 | `Mirleft_Tranche_1_OBJ.zip` | The same single mesh as OBJ + MTL + JPEG textures (6 MB), written by the same command. |
+| `d5/` | D5 Render package: `Mirleft_Tranche_1_D5_FULL.fbx` (everything, the 13 cameras, textures embedded), `Mirleft_Tranche_1_D5_NO_TREES.fbx` (without trees and plants, to place D5's own), `textures/` and `D5_IMPORT_GUIDE.md`. `blender/09_export_d5.py` |
 | `renders/` | 13 views at 1920 × 1080 (see the list below). |
 | `Mirleft_Tranche_1_views.jpg` | The 13 views on one sheet. |
 | `blender/01_extract_site.py` | Reads the plan (DWG made into primitives by `tools/`) and writes `data/site.json`. |
