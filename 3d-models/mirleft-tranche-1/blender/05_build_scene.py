@@ -17,8 +17,11 @@ gives, flights where the plan draws them); the entrance median is paved, not wat
 crossings are painted on the road; no garden wall along the paved band round D-3/D-4. The pool area
 is 1.00 m lower; the long stair north of it goes down from the row C lane to its deck.
 Second round of 15-10: the pool court in the style of the reference images (stone, planks, planting,
-parasols, cabanas, sun shelf); the restaurant portal open on its sides as its facades draw it; the
-D-4 rear garden walled, the 'JARDIN' plots beside it in 0.60 m stone planters.
+parasols, cabanas); the restaurant portal open on its sides as its facades draw it; the D-4 rear
+garden walled, the 'JARDIN' plots beside it in 0.60 m stone planters.
+Third round of 15-10: the restaurant's windows, portal arch and frames as FACADE PRINCIPALE draws
+them; no water behind the restaurant; the lawn between the pool, the restaurant and the road paved;
+the children's pool square to the basin, the in-pool loungers moved to the west deck's row.
 """
 import importlib.util
 import json
@@ -44,6 +47,19 @@ SITE = json.load(open(os.path.join(ROOT, "data", "site.json")))
 Z0 = 50.0
 PLANE = SITE["plane"]
 RNG = random.Random(20261014)
+
+
+def pave_restaurant_lawn():
+    """15-10 (third round): the lawn between the pool court, the restaurant and the road is paved like
+    the restaurant terrace (light herringbone), as the other paved areas round it."""
+    r = Point(SITE["restaurant"]["c"])
+    keep, move = [], []
+    for p in SITE["surfaces"]["lawn"]:
+        g = Polygon(p["ext"], p["holes"]).buffer(0)
+        (move if g.area > 800 and g.distance(r) < 40 else keep).append(p)
+    SITE["surfaces"]["lawn"] = keep
+    SITE["surfaces"].setdefault("terrace", []).extend(move)
+    return sum(Polygon(p["ext"], p["holes"]).buffer(0).area for p in move)
 
 
 def load(fname):
@@ -404,6 +420,7 @@ def main():
     samples = int(args[args.index("--samples") + 1]) if "--samples" in args else 96
     pct = int(args[args.index("--pct") + 1]) if "--pct" in args else 100
     bpy.ops.wm.read_factory_settings(use_empty=True)
+    print(f"  lawn by the restaurant paved: {pave_restaurant_lawn():.0f} m2")
     M = L.materials()
     M["terrain_cut"] = M["mod"].simple("T10_Terrain_Cut_Soil", "#8C6E52", 0.95, 0.0, 6.0, 0.35, 0.3)
     M["kerb_paving"] = M["kerb"]
@@ -487,7 +504,9 @@ def main():
     lt = PUB.local_technique(M, cols["05_POOL"], ltw)
     lt.location.z = z_deck
     src_lounger = POOL.lounger(M, cols["SRC"])
-    for i, l in enumerate(SITE["loungers"]):
+    loungers = [l for l in SITE["loungers"] if to_local(Point(l["c"]), pc["c"], pc["rot_deg"]).x > 0]   # east deck, as drawn
+    loungers += [{"c": fw(u, v), "rot_deg": pc["rot_deg"], "n": 1} for u, v in POOL.WEST_LOUNGERS]   # west: one even row
+    for i, l in enumerate(loungers):
         a = math.radians(l["rot_deg"])
         # head towards the pool axis
         cx, cy = l["c"]

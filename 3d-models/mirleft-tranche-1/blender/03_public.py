@@ -41,11 +41,49 @@ def hole_shape(h):
     if kind == "arch":                 # round-headed: arch springs at z1 - w/2
         zs = z1 - w / 2
         return unary_union([box(s0, z0, s1, zs), Point(sc, zs).buffer(w / 2, 24).intersection(box(s0, zs, s1, z1))])
+    if kind == "poly":                 # outline read from the elevations (s, z)
+        return Polygon(h["pts"])
     if kind == "horseshoe":            # circle wider than the jambs, centre at the springing
         R = w / 2 * 1.16
         zc = z1 - R
         return unary_union([box(s0, z0, s1, zc), Point(sc, zc).buffer(R, 40).intersection(box(sc - R, zc - R * 0.55, sc + R, z1))])
     raise ValueError(kind)
+
+
+def stepped(half):
+    """Closed outline from its right half [(s, z) bottom to top], mirrored about s = 0."""
+    return list(half) + [(-x, z) for x, z in reversed(half)]
+
+
+# FACADE PRINCIPALE (3-PLAN_RESTAURANT_PAVILLON), read off the drawing in metres (z = level, +0.20 deck)
+# tower windows: two leaves under a stepped head (three steps each side), in a plain surround
+WIN_LOW = stepped([(0.648, 1.426), (0.648, 1.684), (0.582, 1.789), (0.582, 2.002), (0.497, 2.120), (0.497, 2.396),
+                   (0.418, 2.530), (0.418, 2.688)])
+WIN_UP = stepped([(0.431, 6.096), (0.431, 6.533), (0.387, 6.603), (0.387, 6.745), (0.331, 6.824), (0.331, 7.008),
+                  (0.278, 7.097), (0.278, 7.202)])
+SURR_LOW = box(-0.748, 1.426, 0.748, 3.026)
+SURR_UP = box(-0.498, 6.096, 0.498, 7.427)
+# portal arch (front and sides alike): pointed horseshoe, jambs 2.40 m apart with a notch at the
+# springing, 2.48 m at its widest, apex at +4.79; half-widths every 0.10 m
+ARCH_HALF = [(0.20, 1.200), (1.80, 1.200), (1.90, 1.187), (2.00, 1.126), (2.10, 1.098), (2.20, 1.080), (2.30, 1.084),
+             (2.40, 1.111), (2.50, 1.163), (2.60, 1.193), (2.70, 1.211), (2.80, 1.226), (2.90, 1.237), (3.00, 1.242),
+             (3.10, 1.240), (3.20, 1.234), (3.30, 1.220), (3.40, 1.202), (3.50, 1.179), (3.60, 1.154), (3.70, 1.116),
+             (3.80, 1.071), (3.90, 1.024), (4.00, 0.968), (4.10, 0.900), (4.20, 0.831), (4.30, 0.740), (4.40, 0.641),
+             (4.50, 0.523), (4.60, 0.389), (4.70, 0.219), (4.79, 0.0)]
+ARCH_PTS = [(w, z) for z, w in ARCH_HALF[:-1]] + [(0.0, 4.79)] + [(-w, z) for z, w in reversed(ARCH_HALF[:-1])]
+# its frame: two mouldings and a bejmat field, three nested rectangles from the deck
+ARCH_FRAMES = [box(-1.807, 0.20, 1.807, 5.825), box(-1.636, 0.20, 1.636, 5.634), box(-1.464, 0.20, 1.464, 5.410)]
+
+
+def relief(mb, mat, X, poly, d):
+    """Flat relief on a face (X from face()): poly in (s, z) standing d proud, with its edges."""
+    for pg in L.as_polys(poly):
+        for t in L.tri_poly(pg):
+            mb.poly(mat, [X(s, z, -d) for s, z in t])
+        for ring in [pg.exterior] + list(pg.interiors):
+            c = list(ring.coords)
+            for (sa, za), (sb, zb) in zip(c, c[1:]):
+                mb.poly(mat, [X(sa, za, 0.0), X(sb, zb, 0.0), X(sb, zb, -d), X(sa, za, -d)])
 
 
 def face(mb, mat, P0, P1, z0, z1, holes=(), taper=0.0, rev=0.25, centre=None):
@@ -166,16 +204,19 @@ def tower(mb, x0, y0, x1, y1, z_wall, z_top, outer, taper=0.40, panels=True, wal
     E = rect_edges(x0, y0, x1, y1)
     for k, (p, q) in E.items():
         holes = []
-        if k in outer and panels:
-            holes = [{"s0": -0.70, "s1": 0.70, "z0": 0.20, "z1": 2.60, "shape": "arch", "kind": "glass", "n": 2},
-                     {"s0": -0.60, "s1": 0.60, "z0": 4.90, "z1": 7.00, "shape": "arch", "kind": "glass", "n": 2}]
+        if k in outer and panels:                  # windows of FACADE PRINCIPALE, both levels
+            holes = [{"s0": -0.648, "s1": 0.648, "z0": 1.426, "z1": 2.688, "shape": "poly", "pts": WIN_LOW, "kind": "glass", "n": 2},
+                     {"s0": -0.431, "s1": 0.431, "z0": 6.096, "z1": 7.202, "shape": "poly", "pts": WIN_UP, "kind": "glass", "n": 2}]
         X = face(mb, wall_mat, p, q, 0.0, z_wall, holes, taper=taper)
         if k in outer and panels:
-            panel(mb, "bejmat", X, 1.40, 1.10, 0.20, 8.00, holes)
-            screen(mb, X, -1.30, 1.30, 0.20, 1.05, 0.40)
-            screen(mb, X, -0.70, 0.70, 4.90, 5.80, 0.35)
-            Lb = math.dist(p, q)
-            squares(mb, X, [s for s in (-1.8, -0.9, 0.0, 0.9, 1.8) if abs(s) < Lb / 2 - 0.6], z_wall - 1.2)
+            # bejmat panel (trapezoid 2.79 -> 2.11 m, +0.43 to +8.21) with the plain window surrounds
+            panel(mb, "bejmat", X, 1.395, 1.056, 0.426, 8.21, [{"s0": -0.748, "s1": 0.748, "z0": 1.426, "z1": 3.026},
+                                                             {"s0": -0.498, "s1": 0.498, "z0": 6.096, "z1": 7.427}])
+            for sr, w in ((SURR_LOW, WIN_LOW), (SURR_UP, WIN_UP)):
+                relief(mb, "trim", X, sr.difference(Polygon(w)), 0.03)
+            screen(mb, X, -1.30, 1.30, 0.426, 1.426, 0.40)        # mashrabiya planter under the low window
+            screen(mb, X, -0.70, 0.70, 5.426, 6.096, 0.35)        # mashrabiya balcony under the high one
+            relief(mb, "trim", X, box(-0.72, 5.226, 0.72, 5.426), 0.40)
     top = box(x0 + taper, y0 + taper, x1 - taper, y1 - taper)
     L.prism(mb, "roof", top, z_wall - 0.01, z_wall, sides=False)
     cornice(mb, top, z_wall, z_wall + 0.15, 0.18)
@@ -301,16 +342,18 @@ PASSAGE = box(-2.50, -7.18, 2.50, -3.18)
 COUR = box(-12.70, -3.10, -8.62, 3.20)
 
 
-def pavilion(M, col, rear_bassin=True, name="SRC_RESTAURANT", plinth=-1.80):
-    """The pavilion with its platform: front bassins and planters, bridge, cour anglaise, rear terrace
-    and (rear_bassin) the bassin strip behind it, timber pergolas at the rear corners. plinth: depth
-    of the platform's base below the pad, down to the lowest ground under its edge."""
+def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80):
+    """The pavilion with its platform: front bassins and planters, bridge, cour anglaise, rear terrace,
+    timber pergolas at the rear corners. rear_bassin: the plan's water behind it (the strip along the
+    rear and the two by the pergolas), left out at the client's request (15-10): the deck covers it.
+    plinth: depth of the platform's base below the pad, down to the lowest ground under its edge."""
     mb = C.MeshBuilder()
     plat = PLATFORM if rear_bassin else PLATFORM_FULL
     towers = [(-TX1, FT[0], -TX0, FT[1], ("front", "left")), (TX0, FT[0], TX1, FT[1], ("front", "right")),
               (-TX1, RT[0], -TX0, RT[1], ("rear", "left")), (TX0, RT[0], TX1, RT[1], ("rear", "right"))]
     # ---- ground: platform, bassins, bridge, cour anglaise --------------------------------------
-    water = unary_union([box(-14.775, -12.18, 14.775, -3.18), box(-14.775, 7.82, -13.815, 11.32), box(13.815, 7.82, 14.775, 11.32)])
+    water = unary_union([box(-14.775, -12.18, 14.775, -3.18)]
+                        + ([box(-14.775, 7.82, -13.815, 11.32), box(13.815, 7.82, 14.775, 11.32)] if rear_bassin else []))
     solids = unary_union([box(t[0], t[1], t[2], t[3]) for t in towers] + [PORTAL, PASSAGE, BODY])
     bridge = box(-1.10, -12.18, 1.10, -3.18)
     planters = [box(-8.90, -8.58, -5.40, -7.48), box(5.40, -8.58, 8.90, -7.48)]
@@ -373,8 +416,14 @@ def pavilion(M, col, rear_bassin=True, name="SRC_RESTAURANT", plinth=-1.80):
     Xs = body_walls(mb, body, 0.0, 7.85, holes)
     rear_X = Xs[edge_index(body, (4.20, 6.22), (-4.20, 6.22))]
     screen(mb, rear_X, -2.65, 2.65, 4.55, 5.20, 0.30)
-    for X in Xs:
-        squares(mb, X, [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0], 8.45)
+    front = edge_index(body, (-8.60, -3.18), (8.60, -3.18))
+    for k, X in enumerate(Xs):
+        if k == front:                      # FACADE PRINCIPALE: twelve 0.25 m squares at +8.03, and the
+            squares(mb, X, [-3.575 + 0.65 * j for j in range(12)], 8.155, size=0.25)   # bands either side of the portal
+            relief(mb, "trim", X, unary_union([box(sg * a0, z - 0.04, sg * a1, z + 0.04) for z in (1.087, 1.797, 3.126, 4.455, 5.836)
+                                               for sg, a0, a1 in ((1, 2.50, 3.76), (-1, 3.76, 2.50))]), 0.03)
+        else:
+            squares(mb, X, [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0], 8.45)
     L.prism(mb, "roof", body.buffer(-0.24, join_style=2), 7.84, 7.85, sides=False)
     cornice(mb, body, 7.75, 7.90, 0.10)
     crown(mb, body, 7.85, 9.20, t=0.25)
@@ -394,40 +443,32 @@ def pavilion(M, col, rear_bassin=True, name="SRC_RESTAURANT", plinth=-1.80):
     mb.box("trim", -2.58, 2.58, -6.87, -3.20, 5.60, 5.68)
     for x0 in (-2.20, 1.90):        # 'mur d'eau' water walls inside the passage
         mb.box("pool_tile", x0, x0 + 0.30, -6.60, -3.60, 0.20, 2.40)
-    arch = {"s0": -1.45, "s1": 1.45, "z0": 0.20, "z1": 5.20, "shape": "horseshoe", "kind": "open"}
-    Xf = face(mb, "render", (-2.875, -12.18), (2.875, -12.18), 0.0, 7.70, [arch], rev=0.40)
-    Xb = face(mb, "render", (2.875, -6.88), (-2.875, -6.88), 0.0, 7.70, [dict(arch)], rev=0.40)
-    for X in (Xf, Xb):
-        sh = hole_shape(arch)
-        fr = sh.buffer(0.38).difference(sh).intersection(box(-3, 0.21, 3, 8))
-        for t in L.tri_poly(fr):
-            mb.poly("bejmat", [X(s, z, -0.05) for s, z in t])
-        squares(mb, X, [-2.0, -1.33, -0.67, 0.0, 0.67, 1.33, 2.0], 6.95)
-        for s in (-2.45, 2.25):       # stacked blocks on the pilasters
-            for k in range(7):
-                z = 0.6 + k * 0.78
-                mb.poly("trim", [X(s, z, -0.06), X(s + 0.2, z, -0.06), X(s + 0.2, z + 0.5, -0.06), X(s, z + 0.5, -0.06)])
-    # side walls open with the horseshoe arch of FACADE DROITE / GAUCHE: 2.15 m between the jambs,
-    # crown at +4.95, in a rectangular bejmat frame 3.60 x 5.15 m; frieze of eight squares above
-    side_arch = {"s0": -1.08, "s1": 1.08, "z0": 0.20, "z1": 4.95, "shape": "horseshoe", "kind": "open"}
-    sh = hole_shape(side_arch)
-    alfiz = box(-1.80, 0.20, 1.80, 5.35)
+    # portal (FACADE PRINCIPALE, DROITE, GAUCHE): the same pointed horseshoe arch on its front and both
+    # sides, each in a rectangular frame (two mouldings, bejmat field), a frieze of eight 0.25 m squares at
+    # +6.37, cornice at +7.04, parapet to +7.62 with horns
+    arch = {"s0": -1.242, "s1": 1.242, "z0": 0.20, "z1": 4.79, "shape": "poly", "pts": ARCH_PTS, "kind": "open"}
+    sh = hole_shape(arch)
+    Xf = face(mb, "render", (-2.875, -12.18), (2.875, -12.18), 0.0, 7.19, [arch], rev=0.40)
+    face(mb, "render", (2.875, -6.88), (-2.875, -6.88), 0.0, 7.19, [dict(arch)], rev=0.40)
+    Xs = [Xf]
     for x0 in (-2.875, 2.475):
         xo, xi = (x0, x0 + 0.40) if x0 < 0 else (x0 + 0.40, x0)
-        Xo = face(mb, "render", (xo, -6.88) if x0 < 0 else (xo, -12.18), (xo, -12.18) if x0 < 0 else (xo, -6.88), 0.0, 7.70,
-                  [dict(side_arch)], rev=0.40)
+        Xs.append(face(mb, "render", (xo, -6.88) if x0 < 0 else (xo, -12.18), (xo, -12.18) if x0 < 0 else (xo, -6.88), 0.0, 7.19,
+                       [dict(arch)], rev=0.40))
         face(mb, "render", (xi, -12.18) if x0 < 0 else (xi, -6.88), (xi, -6.88) if x0 < 0 else (xi, -12.18), 0.0, 6.50,
-             [dict(side_arch)], rev=0.0)
-        for t in L.tri_poly(alfiz.difference(sh)):
-            mb.poly("bejmat", [Xo(s, z, -0.04) for s, z in t])
-        for t in L.tri_poly(alfiz.buffer(0.07, join_style=2).difference(alfiz).intersection(box(-3, 0.21, 3, 8))):
-            mb.poly("trim", [Xo(s, z, -0.06) for s, z in t])
-        squares(mb, Xo, [-2.30 + 0.657 * k for k in range(8)], 6.95)
+             [dict(arch)], rev=0.0)
+    for X in Xs:
+        fa, fb, fc = ARCH_FRAMES
+        relief(mb, "trim", X, fa.difference(fb), 0.07)
+        relief(mb, "render", X, fb.difference(fc), 0.05)
+        relief(mb, "bejmat", X, fc.difference(sh), 0.03)
+        squares(mb, X, [-2.275 + 0.65 * k for k in range(8)], 6.495, size=0.25)
     for P0, P1 in (((2.475, -11.78), (-2.475, -11.78)), ((-2.475, -7.28), (2.475, -7.28))):
         face(mb, "render", P0, P1, 0.0, 6.50, [dict(arch)], rev=0.0)     # inner faces, front and back
-    mb.box("render", -2.865, 2.865, -12.17, -6.89, 6.50, 7.69)
-    crown(mb, PORTAL.buffer(-0.001, join_style=2), 7.69, 8.10, t=0.25)
-    cornice(mb, PORTAL, 7.45, 7.60, 0.10)
+    mb.box("render", -2.865, 2.865, -12.17, -6.89, 6.50, 7.19)
+    cornice(mb, PORTAL, 6.68, 6.75, 0.04)
+    cornice(mb, PORTAL, 6.89, 7.19, 0.10)
+    crown(mb, PORTAL.buffer(-0.001, join_style=2), 7.19, 7.56, t=0.25)
 
     # ---- towers ---------------------------------------------------------------------------------
     for x0, y0, x1, y1, outer in towers:
@@ -454,7 +495,7 @@ def pavilion(M, col, rear_bassin=True, name="SRC_RESTAURANT", plinth=-1.80):
 
 PAV_TOWERS = [box(-TX1, FT[0], -TX0, FT[1]), box(TX0, FT[0], TX1, FT[1]), box(-TX1, RT[0], -TX0, RT[1]), box(TX0, RT[0], TX1, RT[1])]
 PAV_SOLIDS = unary_union(PAV_TOWERS + [BODY, REAR, PORTAL, PASSAGE])
-PAV_WATER = unary_union([box(-14.775, -12.18, 14.775, -3.18), box(-14.775, 11.32, 14.775, 13.62)]).difference(PAV_SOLIDS)
+PAV_WATER = box(-14.775, -12.18, 14.775, -3.18).difference(PAV_SOLIDS)      # front bassins (the rear water is left out)
 PAV_PERGOLAS = [box(-14.40, 7.85, -TX1, 11.25), box(TX1, 7.85, 14.40, 11.25)]
 
 

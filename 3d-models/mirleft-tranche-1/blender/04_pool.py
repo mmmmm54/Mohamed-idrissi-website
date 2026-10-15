@@ -7,8 +7,9 @@ the deck ('PLAGE PISCINE').
 
 Read from the plan:
   CUVE            21.71 x 7.50 m basin, Roman steps (four arcs) in two opposite corners
-  PISCINE ENFANT  9.6 x 3.8 m shallow pool at the south end, against the basin
-  TRANSATS        31 lounger drawings (one of them a pair) on the west and east decks
+  PISCINE ENFANT  9.6 x 3.8 m shallow pool at the south end, against the basin (built square to it)
+  TRANSATS        31 lounger drawings (one of them a pair) on the west and east decks; the west row is
+                  completed to eighteen, evenly spaced and square to the basin (15-10)
   PR              ten 0.45 m circles between the lounger pairs of the east deck: parasols (INFERRED)
   GRADINS         three planted strips (the plan hatches them 'JARDIN', 0.62 m) stepping up from the
                   deck to the upper level, flanked by the two 'ESCALIERS PISCINE' of ten steps
@@ -22,8 +23,8 @@ Levels: the court is sunk; the gradins (four risers of 0.425 m) and the stairs (
 1.70 m to the upper walk on the east. The other sides are retaining walls.
 
 Look and finishes from the reference images of 15-10 (to confirm): rubble stone walls with travertine
-caps, travertine planks, a black overflow grille round the basins, a sun shelf with six white in-pool
-loungers, three timber cabanas on the west deck, planting (agaves, grasses, shrubs) in every bed, and
+caps, travertine planks, a black overflow grille round the basins, three timber cabanas on the west
+deck, planting (agaves, grasses, shrubs) in every bed, and
 two tiers of planted stone terraces between the upper walk and the lawn by the restaurant terrace,
 with a stair up to the lawn in line with each pool stair.
 """
@@ -38,7 +39,7 @@ L = globals()["L"]
 C = L.C
 
 RISE = 1.70
-LAWN = 0.12                                             # lawn top above the graded ground (scene OFFS)
+LAWN = 0.15                                             # top of the paving round the court above the graded ground (scene OFFS)
 COURT = unary_union([box(-12.40, -17.10, 8.70, 20.20), box(-12.60, -19.20, -7.00, -17.10)])
 DECK_E = box(8.70, -14.30, 9.10, 15.00)                 # deck strip in front of the gradins
 GRAD_F = [9.10, 9.92, 10.72, 11.50]                     # fronts of the three gradins and of the upper walk
@@ -57,8 +58,8 @@ BED_SOIL = 0.42
 REEL = (-6.50, 3.80, 17.20)
 SHOWERS = [(5.70, 18.90), (7.10, 18.90), (-11.70, -9.40), (-11.70, -10.80)]
 CUVE_CORNERS = [((-3.75, 10.85), (1, -1)), ((3.75, -10.85), (-1, 1))]
-SHELF = box(-3.75, -6.70, -1.75, 2.70)                  # sun shelf, 0.25 m under the water line
-SHELF_LOUNGERS = [-6.00, -4.95, -3.90, -2.85, 0.90, 1.95]
+KIDS_POOL = box(-6.05, -14.82, 3.55, -11.02)            # 9.60 x 3.80 m, square to the basin (the hatch is drawn askew)
+WEST_LOUNGERS = [(-5.00, -9.91 + 1.235 * k) for k in range(18)]   # the plan's twelve plus six, in one even row
 PARASOLS = [(8.70, v) for v in (-11.55, -9.68, -7.49, -3.29, -1.09, 1.10, 3.30, 7.50, 9.70, 11.90)]
 CABANAS = [(-10.10, 10.00), (-10.10, 5.00), (-10.10, 0.00)]
 # upper level, east of the gradins
@@ -214,7 +215,7 @@ def build(M, col, ground, water_polys, name="POOL_COURT", north_steps=(), north_
     spots = []
     mb = C.MeshBuilder()
     pool = water_polys["pool"]
-    kids = water_polys["kids_pool"]
+    kids = KIDS_POOL
     G = ground
     top_out = lambda u, v: G(u, v) + 0.60                       # retaining walls: parapet over the ground
     # ---- basins: one outline (the two pools side by side), lip, overflow grille ------------------
@@ -233,21 +234,6 @@ def build(M, col, ground, water_polys, name="POOL_COURT", north_steps=(), north_
         for r, z in ((1.75, -1.05), (1.30, -0.70), (0.85, -0.35)):
             q = Point(cx, cy).buffer(r, 32).intersection(box(min(cx, cx + su * 3), min(cy, cy + sv * 3), max(cx, cx + su * 3), max(cy, cy + sv * 3)))
             L.prism(mb, "pool_tile", q.intersection(pool), -1.40, z)
-    L.prism(mb, "pool_tile", SHELF.intersection(pool), -1.40, -0.25)
-    prof = Polygon([(-1.80, -0.25), (-3.38, -0.25), (-3.56, -0.04), (-3.63, 0.13), (-3.62, 0.24), (-3.56, 0.31),
-                    (-3.46, 0.31), (-3.32, 0.24), (-3.14, 0.13), (-2.94, 0.05), (-2.70, 0.015), (-2.40, 0.005),
-                    (-2.16, 0.02), (-1.99, 0.05), (-1.88, 0.03), (-1.81, -0.04)])      # sculpted chaise, head at the wall
-    tris = L.tri_poly(prof)
-    ring = list(prof.exterior.coords)
-    if not prof.exterior.is_ccw:
-        ring = ring[::-1]
-    for vc in SHELF_LOUNGERS:                                   # white in-pool loungers on the shelf
-        va, vb = vc - 0.33, vc + 0.33
-        for t in tris:
-            mb.poly("lounger_white", [(x, va, z) for x, z in t])
-            mb.poly("lounger_white", [(x, vb, z) for x, z in t[::-1]])
-        for (pa, za), (pb, zb) in zip(ring, ring[1:]):
-            mb.poly("lounger_white", [(pa, vb, za), (pb, vb, zb), (pb, va, zb), (pa, va, za)])
     # ---- deck: travertine planks -----------------------------------------------------------------
     bacs = unary_union([box(u0, va, u1, vb) for u0, u1, va, vb in BACS])
     beds = unary_union([BED_N, BED_W, BED_SW])
