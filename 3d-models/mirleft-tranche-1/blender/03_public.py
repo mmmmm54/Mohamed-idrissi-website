@@ -78,7 +78,8 @@ def face(mb, mat, P0, P1, z0, z1, holes=(), taper=0.0, rev=0.25, centre=None):
         if not sh.exterior.is_ccw:
             ring = ring[::-1]
         for (sa, za), (sb, zb) in zip(ring, ring[1:]):
-            mb.poly(mat, [X(sb, zb), X(sa, za), X(sa, za, rev), X(sb, zb, rev)])
+            if rev > 0:                                   # reveal (rev = 0: the inner face of a wall)
+                mb.poly(mat, [X(sb, zb), X(sa, za), X(sa, za, rev), X(sb, zb, rev)])
         kind = h.get("kind", "window")
         inner = sh.buffer(-0.06, join_style=2)
         if kind == "open":
@@ -314,17 +315,32 @@ def pavilion(M, col, rear_bassin=True, name="SRC_RESTAURANT", plinth=-1.80):
     bridge = box(-1.10, -12.18, 1.10, -3.18)
     planters = [box(-8.90, -8.58, -5.40, -7.48), box(5.40, -8.58, 8.90, -7.48)]
     water = water.difference(solids.buffer(0.0)).difference(bridge).difference(unary_union(planters))
-    deck = plat.difference(water).difference(COUR).difference(solids.buffer(-0.02))
+    # the deck runs 2 cm under the walls and planters; kept 5 mm off the water so that its edge never lies
+    # in the plane of a wall face (coplanar faces render as a black band)
+    deck = plat.difference(water.buffer(0.005, join_style=2)).difference(COUR).difference(solids.buffer(-0.02))
+    deck = deck.difference(unary_union(planters).buffer(-0.02, join_style=2))
     L.prism(mb, "terrace", deck, plinth, 0.20)
-    L.prism(mb, "slate", bridge.difference(PORTAL.buffer(-0.40)), 0.20, 0.22, sides=False)
+    L.prism(mb, "slate", bridge, 0.20, 0.22, sides=False)
+    # inside the portal: the bridge runs through, 'Bassin' each side of it (RDC plan), under the arches
+    inner = PORTAL.buffer(-0.40, join_style=2)
+    L.prism(mb, "terrace", bridge.intersection(PORTAL.buffer(-0.02, join_style=2)), plinth, 0.20)
+    L.prism(mb, "pool_tile", inner.difference(bridge), -0.60, -0.55, sides=False)
+    L.prism(mb, "pool_water", inner.difference(bridge), -0.12, -0.10, sides=False)
+    L.prism(mb, "render", PORTAL.difference(inner), -0.60, 0.0)
+    L.prism(mb, "terrace", box(-2.20, -6.90, 2.20, -3.20), plinth, 0.20)      # floor of the passage
     for w in L.as_polys(water):
         L.prism(mb, "pool_tile", w, -0.60, -0.55, sides=False)
         L.prism(mb, "pool_water", w, -0.12, -0.10, sides=False)
     if rear_bassin:
-        L.prism(mb, "pool_tile", box(-14.775, 11.32, 14.775, 13.62).difference(box(-14.575, 11.32, 14.575, 13.42)), plinth, 0.25)
+        rim = box(-14.775, 11.32, 14.775, 13.62).difference(box(-14.575, 11.32, 14.575, 13.42))
+        L.prism(mb, "stone", rim, plinth, 0.25)                    # its outer face is the platform's base
+        L.prism(mb, "deck_stone", rim.buffer(0.02, join_style=2), 0.25, 0.28)
+        L.prism(mb, "pool_tile", box(-14.565, 11.33, 14.565, 13.41).difference(box(-14.555, 11.34, 14.555, 13.40)), -0.55, -0.10)
         L.prism(mb, "pool_tile", box(-14.575, 11.32, 14.575, 13.42), -0.60, -0.55, sides=False)
         L.prism(mb, "pool_water", box(-14.575, 11.32, 14.575, 13.42), -0.12, -0.10, sides=False)
-    L.prism(mb, "terrace", plat.buffer(0.15, join_style=2).difference(plat.buffer(-0.15, join_style=2)), plinth, 0.25)
+    edge = plat.buffer(0.15, join_style=2).difference(plat.buffer(-0.15, join_style=2))
+    L.prism(mb, "stone", edge, plinth, 0.25)                         # base of the platform: rubble stone
+    L.prism(mb, "deck_stone", edge.buffer(0.02, join_style=2), 0.25, 0.28)
     for p in planters:
         L.prism(mb, "render_dark", p, -0.60, 0.65)
         L.prism(mb, "lawn", p.buffer(-0.12, join_style=2), 0.60, 0.62, sides=False)
@@ -391,9 +407,24 @@ def pavilion(M, col, rear_bassin=True, name="SRC_RESTAURANT", plinth=-1.80):
             for k in range(7):
                 z = 0.6 + k * 0.78
                 mb.poly("trim", [X(s, z, -0.06), X(s + 0.2, z, -0.06), X(s + 0.2, z + 0.5, -0.06), X(s, z + 0.5, -0.06)])
+    # side walls open with the horseshoe arch of FACADE DROITE / GAUCHE: 2.15 m between the jambs,
+    # crown at +4.95, in a rectangular bejmat frame 3.60 x 5.15 m; frieze of eight squares above
+    side_arch = {"s0": -1.08, "s1": 1.08, "z0": 0.20, "z1": 4.95, "shape": "horseshoe", "kind": "open"}
+    sh = hole_shape(side_arch)
+    alfiz = box(-1.80, 0.20, 1.80, 5.35)
     for x0 in (-2.875, 2.475):
-        face(mb, "render", (x0, -6.88) if x0 < 0 else (x0 + 0.40, -12.18), (x0, -12.18) if x0 < 0 else (x0 + 0.40, -6.88), 0.0, 7.70)
-        mb.box("render", x0 + 0.01, x0 + 0.39, -11.78, -7.28, 0.0, 6.50)
+        xo, xi = (x0, x0 + 0.40) if x0 < 0 else (x0 + 0.40, x0)
+        Xo = face(mb, "render", (xo, -6.88) if x0 < 0 else (xo, -12.18), (xo, -12.18) if x0 < 0 else (xo, -6.88), 0.0, 7.70,
+                  [dict(side_arch)], rev=0.40)
+        face(mb, "render", (xi, -12.18) if x0 < 0 else (xi, -6.88), (xi, -6.88) if x0 < 0 else (xi, -12.18), 0.0, 6.50,
+             [dict(side_arch)], rev=0.0)
+        for t in L.tri_poly(alfiz.difference(sh)):
+            mb.poly("bejmat", [Xo(s, z, -0.04) for s, z in t])
+        for t in L.tri_poly(alfiz.buffer(0.07, join_style=2).difference(alfiz).intersection(box(-3, 0.21, 3, 8))):
+            mb.poly("trim", [Xo(s, z, -0.06) for s, z in t])
+        squares(mb, Xo, [-2.30 + 0.657 * k for k in range(8)], 6.95)
+    for P0, P1 in (((2.475, -11.78), (-2.475, -11.78)), ((-2.475, -7.28), (2.475, -7.28))):
+        face(mb, "render", P0, P1, 0.0, 6.50, [dict(arch)], rev=0.0)     # inner faces, front and back
     mb.box("render", -2.865, 2.865, -12.17, -6.89, 6.50, 7.69)
     crown(mb, PORTAL.buffer(-0.001, join_style=2), 7.69, 8.10, t=0.25)
     cornice(mb, PORTAL, 7.45, 7.60, 0.10)

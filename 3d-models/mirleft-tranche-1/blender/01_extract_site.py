@@ -341,17 +341,17 @@ for h in HCLS["lawn"]:
     if blk not in DBLK:
         continue
     for pg in as_polys(h["geom"]):
-        if pg.area >= 15 and pg.intersects(near_house):
-            gardens.append(pg)                       # plot garden: walled
+        if (pg.area >= 15 and pg.intersects(near_house)) or (pg.area >= 40 and pg.intersects(house_u.buffer(2.2, join_style=2))):
+            gardens.append(pg)                       # plot garden: walled (also behind the 1 m band of D-3/D-4)
         elif pg.area < 40:
             planters.append(pg)                      # 'Jardin' beds on the pavements: raised planters
 SOLID_WALLS = {("01-murs ext", (255, 0, 0), "SOLID"): ("garden", 1.80),             # rear wall of row B along the 8.5 m road
-               ("08-hachures", (205, 105, 40), "SOLID"): ("garden", 1.80),          # walls of the small gardens south of D-3/4
+               ("08-hachures", (205, 105, 40), "SOLID"): ("planter", 0.60),         # the 'JARDIN' beds of the pool block, south of D-3/4
                ("-id-structure jardin", (255, 255, 255), "ANSI37"): ("enclosure", 1.20),   # pétanque, east boundary
                ("08-hachures", (212, 186, 43), "SOLID"): ("pool", 1.10)}            # pool terrace enclosure (north / west)
 solid = [(h, SOLID_WALLS[(h["layer"], h["rgb"], h["pat"])]) for h in HATCH
          if (h["layer"], h["rgb"], h["pat"]) in SOLID_WALLS and T1.intersects(h["geom"])]
-solid_u = unary_union([h["geom"] for h, _ in solid])
+solid_u = unary_union([h["geom"] for h, (kind, _) in solid if kind != "planter"])
 # Walls run along the garden edges, except where the edge faces the house: the plan draws lawn up to the
 # house, or (D-3/D-4) a 1 m paved band round it, and no wall there. An edge segment running along a house
 # wholly within 2 m of it is that edge; one within 0.7 m of a wall the plan draws is that wall, not a second one.
@@ -372,11 +372,12 @@ for pg in gardens:
                 continue                     # (a short piece joining a wall to the house is kept)
             segs_w.append(LineString([a_, b_]))
 garden_walls = unary_union([l.buffer(0.10, cap_style=2, join_style=2) for l in segs_w])
+garden_walls = garden_walls.buffer(0.10, join_style=2).buffer(-0.10, join_style=2)    # a shared divider: one wall
 garden_walls = unary_union([p for p in as_polys(garden_walls.difference(house_u)) if p.area > 0.08])
 walls = [{"kind": "garden", "h": 1.80, "poly": q} for q in poly_out(gloc(garden_walls))]
 band = house_u.buffer(1.10, join_style=2)          # the 1 m band round D-3/D-4 stays clear of the plot walls
 for h, (kind, hh) in solid:
-    g = h["geom"].difference(band) if kind == "garden" else h["geom"]
+    g = h["geom"].difference(band) if kind in ("garden", "planter") else h["geom"]
     for q in poly_out(gloc(g)):
         walls.append({"kind": kind, "h": hh, "poly": q})
 # the 'JARDIN' plots beside D-4 (PISCINE block) are drawn 0.6 m into the band: closed by a wall on the
@@ -393,6 +394,12 @@ if not over.is_empty:
     site["surfaces"]["lawn"] = poly_out(sl.difference(ov))
     site["surfaces"]["paving"] = poly_out(sp.union(ov.intersection(sl)))
     print("  band beside D-4: plot lawn trimmed", round(ov.intersection(sl).area, 1), "m2")
+site["pool_beds"] = poly_out(gloc(plots.difference(band)))
+# D-3/D-4: the garden divider ('Axe limite villa') runs on across the paved band to the house
+for d in dups:
+    if d["units"] == ["D-3", "D-4"]:
+        g = affinity.translate(affinity.rotate(box(-0.25, 5.25, 0.05, 7.40), d["rot_deg"], origin=(0, 0)), *d["c"])
+        walls.append({"kind": "garden", "h": 1.80, "poly": poly_out(g)[0]})
 # '03-vue' grey solid: walls of the local technique block (building) and the retaining wall along the south road
 LT_BOX = box(251970, 119383, 251990, 119412)
 lt_walls = []

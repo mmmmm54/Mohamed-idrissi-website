@@ -107,6 +107,8 @@ TEX = {
     "T05_Stabilise_Sand": (gen_tiles("stabilise", 0, 0, "#CDB894", None, (205, 184, 148), noise=12), 2.0),
     "T06_Travertine_Deck": (gen_tiles("travertine", 4, 6, "#E6DCC8", "#DCCFB7", (194, 180, 154)), 2.4),
     "D09_Sand": (gen_tiles("sand", 0, 0, "#D9C49A", None, (217, 196, 154), noise=10), 2.0),
+    "T13_Travertine_Planks": (gen_tiles("planks", 2, 8, "#E5D8C0", "#D7C7AA", (185, 169, 142)), 1.8),
+    "T12_Overflow_Grille_Black": (gen_tiles("grille", 16, 16, "#2A2A2C", "#1F1F21", (6, 6, 6), stagger=False), 0.56),
 }
 FLAT = {   # plain colours (hex), roughness, metallic
     "A06_Interior_Proxy": ("#4A3A2E", 0.9, 0.0), "D02_Door_Wood_Dark": ("#5C3A22", 0.6, 0.0),
@@ -120,6 +122,8 @@ FLAT = {   # plain colours (hex), roughness, metallic
     "V05_Hedge": ("#4E6B34", 0.85, 0.0), "T07_Coping_White_Stone": ("#EEE8DC", 0.5, 0.0),
     "T08_Planter_Soil": ("#6B5240", 0.95, 0.0), "T09_Pool_Cover_Blue": ("#2C5E8C", 0.5, 0.0),
     "T10_Terrain_Cut_Soil": ("#8C6E52", 0.95, 0.0), "T11_Road_Paint_White": ("#E9E7E0", 0.6, 0.0),
+    "T14_Lounger_White_Resin": ("#F1EFE9", 0.35, 0.0), "T15_Parasol_Canvas": ("#D9C8A9", 0.85, 0.0),
+    "V09_Agave_Leaf": ("#7E9B8A", 0.6, 0.0), "V04_Ornamental_Grass": ("#B7A56E", 0.75, 0.0),
 }
 ALPHA = {"D01_Mashrabiya_Wood": "#3B2414", "V01_Palm_Fan": None, "V03_Olive_Foliage": None,
          "V07_Pink_Blossom_Tree": None, "V08_Green_Shade_Tree": None}

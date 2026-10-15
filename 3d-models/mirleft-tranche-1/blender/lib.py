@@ -141,6 +141,12 @@ def materials():
     M["soil"] = mod.simple("T08_Planter_Soil", "#6B5240", 0.95, 0.0, 25.0, 0.3, 0.4)
     M["pool_cover"] = mod.simple("T09_Pool_Cover_Blue", "#2C5E8C", 0.5, 0.0, 0.0, 0.0, 0.0)
     M["paint"] = mod.simple("T11_Road_Paint_White", "#E9E7E0", 0.6, 0.0, 40.0, 0.12, 0.1)
+    # pool court in the style of the 15-10 reference images
+    M["grille"] = uv_tiles(mod.tiles("T12_Overflow_Grille_Black", "#2A2A2C", "#1F1F21", 0.035, 0.035, "#060606", 0.006, 0.45, 0.4, 0.0))
+    M["planks"] = uv_tiles(mod.tiles("T13_Travertine_Planks", "#E5D8C0", "#D7C7AA", 0.90, 0.22, "#B9A98E", 0.003, 0.6, 0.2, 0.37), 90.0)
+    M["lounger_white"] = mod.simple("T14_Lounger_White_Resin", "#F1EFE9", 0.35, 0.0, 0.0, 0.0, 0.0)
+    M["canvas"] = mod.simple("T15_Parasol_Canvas", "#D9C8A9", 0.85, 0.0, 30.0, 0.08, 0.05)
+    M["agave"] = mod.simple("V09_Agave_Leaf", "#7E9B8A", 0.55, 0.0, 20.0, 0.12, 0.05)
     M["mod"] = mod
     return M
 
@@ -177,10 +183,10 @@ def prism(mb, mat, poly, z0, z1, zf=None, sides=True, bottom=False):
             if bottom:
                 mb.poly(mat, [(x, y, z0 + zf(x, y)) for x, y in t[::-1]], [(x, y) for x, y in t[::-1]])
         if sides:
-            for ring in [pg.exterior] + list(pg.interiors):
+            for k, ring in enumerate([pg.exterior] + list(pg.interiors)):
                 c = list(ring.coords)
                 ccw = ring.is_ccw
-                inner = ring is not pg.exterior
+                inner = k > 0                     # (pg.exterior is a new object on each access: no `is` test)
                 for (ax, ay), (bx, by) in zip(c, c[1:]):
                     if (ccw and not inner) or (not ccw and inner):
                         p, q = (ax, ay), (bx, by)

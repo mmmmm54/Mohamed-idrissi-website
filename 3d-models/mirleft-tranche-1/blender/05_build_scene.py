@@ -6,15 +6,19 @@
 World frame: metres, x east, y north (the plan's north arrow), origin = DWG (252000, 119430),
 z = altitude - 50 m. The 1er TRANCHE is graded on the plane fitted to the plan's contours (the 2013
 contours brought over, 5.5 % rising to the east); duplex pads, the restaurant and the commerces sit
-at the plane height of their centre; the pool court is sunk 2.70 m below the ground at the top of
-its gradins (1.70 m of gradins, the gradins top 1.00 m below the ground around it).
-The rest of the site keeps the natural terrain of the contours, blended over 25 m.
+at the plane height of their centre; the pool deck is 2.70 m below the graded ground at the top of
+its gradins, which climb 1.70 m to an upper walk; planted stone terraces take that walk up to the
+lawn by the restaurant terrace (04_pool). The rest of the site keeps the natural terrain of the
+contours, blended over 25 m.
 
 Revision 15-10: the restaurant is the pavilion of its own plan (3-PLAN_RESTAURANT_PAVILLON) on the
 12-10 axis; the stairs are built (level treads, risers of about 15 cm for the height the ground
 gives, flights where the plan draws them); the entrance median is paved, not water; the pedestrian
 crossings are painted on the road; no garden wall along the paved band round D-3/D-4. The pool area
 is 1.00 m lower; the long stair north of it goes down from the row C lane to its deck.
+Second round of 15-10: the pool court in the style of the reference images (stone, planks, planting,
+parasols, cabanas, sun shelf); the restaurant portal open on its sides as its facades draw it; the
+D-4 rear garden walled, the 'JARDIN' plots beside it in 0.60 m stone planters.
 """
 import importlib.util
 import json
@@ -54,38 +58,9 @@ def hg(x, y):
     return PLANE[0] * x + PLANE[1] * y + PLANE[2]
 
 
-PAD = {"poly": None, "z": 0.0, "blend": 10.0}
-
-
 def hz(x, y):
-    """Graded ground: the plane, levelled behind the pool gradins (PAD) and blended back over 10 m."""
-    h = hg(x, y)
-    if PAD["poly"] is None:
-        return h
-    d = PAD["poly"].distance(Point(x, y))
-    if d >= PAD["blend"]:
-        return h
-    w = 1.0 - d / PAD["blend"]
-    w = w * w * (3 - 2 * w)
-    return h + w * (PAD["z"] - h)
-
-
-def gridsplit(g, step=3.0):
-    """Pieces of g: as is far from the levelled pad, cut on a grid near it (so the blend is sampled)."""
-    if PAD["poly"] is None or g.is_empty:
-        return [g]
-    zone = PAD["poly"].buffer(PAD["blend"] + 1.0)
-    near = g.intersection(zone)
-    out = [g.difference(zone)] if not near.is_empty else [g]
-    if near.is_empty:
-        return out
-    x0, y0, x1, y1 = zone.bounds
-    for i in range(int((x1 - x0) / step) + 1):
-        for j in range(int((y1 - y0) / step) + 1):
-            q = near.intersection(box(x0 + i * step, y0 + j * step, x0 + (i + 1) * step, y0 + (j + 1) * step))
-            if not q.is_empty and q.area > 1e-4:
-                out.append(q)
-    return out
+    """Graded ground of the tranche: the fitted plane (the pool court builds its own levels)."""
+    return hg(x, y)
 
 
 def polys(lst):
@@ -204,8 +179,7 @@ def build_ground(M, col, t1, cut):
     S = SITE["surfaces"]
     out = []
     mb = C.MeshBuilder()
-    for q in gridsplit(t1.difference(cut)):
-        L.prism(mb, "asphalt", q, -0.65, 0.0, zf=zf)
+    L.prism(mb, "asphalt", t1.difference(cut), -0.65, 0.0, zf=zf)
     out += mb.build("GROUND_ASPHALT_BASE", col, M)
     for key, off, mat in OFFS:
         keep = [g for g in polys(S.get(key, [])) if g.area >= MIN_AREA.get(key, 0.05)]
@@ -213,8 +187,7 @@ def build_ground(M, col, t1, cut):
         if g.is_empty:
             continue
         mb = C.MeshBuilder()
-        for q in gridsplit(g):
-            L.prism(mb, mat, q, -0.65, off, zf=zf)
+        L.prism(mb, mat, g, -0.65, off, zf=zf)
         out += mb.build(f"GROUND_{key.upper()}", col, M)
     return out
 
@@ -291,9 +264,9 @@ def build_walls(M, col):
         if w["kind"] in ("pool", "retaining"):
             continue                                                # built with the pool court
         g = Polygon(w["poly"]["ext"], w["poly"]["holes"]).buffer(0)
-        mat = "render"
+        mat, cap = ("stone", "deck_stone") if w["kind"] == "planter" else ("render", "trim")
         L.prism(mb, mat, g, -0.40, w["h"], zf=zf)
-        L.prism(mb, "trim", g.buffer(0.03, join_style=2), w["h"], w["h"] + 0.05, zf=zf)
+        L.prism(mb, cap, g.buffer(0.03, join_style=2), w["h"], w["h"] + 0.05, zf=zf)
     for p in polys(SITE["planters"]):                              # 'Jardin' beds: raised planters
         if p.area < 0.6:
             continue
@@ -351,11 +324,16 @@ def stair_level(sp, t):
     return sp["zA"] + sp["h"] * sum(1 for r in sp["risers"] if r <= t)
 
 
-def solid_stair(mb, sp, width, pad=0.15, cheeks=()):
+POOL_STAIR_MATS = {"tread": "planks", "nose": "coping", "cheek": "stone", "cap": "deck_stone"}
+
+
+def solid_stair(mb, sp, width, pad=0.15, cheeks=(), mats=None):
     """The stair of stair_plan(), wall to wall: level treads, vertical risers, a dark stone nosing at
     each step, a slim handrail on the centre line over each flight (the plan's centre line).
     cheeks: sides (+1 left of A->B, -1 right) that get a retaining wall where the ground beside the
-    stair is higher than its treads; an end wall closes B the same way."""
+    stair is higher than its treads; an end wall closes B the same way. mats: tread / nose / cheek / cap
+    materials (default light pavers, dark stone nosings, render cheeks)."""
+    mats = mats or {"tread": "terrace", "nose": "slate", "cheek": "render", "cap": "trim"}
     eA, ax, nr, Lt, zA, zB, h = sp["eA"], sp["ax"], sp["nr"], sp["Lt"], sp["zA"], sp["zB"], sp["h"]
     flights, risers = sp["flights"], sp["risers"]
     ns = [sum(1 for r in risers if f[0] - 1e-6 <= r <= f[1] + 1e-6) for f in flights]
@@ -365,12 +343,12 @@ def solid_stair(mb, sp, width, pad=0.15, cheeks=()):
     edges = [0.0] + risers + [Lt]
     for k in range(len(edges) - 1):
         z = zA + h * k
-        L.prism(mb, "terrace", quad(edges[k], edges[k + 1], -width / 2 - pad, width / 2 + pad), zb, z)
+        L.prism(mb, mats["tread"], quad(edges[k], edges[k + 1], -width / 2 - pad, width / 2 + pad), zb, z)
     for k, t in enumerate(risers):                        # dark stone nosing band at each step edge
         z = zA + h * (k + 1) if h > 0 else zA + h * k
         t0, t1 = (t, t + 0.30) if h > 0 else (t - 0.30, t)
-        L.prism(mb, "slate", quad(t0, t1, -width / 2, width / 2), z - 0.02, z + 0.005, sides=False)
-        L.prism(mb, "slate", quad(t - 0.004, t + 0.004, -width / 2, width / 2), z - abs(h), z)
+        L.prism(mb, mats["nose"], quad(t0, t1, -width / 2, width / 2), z - 0.02, z + 0.005, sides=False)
+        L.prism(mb, mats["nose"], quad(t - 0.004, t + 0.004, -width / 2, width / 2), z - abs(h), z)
     for (t0, t1, _), n in zip(flights, ns):              # centre handrail over the flight
         a, b = max(0.0, t0 - 0.40), min(Lt, t1 + 0.40)
         za = zA + h * sum(1 for r in risers if r < a)
@@ -401,13 +379,13 @@ def solid_stair(mb, sp, width, pad=0.15, cheeks=()):
                 z = zA + h * k
                 if g > z + 0.05:
                     s0, s1 = sorted((side * e_, side * (e_ + 0.20)))
-                    L.prism(mb, "render", quad(a_, b_, s0, s1), zb, g + 0.05)
-                    L.prism(mb, "trim", quad(a_, b_, s0, s1).buffer(0.03, join_style=2), g + 0.05, g + 0.10)
+                    L.prism(mb, mats["cheek"], quad(a_, b_, s0, s1), zb, g + 0.05)
+                    L.prism(mb, mats["cap"], quad(a_, b_, s0, s1).buffer(0.03, join_style=2), g + 0.05, g + 0.10)
     if cheeks:
         g = ground_top(*(eA + ax * (Lt + 0.45)))
         if g > zB + 0.05:
-            L.prism(mb, "render", quad(Lt, Lt + 0.20, -e_ - 0.20, e_ + 0.20), zb, g + 0.05)
-            L.prism(mb, "trim", quad(Lt, Lt + 0.20, -e_ - 0.20, e_ + 0.20).buffer(0.03, join_style=2), g + 0.05, g + 0.10)
+            L.prism(mb, mats["cheek"], quad(Lt, Lt + 0.20, -e_ - 0.20, e_ + 0.20), zb, g + 0.05)
+            L.prism(mb, mats["cap"], quad(Lt, Lt + 0.20, -e_ - 0.20, e_ + 0.20).buffer(0.03, join_style=2), g + 0.05, g + 0.10)
     return quad(0.0, Lt, -width / 2 - pad, width / 2 + pad)
 
 
@@ -437,9 +415,7 @@ def main():
     POOL = load("04_pool.py")
     pc = SITE["pool"]
     fw = frame(pc["c"], pc["rot_deg"])
-    z_deck = hg(*fw(POOL.GRADINS_U[3], 0.0)) - POOL.RISE - POOL_DROP
-    PAD["poly"] = to_world(POOL.upper_pad(), pc["c"], pc["rot_deg"])
-    PAD["z"] = z_deck + POOL.RISE
+    z_deck = hg(*fw(POOL.GRAD_F[3], 0.0)) - POOL.RISE - POOL_DROP
     build_terrain(M, cols["01_TERRAIN"], site, t1)
 
     # ---- duplexes ------------------------------------------------------------------------------
@@ -490,15 +466,23 @@ def main():
     for kind in ("pool", "kids_pool"):
         g = unary_union([Polygon(w["poly"]["ext"], w["poly"]["holes"]) for w in SITE["water"] if w["kind"] == kind])
         wp[kind] = to_local(g, pc["c"], pc["rot_deg"])
+    # the upper level east of the gradins keeps clear of the road's footway, which cuts its south-east corner
+    win = box(12.50, -25.0, 20.0, -10.0)
+    foot = [to_local(g, pc["c"], pc["rot_deg"]) for g in polys(SITE["surfaces"]["paving"])]
+    POOL.layout(ground, unary_union([g for g in foot if g.intersects(win)]))
     # the long stair north of the court ('ESCALIERS' 1-10 and 11-21): from the row C lane down into the
     # sunken court, landing on the deck at its north-east corner through an opening in the north wall;
     # that wall is its 1 m guard over the court
     sp_n = stair_plan(fw(-12.40, 22.175), fw(8.70, 22.175), [(0.0, 5.50, 10), (14.30, 19.80, 11)], zB=z_deck)
-    north_top = lambda u: stair_level(sp_n, u + 12.40) - z_deck + 1.00
-    pool_ob = POOL.build(M, cols["SRC"], ground, wp, north_top=north_top, north_gap=(7.40, 8.70))
+    ed = [0.0] + sp_n["risers"] + [sp_n["Lt"]]
+    north_steps = [(-12.40 + ed[k], -12.40 + ed[k + 1], sp_n["zA"] + sp_n["h"] * k - z_deck) for k in range(len(ed) - 1)]
+    pool_ob, spots = POOL.build(M, cols["SRC"], ground, wp, north_steps=north_steps, north_gap=(7.40, 8.70))
     place(pool_ob, "POOL_COURT", pc["c"], pc["rot_deg"], cols["05_POOL"], z=z_deck)
     pool_ob.users_collection[0].objects.unlink(pool_ob)
-    cut.append(to_world(POOL.footprint(), pc["c"], pc["rot_deg"]))
+    pfoot = to_world(POOL.footprint(), pc["c"], pc["rot_deg"])
+    cut.append(pfoot)
+    for st in POOL.LAY["ups"]:
+        print(f"  pool upper stair v {st['v0']:.2f}-{st['v1']:.2f}: rise {st['zT'] - POOL.RISE:.2f} m, {st['n']} risers of {st['h']:.3f} m")
     ltw = polys(SITE["local_technique_walls"])
     lt = PUB.local_technique(M, cols["05_POOL"], ltw)
     lt.location.z = z_deck
@@ -517,15 +501,27 @@ def main():
             ob.location = (x, y, z_deck)
             ob.rotation_euler = (0, 0, a)
             cols["05_POOL"].objects.link(ob)
+    src_par = POOL.parasol(M, cols["SRC"])                      # the plan's 'PR' circles of the east deck
+    for i, (u, v) in enumerate(POOL.PARASOLS):
+        ob = bpy.data.objects.new(f"PARASOL_{i:02d}", src_par.data)
+        ob.location = (*fw(u, v), z_deck)
+        ob.rotation_euler = (0, 0, math.radians(pc["rot_deg"] + 22.5 * (i % 2)))
+        cols["05_POOL"].objects.link(ob)
+    src_cab = POOL.cabana(M, cols["SRC"])                       # reference images: cabanas on the west deck
+    for i, (u, v) in enumerate(POOL.CABANAS):
+        ob = bpy.data.objects.new(f"CABANA_{i:02d}", src_cab.data)
+        ob.location = (*fw(u, v), z_deck)
+        ob.rotation_euler = (0, 0, math.radians(pc["rot_deg"]))
+        cols["05_POOL"].objects.link(ob)
     pits = [Point(t["c"]).buffer(0.60, 6) for t in SITE["trees"] if t["kind"] == "pit"]
     cut.extend(pits)
     # stairs: across the rows ('ESC 16-17', 'ESC V4', flights read from the plan) and the long stair
     # north of the pool court ('ESCALIERS' 1-10 and 11-21, landing between)
-    stair_specs = [(s["name"], stair_plan(s["axis"][0], s["axis"][1], s["flights"]), s["width"], ()) for s in SITE["stairs"]]
-    stair_specs.append(("ESCALIERS NORD PISCINE", sp_n, 3.45, (1,)))
+    stair_specs = [(s["name"], stair_plan(s["axis"][0], s["axis"][1], s["flights"]), s["width"], (), None) for s in SITE["stairs"]]
+    stair_specs.append(("ESCALIERS NORD PISCINE", sp_n, 3.45, (1,), POOL_STAIR_MATS))
     mb_st = C.MeshBuilder()
-    for name, sp, w_, cheeks in stair_specs:
-        cut.append(solid_stair(mb_st, sp, w_, cheeks=cheeks))
+    for name, sp, w_, cheeks, mats in stair_specs:
+        cut.append(solid_stair(mb_st, sp, w_, cheeks=cheeks, mats=mats))
         print(f"  stair {name}: rise {sp['dz']:+.2f} m, {sp['n']} risers of {abs(sp['h']):.3f} m")
     mb_st.build("STAIRS", cols["02_GROUND"], M)
     cutp = unary_union(cut)
@@ -564,12 +560,18 @@ def main():
         "standard": LS.make_source("CLIPPED_STANDARD_TREE", tree(23, 4.4, 1.60, "green_leaf", 220, card=0.70, gnarl=0.0), M, cols["SRC"]),
         "wash": LS.make_source("WASHINGTONIA", LS.washingtonia(1, 9.0), M, cols["SRC"]),
         "date": LS.make_source("DATE_PALM", LS.date_palm(4, 5.0), M, cols["SRC"]),
-        "shrub": shrub_source(M, cols["SRC"]),
+        "shrub": LS.make_source("SHRUB_MOUND", bush(31, "olive_leaf"), M, cols["SRC"]),
+        "shrub_pink": LS.make_source("SHRUB_FLOWERING", bush(47, "blossom", cards=90), M, cols["SRC"]),
+        "agave": LS.make_source("AGAVE", POOL.agave(3), M, cols["SRC"]),
+        "agave_b": LS.make_source("AGAVE_SMALL", POOL.agave(8, n=14, length=0.45), M, cols["SRC"]),
+        "grass": LS.make_source("ORNAMENTAL_GRASS", LS.grass_clump(5), M, cols["SRC"]),
     }
     veg = cols["06_LANDSCAPE"]
     nveg = [0]
 
     def plant(key, xy, s=1.0, z=None, sz=None):
+        if key == "shrub" and RNG.random() < 0.25:
+            key = "shrub_pink"                                   # a flowering one now and then
         ob = bpy.data.objects.new(f"VEG_{key.upper()}_{nveg[0]:03d}", srcv[key].data)
         ob.location = (xy[0], xy[1], (hz(*xy) + 0.12) if z is None else z)
         ob.rotation_euler = (0, 0, RNG.uniform(0, 6.283))
@@ -589,7 +591,7 @@ def main():
                                               or any(pg.buffer(0.6).contains(q) for pg in PUB.PAV_PERGOLAS)):
             n_skip += 1                                          # in its bassins, pergolas or against its walls
             continue
-        z = z_deck + 0.45 if court.buffer(0.5).contains(Point(xy)) else None
+        z = z_deck + POOL.BAC_SOIL if court.buffer(0.5).contains(Point(xy)) else None
         if PUB.PLATFORM_FULL.contains(q):
             z = z_pav + 0.20                                     # on the pavilion's deck
         if t["kind"] == "palm":                                 # symbol 0.23-0.68 m radius on the plan: young palms
@@ -605,6 +607,33 @@ def main():
         else:
             plant("pit", xy, RNG.uniform(0.85, 1.0), hz(*xy) + 0.09)
     print("  trees of the 12-10 layout left out on the pavilion:", n_skip)
+    for u, v, z, kind, s in spots:                                   # pool court beds (reference images)
+        plant(RNG.choice(("agave", "agave_b")) if kind == "agave" else kind, fw(u, v), s, z_deck + z)
+    print("  pool court plants:", len(spots))
+    # the plan's 'JARDIN' beds of the pool block outside the court: the west strip at the lawn level,
+    # the beds north of the long stair inside their 0.60 m stone planter walls (soil at 0.50)
+    pwalls = unary_union([Polygon(w["poly"]["ext"], w["poly"]["holes"]).buffer(0) for w in SITE["walls"] if w["kind"] == "planter"])
+    mb = C.MeshBuilder()
+    n_out = 0
+    for p in polys(SITE["pool_beds"]):
+        for q in L.as_polys(p.difference(pfoot.buffer(0.05))):
+            if q.area < 1.0:
+                continue
+            raised = q.distance(pwalls) < 0.30 if not pwalls.is_empty else False
+            if raised:
+                q = q.difference(pwalls)
+                L.prism(mb, "soil", q, -0.30, 0.50, zf=hz, sides=False)
+            x0, y0, x1, y1 = q.bounds
+            for _ in range(int(q.area / 0.9)):
+                pt = Point(RNG.uniform(x0, x1), RNG.uniform(y0, y1))
+                if not q.buffer(-0.25).contains(pt):
+                    continue
+                k = RNG.choices(("shrub", "grass", "agave", "agave_b"), (0.40, 0.30, 0.15, 0.15))[0]
+                zt = hz(pt.x, pt.y) + 0.50 if raised else ground_top(pt.x, pt.y)
+                plant(k, (pt.x, pt.y), RNG.uniform(0.8, 1.2), zt)
+                n_out += 1
+    mb.build("POOL_BLOCK_JARDIN_SOIL", cols["02_GROUND"], M)
+    print("  plants in the pool block's other beds:", n_out)
     for p in polys(SITE["planters"]):                                # shrubs in the raised beds (INFERRED planting)
         if p.area < 1.5:
             continue
@@ -699,20 +728,25 @@ def tree(seed, height, crown, leaf, cards, card=0.55, gnarl=0.18):
     return mb
 
 
-def shrub_source(M, col):
-    """Low rounded shrub (0.7 m) for the raised beds: a squashed faceted ball."""
+def bush(seed, leaf, cards=120, r=0.46, h=0.62):
+    """Mediterranean shrub (rosemary / lavender / bougainvillea habit), about 0.9 m across and 0.6 m
+    high: a mound of leaf cards (leaf textures of the Mirleft Bay project). INFERRED planting."""
+    rr = random.Random(seed)
     mb = C.MeshBuilder()
-    nu, nv = 10, 6
-    R, H = 0.38, 0.55
-    pts = [[(R * math.sin(math.pi * j / nv) * math.cos(2 * math.pi * i / nu), R * math.sin(math.pi * j / nv) * math.sin(2 * math.pi * i / nu),
-             H / 2 - H / 2 * math.cos(math.pi * j / nv)) for i in range(nu)] for j in range(nv + 1)]
-    for j in range(nv):
-        for i in range(nu):
-            a, b = pts[j][i], pts[j][(i + 1) % nu]
-            c, d = pts[j + 1][(i + 1) % nu], pts[j + 1][i]
-            mb.poly("hedge", [a, d, c, b])
-    obs = mb.build("SHRUB", col, M)
-    return L.join(obs, "SRC_SHRUB")
+    for _ in range(cards):
+        u = np.array([rr.gauss(0, 1), rr.gauss(0, 1), abs(rr.gauss(0, 1))])
+        u /= np.linalg.norm(u) + 1e-9
+        k = rr.uniform(0.45, 1.0) ** 0.5
+        p = np.array([u[0] * r * k, u[1] * r * k, 0.05 + u[2] * h * k])
+        nrm = np.array([rr.gauss(0, 1), rr.gauss(0, 1), rr.gauss(0, 1) + 0.9])
+        nrm /= np.linalg.norm(nrm)
+        a1 = np.cross(nrm, [0, 0, 1.0]) if abs(nrm[2]) < 0.95 else np.array([1.0, 0, 0])
+        a1 /= np.linalg.norm(a1)
+        a2 = np.cross(nrm, a1)
+        s_ = r * rr.uniform(0.22, 0.34)
+        q = [p - a1 * s_ - a2 * s_, p + a1 * s_ - a2 * s_, p + a1 * s_ + a2 * s_, p - a1 * s_ + a2 * s_]
+        mb.poly(leaf, [tuple(v) for v in q], [(0, 0), (1, 0), (1, 1), (0, 1)])
+    return mb
 
 
 def camera_sky():
@@ -757,7 +791,7 @@ def make_cameras(col, z_deck):
         # name: (eye xy, eye height above the plane, target xy, target height, lens)
         "CAM_01_AERIAL_T1": ((115, -118), 82, (2, 8), 0, 30),
         "CAM_02_AERIAL_FROM_WEST": ((-175, -30), 95, (5, 10), 0, 30),
-        "CAM_03_POOL_COURT": (fw(13.6, -9.0), 1.7, fw(-4.0, 5.0), 0.4, 22),
+        "CAM_03_POOL_COURT": (fw(-11.6, -15.6), 4.2, fw(9.0, 5.0), 1.0, 20),
         "CAM_04_RESTAURANT": (fr(4.0, -32.0), 1.8, fr(0.0, 0.0), 6.0, 24),
         "CAM_05_COMMERCES_PLAZA": (fc(20.0, -24.0), 11.0, fc(0.0, -1.0), 2.0, 24),
         "CAM_06_LANE_ROWS": (fa(-24.0, -11.2), 1.7, fa(30.0, -11.2), 3.0, 24),
@@ -773,7 +807,7 @@ def make_cameras(col, z_deck):
     for n, (e, eh, t, th, lens) in shots.items():
         cam = bpy.data.objects.new(n, bpy.data.cameras.new(n))
         col.objects.link(cam)
-        ez = hz(*e) + eh
+        ez = (z_deck if n == "CAM_03_POOL_COURT" else hz(*e)) + eh
         tz = (z_deck if n == "CAM_03_POOL_COURT" else hz(*t)) + th
         E = Vector((e[0], e[1], ez))
         T = Vector((t[0], t[1], tz))
