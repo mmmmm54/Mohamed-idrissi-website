@@ -9,8 +9,8 @@ colour image with the tint baked in and box-projected UVs at true size, or a pla
 name, and the textured ones get a normal map baked from their colour image. Writes d5/:
   Mirleft_Tranche_1_D5_FULL.fbx       everything (buildings, ground, pool court, furniture, plants, the
                                       13 cameras), textures embedded
-  Mirleft_Tranche_1_D5_NO_TREES.fbx   the same without trees, palms, shrubs, agaves and grasses, to place
-                                      D5 library plants; textures embedded
+  Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx   the same without the palms and trees (shrubs, agaves and
+                                      grasses kept), to place D5 library trees; textures embedded
   textures/                           the same images, to reassign by hand if a material comes in white
   D5_IMPORT_GUIDE.md
 and zips the folder to Mirleft_Tranche_1_D5.zip next to the .blend.
@@ -106,7 +106,7 @@ GUIDE = """# D5 import guide: Mirleft 1er TRANCHE
 | File | Contents | Use it when |
 |---|---|---|
 | `Mirleft_Tranche_1_D5_FULL.fbx` | Everything: duplexes, restaurant, commerces, pool court, ground, walls, stairs, furniture, trees, palms and plants, and the 13 cameras | You want everything placed already |
-| `Mirleft_Tranche_1_D5_NO_TREES.fbx` | The same without trees, palms, shrubs, agaves and grasses | You place D5 library plants yourself |
+| `Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx` | The same without the palms and trees; the shrubs, agaves and grasses stay | You place D5 library palms and trees yourself |
 
 Both FBX files carry their textures inside. The same images are in `textures/`: keep that folder next to the FBX.
 
@@ -116,7 +116,7 @@ Both FBX files carry their textures inside. The same images are in `textures/`: 
 3. If a material still shows white, set Base Color to `textures/<material>_COL.jpg` and Normal to `textures/<material>_NRM.jpg`.
 
 ## Recommended D5 material swaps
-- `M10_Pool_Water` (pools, bassins, fountain) → D5 Water. The tiled floor and walls under it stay visible.
+- `M10_Pool_Water` (pools, bassins, fountain) → D5 Water. The blue tiled floor and walls under it show through.
 - `M06_Glass` → D5 Glass.
 - `T03_Lawn` → D5 Grass (scatter) if you want real grass.
 
@@ -139,10 +139,10 @@ def main():
     swapped = d5_materials(vl)
     print("D5_MATERIALS", len(swapped))
     export(os.path.join(OUT, "Mirleft_Tranche_1_D5_FULL.fbx"))
-    for o in list(bpy.data.objects):
-        if o.name.startswith("VEG_"):
-            bpy.data.objects.remove(o, do_unlink=True)
-    export(os.path.join(OUT, "Mirleft_Tranche_1_D5_NO_TREES.fbx"))
+    trees = bpy.data.collections.get("06_TREES_PALMS")
+    for o in list(trees.objects if trees else []):
+        bpy.data.objects.remove(o, do_unlink=True)
+    export(os.path.join(OUT, "Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx"))
     open(os.path.join(OUT, "D5_IMPORT_GUIDE.md"), "w").write(GUIDE)
     z = os.path.join(ROOT, "Mirleft_Tranche_1_D5.zip")
     with zipfile.ZipFile(z, "w", zipfile.ZIP_DEFLATED) as zf:

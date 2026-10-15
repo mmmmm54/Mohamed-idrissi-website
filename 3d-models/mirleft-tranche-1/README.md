@@ -17,7 +17,7 @@ The rest of the site is empty land: the exact site boundary and the natural slop
 | `Mirleft_Tranche_1.glb` | Light GLB with JPEG textures and colours (14 MB; shared meshes; no cameras or lights). Metres, Y up. `blender/08_export_glb.py` |
 | `Mirleft_Tranche_1_AE_SAFE.glb` | The most compatible version for After Effects (16 MB): the tranche only, one mesh of 187k triangles, centred with its ground at 0, JPEG only, no alpha, no trees. `08_export_glb.py --ae-safe` |
 | `Mirleft_Tranche_1_OBJ.zip` | The same single mesh as OBJ + MTL + JPEG textures (6 MB), written by the same command. |
-| `d5/` | D5 Render package: `Mirleft_Tranche_1_D5_FULL.fbx` (everything, the 13 cameras, textures embedded), `Mirleft_Tranche_1_D5_NO_TREES.fbx` (without trees and plants, to place D5's own), `textures/` and `D5_IMPORT_GUIDE.md`. `blender/09_export_d5.py` |
+| `d5/` | D5 Render package: `Mirleft_Tranche_1_D5_FULL.fbx` (everything, the 13 cameras, textures embedded), `Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx` (without the palms and trees, the agaves, grasses and shrubs kept, to place D5's own), `textures/` and `D5_IMPORT_GUIDE.md`. `blender/09_export_d5.py` |
 | `renders/` | 13 views at 1920 × 1080 (see the list below). |
 | `Mirleft_Tranche_1_views.jpg` | The 13 views on one sheet. |
 | `blender/01_extract_site.py` | Reads the plan (DWG made into primitives by `tools/`) and writes `data/site.json`. |
@@ -86,7 +86,8 @@ The rest of the site is empty land: the exact site boundary and the natural slop
     - Lower window 1.30 m wide, from +1.43 to +2.69, on a mashrabiya planter (+0.43 to +1.43).
     - Upper window 0.86 m wide, from +6.10 to +7.20, on a mashrabiya balcony (+5.23 to +6.10).
     - **Body**: twelve 0.25 m squares at +8.03 on the front, and the five bands on the wall either side of the portal.
-  - The platform: front bassins with planters, the bridge, the cour anglaise, the rear terrace and the timber pergolas at the rear corners.
+  - The platform: front bassins with planters, the bridge, the rear terrace and the timber pergolas at the rear corners.
+  - The plan's cour anglaise (the sunken court with a railing on the left side) is left out at the client's request (15-10). The deck covers it.
   - The water the plan draws behind the pavilion (the strip along the rear and the two by the pergolas) is left out at the client's request (15-10). The deck covers it.
   - The base of the platform, which shows above the paving on the pool side, is in rubble stone like the pool court's walls.
   - It stands on the axis of the 12-10 restaurant block, moved 1.30 m back so the whole platform fits the plan's TERRASSE RESTAURANT.
@@ -99,7 +100,7 @@ The rest of the site is empty land: the exact site boundary and the natural slop
 - **Pool court**
   - The basin is 21.71 × 7.50 m, with Roman steps in two corners.
   - The children's pool is 9.6 × 3.8 m, against the basin. The plan's hatch is drawn askew; it is built square to the basin (15-10).
-  - Loungers ('TRANSATS'): the east deck's as drawn. The west row (12 drawn) is completed to 18, evenly spaced and square to the basin (15-10).
+  - Loungers ('TRANSATS'): the east deck's as drawn. The west row (12 drawn) is completed to 18, evenly spaced and square to the basin (15-10). All face the pool, backrest on the far side.
   - The gradins: the plan hatches them 'JARDIN'. They are three planted strips of 0.62 m in rubble-stone steps of 0.425 m, flanked by the two stairs of ten steps ('ESCALIERS PISCINE', numbered 1-10).
   - Four planters with palms ('LES BACS A FLEURS').
   - The ramp along the south ('RAMPE'), the planted beds along the north and in the north-east corner ('JARDIN'), the pool cover reel ('COUVERTURE PISCINE AMOVIBLE'), four shower columns.
@@ -112,12 +113,12 @@ The rest of the site is empty land: the exact site boundary and the natural slop
   - Three timber cabanas on the west deck, and a planted bed at the foot of the west wall.
   - Agaves, ornamental grasses and Mediterranean shrubs in every bed, gradin and terrace.
 - **Pétanque**: two courts, the pergola, benches, the curved wall ('Mur') and the trees in the semicircle.
-- **Entrance**: the median, the fountain (semicircle) and the ring road.
+- **Entrance**: the median, the fountain (semicircle) and the ring road. The fountain's basin is cut into the ground, so its blue tiled floor shows under the water.
   - Median (revision 15-10): no water. The two beds the plan hatches are paved flush, in diagonal stripes of dark slate and light travertine like the hatch.
 - **Pedestrian crossings** (revision 15-10): every crossing the plan draws, as flat white paint on the road.
   - Six at the entrance and median ('DFGW', 'xwdfrg').
   - Two on the 8.5 m road at the stair exits ('TRACAGE VOIRIE').
-- **Trees**: at every tree symbol of the plan.
+- **Trees**: at every tree symbol of the plan. In the .blend they are in their own collection, `06_TREES_PALMS`; the shrubs, agaves and grasses are in `06_LANDSCAPE`.
   - 98 small palms, 31 round-crowned trees on the plaza and terraces, and 4 palms in the pool planters.
   - 7 trees at the pétanque.
   - 57 trees in the Ø 1.2 m pits. The plan draws 31 of these pits against a façade, so those trees are clipped standards

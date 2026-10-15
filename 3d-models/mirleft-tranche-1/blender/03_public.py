@@ -342,10 +342,12 @@ PASSAGE = box(-2.50, -7.18, 2.50, -3.18)
 COUR = box(-12.70, -3.10, -8.62, 3.20)
 
 
-def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80):
+def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80, cour=False):
     """The pavilion with its platform: front bassins and planters, bridge, cour anglaise, rear terrace,
     timber pergolas at the rear corners. rear_bassin: the plan's water behind it (the strip along the
     rear and the two by the pergolas), left out at the client's request (15-10): the deck covers it.
+    cour: the plan's cour anglaise (sunken court with a railing on the left side), left out at the
+    client's request (15-10): the deck covers it.
     plinth: depth of the platform's base below the pad, down to the lowest ground under its edge."""
     mb = C.MeshBuilder()
     plat = PLATFORM if rear_bassin else PLATFORM_FULL
@@ -360,7 +362,7 @@ def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80):
     water = water.difference(solids.buffer(0.0)).difference(bridge).difference(unary_union(planters))
     # the deck runs 2 cm under the walls and planters; kept 5 mm off the water so that its edge never lies
     # in the plane of a wall face (coplanar faces render as a black band)
-    deck = plat.difference(water.buffer(0.005, join_style=2)).difference(COUR).difference(solids.buffer(-0.02))
+    deck = plat.difference(water.buffer(0.005, join_style=2)).difference(COUR if cour else Polygon()).difference(solids.buffer(-0.02))
     deck = deck.difference(unary_union(planters).buffer(-0.02, join_style=2))
     L.prism(mb, "terrace", deck, plinth, 0.20)
     L.prism(mb, "slate", bridge, 0.20, 0.22, sides=False)
@@ -388,9 +390,10 @@ def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80):
         L.prism(mb, "render_dark", p, -0.60, 0.65)
         L.prism(mb, "lawn", p.buffer(-0.12, join_style=2), 0.60, 0.62, sides=False)
     # cour anglaise: walls down to the sous-sol and a bronze railing
-    L.prism(mb, "render", L.ring_poly(COUR, 0.01), -3.20, 0.20)
-    L.prism(mb, "terrace", COUR, -3.21, -3.20, sides=False)
-    for (a, b) in [((-12.70, -3.10), (-8.62, -3.10)), ((-12.70, 3.20), (-8.62, 3.20)), ((-12.70, -3.10), (-12.70, 3.20))]:
+    if cour:
+        L.prism(mb, "render", L.ring_poly(COUR, 0.01), -3.20, 0.20)
+        L.prism(mb, "terrace", COUR, -3.21, -3.20, sides=False)
+    for (a, b) in ([] if not cour else [((-12.70, -3.10), (-8.62, -3.10)), ((-12.70, 3.20), (-8.62, 3.20)), ((-12.70, -3.10), (-12.70, 3.20))]):
         n = int(math.dist(a, b) / 0.15)
         for i in range(n + 1):
             x = a[0] + (b[0] - a[0]) * i / n

@@ -426,7 +426,7 @@ def main():
     M["kerb_paving"] = M["kerb"]
     site = Polygon(SITE["boundary"])
     t1 = P(SITE["t1_region"])
-    cols = {k: C.collection(k) for k in ("01_TERRAIN", "02_GROUND", "03_DUPLEX", "04_PUBLIC", "05_POOL", "06_LANDSCAPE", "07_CAMERAS", "SRC")}
+    cols = {k: C.collection(k) for k in ("01_TERRAIN", "02_GROUND", "03_DUPLEX", "04_PUBLIC", "05_POOL", "06_LANDSCAPE", "06_TREES_PALMS", "07_CAMERAS", "SRC")}
     cols["SRC"].hide_render = True
 
     POOL = load("04_pool.py")
@@ -508,10 +508,10 @@ def main():
     loungers += [{"c": fw(u, v), "rot_deg": pc["rot_deg"], "n": 1} for u, v in POOL.WEST_LOUNGERS]   # west: one even row
     for i, l in enumerate(loungers):
         a = math.radians(l["rot_deg"])
-        # head towards the pool axis
+        # backrest away from the pool, so that they face it (15-10)
         cx, cy = l["c"]
         to_pool = np.array(pc["c"]) - np.array([cx, cy])
-        if np.dot(to_pool, [math.cos(a), math.sin(a)]) < 0:
+        if np.dot(to_pool, [math.cos(a), math.sin(a)]) > 0:
             a += math.pi
         offs = [0.0] if l["n"] == 1 else [-0.42, 0.42]
         for j, o in enumerate(offs):
@@ -532,6 +532,9 @@ def main():
         ob.location = (*fw(u, v), z_deck)
         ob.rotation_euler = (0, 0, math.radians(pc["rot_deg"]))
         cols["05_POOL"].objects.link(ob)
+    fountain = [Polygon(w["poly"]["ext"], w["poly"]["holes"]) for w in SITE["water"] if w["kind"] == "fountain"]
+    if fountain:                          # its basin is cut from the ground: the blue floor shows under the water
+        cut.append(unary_union([g.buffer(0.10) for g in fountain]).convex_hull.buffer(0.35))
     pits = [Point(t["c"]).buffer(0.60, 6) for t in SITE["trees"] if t["kind"] == "pit"]
     cut.extend(pits)
     # stairs: across the rows ('ESC 16-17', 'ESC V4', flights read from the plan) and the long stair
@@ -595,7 +598,7 @@ def main():
         ob.location = (xy[0], xy[1], (hz(*xy) + 0.12) if z is None else z)
         ob.rotation_euler = (0, 0, RNG.uniform(0, 6.283))
         ob.scale = (s, s, s if sz is None else sz)
-        veg.objects.link(ob)
+        (veg if key.startswith(("shrub", "agave", "grass")) else cols["06_TREES_PALMS"]).objects.link(ob)
         nveg[0] += 1
 
     court = to_world(POOL.COURT, pc["c"], pc["rot_deg"])

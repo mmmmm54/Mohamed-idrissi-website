@@ -3,7 +3,7 @@
 | File | Contents | Use it when |
 |---|---|---|
 | `Mirleft_Tranche_1_D5_FULL.fbx` | Everything: duplexes, restaurant, commerces, pool court, ground, walls, stairs, furniture, trees, palms and plants, and the 13 cameras | You want everything placed already |
-| `Mirleft_Tranche_1_D5_NO_TREES.fbx` | The same without trees, palms, shrubs, agaves and grasses | You place D5 library plants yourself |
+| `Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx` | The same without the palms and trees; the shrubs, agaves and grasses stay | You place D5 library palms and trees yourself |
 
 Both FBX files carry their textures inside. The same images are in `textures/`: keep that folder next to the FBX.
 
@@ -13,7 +13,7 @@ Both FBX files carry their textures inside. The same images are in `textures/`: 
 3. If a material still shows white, set Base Color to `textures/<material>_COL.jpg` and Normal to `textures/<material>_NRM.jpg`.
 
 ## Recommended D5 material swaps
-- `M10_Pool_Water` (pools, bassins, fountain) → D5 Water. The tiled floor and walls under it stay visible.
+- `M10_Pool_Water` (pools, bassins, fountain) → D5 Water. The blue tiled floor and walls under it show through.
 - `M06_Glass` → D5 Glass.
 - `T03_Lawn` → D5 Grass (scatter) if you want real grass.
 
