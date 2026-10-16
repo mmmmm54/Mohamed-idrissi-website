@@ -62,6 +62,16 @@ def pave_restaurant_lawn():
     return sum(Polygon(p["ext"], p["holes"]).buffer(0).area for p in move)
 
 
+def drop_road_strip():
+    """15-10: the paved strip the plan draws across the ring road between the fountain and the median
+    (from one zebra crossing to the other) is left out at the client's request: road there."""
+    zone = box(60.5, -30.0, 66.5, -12.0)
+    keep = [p for p in SITE["surfaces"]["paving"] if not zone.contains(Polygon(p["ext"], p["holes"]).buffer(0))]
+    n = len(SITE["surfaces"]["paving"]) - len(keep)
+    SITE["surfaces"]["paving"] = keep
+    return n
+
+
 def load(fname):
     spec = importlib.util.spec_from_file_location("t1_" + fname[:2], os.path.join(HERE, fname))
     mod = importlib.util.module_from_spec(spec)
@@ -421,6 +431,7 @@ def main():
     pct = int(args[args.index("--pct") + 1]) if "--pct" in args else 100
     bpy.ops.wm.read_factory_settings(use_empty=True)
     print(f"  lawn by the restaurant paved: {pave_restaurant_lawn():.0f} m2")
+    print(f"  paved strip across the ring road removed: {drop_road_strip()}")
     M = L.materials()
     M["terrain_cut"] = M["mod"].simple("T10_Terrain_Cut_Soil", "#8C6E52", 0.95, 0.0, 6.0, 0.35, 0.3)
     M["kerb_paving"] = M["kerb"]
