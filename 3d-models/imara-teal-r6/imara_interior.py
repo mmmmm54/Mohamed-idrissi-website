@@ -1153,7 +1153,7 @@ def entrance_portal():
     B.box("exit", 3.47, 3.57, -0.505, -0.50, 2.14, 2.24)
     # sidewalk: driveway band and bollards
     B.SITE[0] = True
-    B.box("granite", x0, x1, -4.0, -0.40, -0.15, 0.003)
+    B.box("granite", x0, x1, -3.95, -0.40, -0.02, 0.003)
     for x in (0.12, 3.62):
         cyl("inox", x, -3.70, 0.07, 0.0, 0.90, 14)
     B.SITE[0] = False
