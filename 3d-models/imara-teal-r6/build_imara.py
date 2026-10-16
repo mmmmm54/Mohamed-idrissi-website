@@ -10,6 +10,10 @@ Origin = left party-wall corner of the ground floor on the main street.
 
 Measurements come from "PLAN 1er, 2eme, 3eme et 4eme ETAGES" and the two
 elevations. Colours and finishes come from the two colour renders.
+
+The inside (floor plans of floors 1-6, ground-floor lobby, basement parking, ramp and its street
+entrance) is in imara_interior.py. Every level is its own collection (Niveau_-1_Sous-sol, Niveau_0_RDC,
+Niveau_1 ... Niveau_6, Toiture): hide the ones above a floor to see it as a 3D plan.
 """
 import math
 import os
@@ -19,6 +23,9 @@ import sys
 import bpy
 import numpy as np
 from PIL import Image
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import imara_interior as I  # noqa: E402
 
 OUT = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else "out")
 RENDER = "--render" in sys.argv
@@ -199,6 +206,104 @@ def tex_party():
     return save("party_wall", base[None, None, :] + ((fbm(10) - 0.5) * 0.05)[..., None])
 
 
+def tex_tile60():
+    # porcelain 0.60 x 0.60, light warm grey with a soft cloud; tile = 1.2 m (2 x 2)
+    base = hexrgb("#D9D3CA")
+    n = (fbm(6) - 0.5) * 0.06 + (fbm(48, 3) - 0.5) * 0.025
+    y, x = np.mgrid[0:S, 0:S]
+    tone = RNG.normal(0, 0.012, (2, 2)).astype(np.float32)[(y * 2 // S), (x * 2 // S)]
+    img = base[None, None, :] + (n + tone)[..., None]
+    img[grid_lines(2, 2, 3)] = hexrgb("#ADA69C")
+    return save("floor_tile60", img)
+
+
+def tex_parquet():
+    # oak planks 0.15 x 1.20 in staggered rows; tile = 1.2 m
+    y, x = np.mgrid[0:S, 0:S]
+    rows = 8
+    row = (y * rows // S).astype(int)
+    xs = (x + (row * 0.37 % 1.0) * S) % S
+    tone = RNG.normal(0, 0.05, rows).astype(np.float32)[row]
+    grain = 0.5 + 0.5 * np.sin(2 * np.pi * (y / S * rows * 6 + fbm(6) * 3 + xs / S * 0.8))
+    base = hexrgb("#B88A5A")
+    img = base[None, None, :] * (0.90 + 0.10 * grain[..., None]) + tone[..., None]
+    img += ((fbm(40, 3) - 0.5) * 0.05)[..., None]
+    img[((y % (S // rows)) < 2) | (xs < 2)] = hexrgb("#6E4E32")
+    return save("parquet_oak", img)
+
+
+def tex_bath():
+    # tiles 0.30 x 0.60, light stone grey; tile = 1.2 m
+    base = hexrgb("#E2DFD9")
+    img = base[None, None, :] + ((fbm(10) - 0.5) * 0.04)[..., None]
+    img[grid_lines(4, 2, 3)] = hexrgb("#B9B4AC")
+    return save("bath_tiles", img)
+
+
+def tex_terrace():
+    base = hexrgb("#CBBBA6")
+    n = (fbm(12) - 0.5) * 0.06 + (RNG.random((S, S)).astype(np.float32) - 0.5) * 0.03
+    img = base[None, None, :] + n[..., None]
+    img[grid_lines(4, 4, 4)] = hexrgb("#9C8F7E")
+    return save("terrace_tiles", img)
+
+
+def tex_granite():
+    base = hexrgb("#C6C1BA")
+    sp = RNG.random((S, S)).astype(np.float32)
+    img = base[None, None, :] + ((fbm(30, 3) - 0.5) * 0.06)[..., None]
+    img[sp > 0.93] = hexrgb("#6F6B66")
+    img[sp < 0.04] = hexrgb("#ECE9E4")
+    return save("granite_grey", img)
+
+
+def tex_marble_white():
+    y, x = np.mgrid[0:S, 0:S].astype(np.float32)
+    v = (np.exp(-np.abs(np.sin(2 * np.pi * (x + 2 * y) / S + 6.0 * fbm(3))) * 30) * 0.45
+         + np.exp(-np.abs(np.sin(2 * np.pi * (3 * x - y) / S + 8.0 * fbm(4))) * 70) * 0.25)
+    base, vein = hexrgb("#EEECE8"), hexrgb("#9A9894")
+    img = base[None, None, :] * (1 - v[..., None]) + vein[None, None, :] * v[..., None]
+    img[grid_lines(2, 2, 2)] = hexrgb("#CFCCC6")
+    return save("marble_white", img)
+
+
+def tex_epoxy():
+    base = hexrgb("#8B9096")
+    n = (fbm(8) - 0.5) * 0.05 + (fbm(64, 3) - 0.5) * 0.03
+    return save("epoxy_grey", base[None, None, :] + n[..., None])
+
+
+def tex_concrete():
+    # raw concrete, formwork panels 2.4 x 1.2 with tie holes; tile = 2.4 m
+    base = hexrgb("#B5B2AC")
+    n = (fbm(10) - 0.5) * 0.08 + (RNG.random((S, S)).astype(np.float32) - 0.5) * 0.04
+    img = base[None, None, :] + n[..., None]
+    img[grid_lines(1, 2, 3)] = hexrgb("#97948E")
+    y, x = np.mgrid[0:S, 0:S]
+    for cx in (0.25, 0.75):
+        for cy in (0.125, 0.375, 0.625, 0.875):
+            img[(x - cx * S) ** 2 + (y - cy * S) ** 2 < 36] = hexrgb("#7E7B76")
+    return save("concrete_raw", img)
+
+
+def tex_ramp():
+    # ramp concrete with chevron grooves for grip; tile = 1.0 m
+    y, x = np.mgrid[0:S, 0:S].astype(np.float32)
+    img = hexrgb("#A9A59E")[None, None, :] + ((fbm(16) - 0.5) * 0.07)[..., None]
+    img[((y + np.abs(x - S / 2)) % (S / 8)) < 10] = hexrgb("#7F7B75")
+    return save("ramp_grooved", img)
+
+
+def tex_rug():
+    # cream rug with a red and petrol diamond lattice; tile = 2.0 m
+    y, x = np.mgrid[0:S, 0:S].astype(np.float32)
+    img = np.broadcast_to(hexrgb("#E4D6BE"), (S, S, 3)).copy() + ((fbm(40, 3) - 0.5) * 0.04)[..., None]
+    d = np.abs(((x / S * 4) % 1) - 0.5) + np.abs(((y / S * 4) % 1) - 0.5)
+    img[np.abs(d - 0.5) < 0.035] = hexrgb("#9B3B2A")
+    img[np.abs(d - 0.25) < 0.02] = hexrgb("#2F4F5A")
+    return save("rug_moroccan", img)
+
+
 # material key -> (label, texture fn or hex, tile_u, tile_v, off_u, off_v, roughness, metallic, extra)
 MAT_DEF = {
     "beige":   ("Facade_Panels_Beige", tex_beige, 1.50, 1.60, 0.0, H_RDC, 0.55, 0.0, {}),
@@ -212,7 +317,7 @@ MAT_DEF = {
     "party":   ("Party_Walls", tex_party, 4.0, 4.0, 0, 0, 0.9, 0.0, {}),
     "paver":   ("Sidewalk", tex_paver, 2.0, 2.0, 0, 0, 0.85, 0.0, {}),
     "asphalt": ("Asphalt", tex_asphalt, 6.0, 6.0, 0, 0, 0.9, 0.0, {}),
-    "glass":   ("Window_Glass", "#1D2A3A", 1, 1, 0, 0, 0.04, 0.35, {}),
+    "glass":   ("Window_Glass", "#C9D5DB", 1, 1, 0, 0, 0.02, 0.0, {"transmit": True}),
     "frame":   ("Window_Frames_Black", "#1B1B1D", 1, 1, 0, 0, 0.35, 0.5, {}),
     "rail":    ("Balcony_Glass_Railing", "#8FB9C8", 1, 1, 0, 0, 0.05, 0.0, {"alpha": 0.22}),
     "steel":   ("Railing_Cap_Steel", "#C9CCCF", 1, 1, 0, 0, 0.25, 1.0, {}),
@@ -221,6 +326,44 @@ MAT_DEF = {
     "leaf":    ("Plants_Green", "#3F7A2E", 1, 1, 0, 0, 0.6, 0.0, {"double": True}),
     "leaf2":   ("Plants_Light", "#6A9B3C", 1, 1, 0, 0, 0.6, 0.0, {"double": True}),
     "door":    ("Doors_Dark", "#2B2622", 1, 1, 0, 0, 0.5, 0.2, {}),
+    # inside
+    "paint":   ("Interior_Paint", "#ECE8E1", 1, 1, 0, 0, 0.85, 0.0, {}),
+    "tile":    ("Floor_Porcelain_60", tex_tile60, 1.2, 1.2, 0, 0, 0.22, 0.0, {}),
+    "parquet": ("Floor_Parquet_Oak", tex_parquet, 1.2, 1.2, 0, 0, 0.45, 0.0, {}),
+    "bath":    ("Bath_Floor_Tiles", tex_bath, 1.2, 1.2, 0, 0, 0.25, 0.0, {}),
+    "terrace": ("Terrace_Tiles", tex_terrace, 1.6, 1.6, 0, 0, 0.75, 0.0, {}),
+    "granite": ("Stair_Granite", tex_granite, 1.0, 1.0, 0, 0, 0.30, 0.0, {}),
+    "lobby":   ("Lobby_Marble_White", tex_marble_white, 2.4, 2.4, 0, 0, 0.10, 0.0, {}),
+    "polished": ("Shop_Polished_Concrete", "#C9C6C0", 1, 1, 0, 0, 0.30, 0.0, {}),
+    "epoxy":   ("Parking_Epoxy_Floor", tex_epoxy, 4.0, 4.0, 0, 0, 0.32, 0.0, {}),
+    "concrete": ("Parking_Concrete", tex_concrete, 2.4, 2.4, 0, 0, 0.85, 0.0, {}),
+    "dado":    ("Parking_Wall_Grey", "#6F757B", 1, 1, 0, 0, 0.6, 0.0, {}),
+    "ramp":    ("Ramp_Grooved_Concrete", tex_ramp, 1.0, 1.0, 0, 0, 0.80, 0.0, {}),
+    "rug":     ("Rug_Moroccan", tex_rug, 2.0, 2.0, 0, 0, 0.95, 0.0, {}),
+    "line":    ("Paint_White_Lines", "#F1F1EE", 1, 1, 0, 0, 0.55, 0.0, {}),
+    "yellow":  ("Paint_Safety_Yellow", "#E2B11E", 1, 1, 0, 0, 0.50, 0.0, {}),
+    "black":   ("Paint_Black", "#1A1A1C", 1, 1, 0, 0, 0.50, 0.0, {}),
+    "red":     ("Fire_Red", "#B11D1B", 1, 1, 0, 0, 0.40, 0.0, {}),
+    "exit":    ("Exit_Sign_Green", "#22B455", 1, 1, 0, 0, 0.50, 0.0, {"emit": 4.0}),
+    "sign":    ("Sign_White_Lit", "#FFFFFF", 1, 1, 0, 0, 0.50, 0.0, {"emit": 3.0}),
+    "signblue": ("Sign_Parking_Blue", "#1E4EA1", 1, 1, 0, 0, 0.40, 0.0, {}),
+    "mesh":    ("Locker_Mesh", "#7B8085", 1, 1, 0, 0, 0.50, 0.6, {"alpha": 0.45}),
+    "led":     ("LED_Light", "#EEF6FF", 1, 1, 0, 0, 0.50, 0.0, {"emit": 6.0}),
+    "shade":   ("Lamp_Shade", "#F3E6CC", 1, 1, 0, 0, 0.80, 0.0, {"emit": 0.8}),
+    "idoor":   ("Doors_Interior_Oak", "#A98257", 1, 1, 0, 0, 0.50, 0.0, {}),
+    "edoor":   ("Doors_Entrance_Walnut", "#4A3326", 1, 1, 0, 0, 0.45, 0.0, {}),
+    "cabinet": ("Kitchen_Cabinets", "#3D494E", 1, 1, 0, 0, 0.50, 0.0, {}),
+    "counter": ("Worktop_Quartz", "#EBE9E4", 1, 1, 0, 0, 0.18, 0.0, {}),
+    "ceramic": ("Sanitary_Ceramic", "#F6F6F4", 1, 1, 0, 0, 0.10, 0.0, {}),
+    "mirror":  ("Mirror", "#DCE1E4", 1, 1, 0, 0, 0.02, 1.0, {}),
+    "inox":    ("Stainless_Steel", "#BABEC2", 1, 1, 0, 0, 0.28, 1.0, {}),
+    "blackglass": ("Black_Glass", "#111113", 1, 1, 0, 0, 0.05, 0.0, {}),
+    "sedari":  ("Salon_Velvet_Teal", "#2E5C62", 1, 1, 0, 0, 0.85, 0.0, {}),
+    "gold":    ("Salon_Cushions_Gold", "#C2984C", 1, 1, 0, 0, 0.60, 0.0, {}),
+    "duvet":   ("Bed_Linen", "#EDEAE4", 1, 1, 0, 0, 0.90, 0.0, {}),
+    "headb":   ("Upholstery_Taupe", "#7E766C", 1, 1, 0, 0, 0.85, 0.0, {}),
+    "walnut":  ("Furniture_Walnut", "#5A3D2B", 1, 1, 0, 0, 0.50, 0.0, {}),
+    "oakf":    ("Furniture_Oak", "#B58B60", 1, 1, 0, 0, 0.50, 0.0, {}),
 }
 SITE_MATS = {"paver", "asphalt"}
 
@@ -228,61 +371,90 @@ SITE_MATS = {"paver", "asphalt"}
 # Geometry accumulators: one mesh per material
 # ---------------------------------------------------------------------------
 G = {}
+SITE = [False]
+LEVEL = [None]                       # forces the level of what is built next (else from its height)
+CUT = [None]                         # when set, everything is cut at this height (3D plan copy of a floor)
+PLAN3D = "Plan3D_Niveau_3"           # 3rd floor cut at 1.40 m, for the 3D plan views (render only)
+LEVELS = ["Niveau_-1_Sous-sol", "Niveau_0_RDC"] + ["Niveau_%d" % k for k in range(1, 7)] + ["Toiture"]
+SHORT = dict(zip(LEVELS + [PLAN3D], ["SS", "RDC", "N1", "N2", "N3", "N4", "N5", "N6", "TOIT", "PLAN3D_N3"]))
 
 
-def _acc(key, site=False):
-    k = (key, site)
+def level_of(z):
+    """Level of a piece starting at height z: from 0.45 m below each floor (its slab) to the next."""
+    if z < -0.45:
+        return LEVELS[0]
+    for k in range(7):
+        if z < FL[k] - 0.45:
+            return LEVELS[1 + k]
+    return LEVELS[-1]
+
+
+LAMPS = []                           # (type, location, power W, size, colour, level)
+WARM, COOL = (1.0, 0.86, 0.70), (0.93, 0.97, 1.0)
+
+
+def lamp(kind, loc, power, size=0.10, color=WARM):
+    if CUT[0] is not None:
+        return
+    LAMPS.append((kind, loc, power, size, color, LEVEL[0] or level_of(loc[2])))
+
+
+def _acc(key, grp):
+    k = (key, grp)
     if k not in G:
         G[k] = ([], [], [])
     return G[k]
 
 
-SITE = [False]
-
-
-def poly(mat, pts, uvs):
-    V, F, U = _acc(mat, SITE[0])
+def poly(mat, pts, uvs, grp=None):
+    if SITE[0]:
+        grp = "Site"
+    elif grp is None:
+        grp = LEVEL[0] or level_of(min(p[2] for p in pts))
+    if CUT[0] is not None and min(p[2] for p in pts) >= CUT[0] - 1e-6:
+        return
+    V, F, U = _acc(mat, grp)
     i = len(V)
     V.extend(pts)
     F.append(tuple(range(i, i + len(pts))))
     U.extend(uvs)
 
 
-def box(mat, x0, x1, y0, y1, z0, z1):
+def box(mat, x0, x1, y0, y1, z0, z1, faces=None):
+    """Box with one material, or other materials on some faces ('-Y', '+Y', '-X', '+X', '+Z', '-Z')."""
     x0, x1 = sorted((x0, x1))
     y0, y1 = sorted((y0, y1))
     z0, z1 = sorted((z0, z1))
+    if CUT[0] is not None:
+        z1 = min(z1, CUT[0])
     if x1 - x0 < 1e-4 or y1 - y0 < 1e-4 or z1 - z0 < 1e-4:
         return
-    d = MAT_DEF[mat]
-    tu, tv, ou, ov = d[2], d[3], d[4], d[5]
+    grp = "Site" if SITE[0] else (LEVEL[0] or level_of(z0))
+    fm = faces or {}
 
-    def uv(u, v):
-        return ((u - ou) / tu, (v - ov) / tv)
+    def face(side, pts, uvc):
+        m = fm.get(side, mat)
+        d = MAT_DEF[m]
+        tu, tv, ou, ov = d[2], d[3], d[4], d[5]
+        poly(m, pts, [((u - ou) / tu, (v - ov) / tv) for u, v in uvc], grp)
 
-    poly(mat, [(x0, y0, z0), (x1, y0, z0), (x1, y0, z1), (x0, y0, z1)],
-         [uv(x0, z0), uv(x1, z0), uv(x1, z1), uv(x0, z1)])
-    poly(mat, [(x1, y1, z0), (x0, y1, z0), (x0, y1, z1), (x1, y1, z1)],
-         [uv(-x1, z0), uv(-x0, z0), uv(-x0, z1), uv(-x1, z1)])
-    poly(mat, [(x0, y1, z0), (x0, y0, z0), (x0, y0, z1), (x0, y1, z1)],
-         [uv(-y1, z0), uv(-y0, z0), uv(-y0, z1), uv(-y1, z1)])
-    poly(mat, [(x1, y0, z0), (x1, y1, z0), (x1, y1, z1), (x1, y0, z1)],
-         [uv(y0, z0), uv(y1, z0), uv(y1, z1), uv(y0, z1)])
-    poly(mat, [(x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)],
-         [uv(x0, y0), uv(x1, y0), uv(x1, y1), uv(x0, y1)])
-    poly(mat, [(x0, y1, z0), (x1, y1, z0), (x1, y0, z0), (x0, y0, z0)],
-         [uv(x0, y1), uv(x1, y1), uv(x1, y0), uv(x0, y0)])
+    face("-Y", [(x0, y0, z0), (x1, y0, z0), (x1, y0, z1), (x0, y0, z1)], [(x0, z0), (x1, z0), (x1, z1), (x0, z1)])
+    face("+Y", [(x1, y1, z0), (x0, y1, z0), (x0, y1, z1), (x1, y1, z1)], [(-x1, z0), (-x0, z0), (-x0, z1), (-x1, z1)])
+    face("-X", [(x0, y1, z0), (x0, y0, z0), (x0, y0, z1), (x0, y1, z1)], [(-y1, z0), (-y0, z0), (-y0, z1), (-y1, z1)])
+    face("+X", [(x1, y0, z0), (x1, y1, z0), (x1, y1, z1), (x1, y0, z1)], [(y0, z0), (y1, z0), (y1, z1), (y0, z1)])
+    face("+Z", [(x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)], [(x0, y0), (x1, y0), (x1, y1), (x0, y1)])
+    face("-Z", [(x0, y1, z0), (x1, y1, z0), (x1, y0, z0), (x0, y0, z0)], [(x0, y1), (x1, y1), (x1, y0), (x0, y0)])
 
 
-def pbox(mat, ax, plane, n, ua, ub, da, db, za, zb):
+def pbox(mat, ax, plane, n, ua, ub, da, db, za, zb, faces=None):
     """Box in facade coordinates: u along the facade, d = depth inward from the
     outer face (negative = in front of it). ax='Y': facade lies in plane Y=plane,
     u is X. ax='X': facade lies in plane X=plane, u is Y. n = outward normal sign."""
     c1, c2 = plane - n * da, plane - n * db
     if ax == "Y":
-        box(mat, ua, ub, c1, c2, za, zb)
+        box(mat, ua, ub, c1, c2, za, zb, faces=faces)
     else:
-        box(mat, c1, c2, ua, ub, za, zb)
+        box(mat, c1, c2, ua, ub, za, zb, faces=faces)
 
 
 def O(u0, u1, z0, z1, kind):
@@ -300,6 +472,8 @@ def door(u0, u1, f):
 def glazing(ax, plane, n, o):
     u0, u1, z0, z1, kind = o["u0"], o["u1"], o["z0"], o["z1"], o["kind"]
     fw = 0.06
+    if kind == "void":                       # an opening dressed elsewhere (the garage portal)
+        return
     if kind == "shutter":
         pbox("shutter", ax, plane, n, u0, u1, 0.10, 0.14, z0, z1 - 0.35)
         pbox("frame", ax, plane, n, u0, u1, 0.03, 0.14, z1 - 0.35, z1)
@@ -340,17 +514,21 @@ def _subtract(a, b, cuts):
     return [(s0, s1) for s0, s1 in out if s1 - s0 > 1e-4]
 
 
-def wall(mat, ax, plane, n, u0, u1, z0, z1, openings=(), t=T):
-    """Wall panel with rectangular openings; reveals come from the split pieces."""
+def wall(mat, ax, plane, n, u0, u1, z0, z1, openings=(), t=T, inner=None):
+    """Wall panel with rectangular openings; reveals come from the split pieces.
+    inner = material of the inside face (rooms behind a facade are painted)."""
     ops = [o for o in openings]
+    faces = {{("Y", -1): "+Y", ("Y", 1): "-Y", ("X", -1): "+X", ("X", 1): "-X"}[(ax, n)]: inner} if inner else None
     cuts = sorted({u0, u1, *[min(max(o["u0"], u0), u1) for o in ops],
                    *[min(max(o["u1"], u0), u1) for o in ops]})
     for ua, ub in zip(cuts[:-1], cuts[1:]):
         cover = [(o["z0"], o["z1"]) for o in ops if o["u0"] <= ua + 1e-6 and o["u1"] >= ub - 1e-6]
         for za, zb in _subtract(z0, z1, cover):
-            pbox(mat, ax, plane, n, ua, ub, 0, t, za, zb)
+            pbox(mat, ax, plane, n, ua, ub, 0, t, za, zb, faces=faces)
     for o in ops:
         glazing(ax, plane, n, o)
+        if o["kind"] == "door":              # threshold across the wall
+            pbox("white", ax, plane, n, o["u0"], o["u1"], 0, t, o["z0"] - 0.20, o["z0"] + 0.02)
 
 
 def railing(ax, plane, n, u0, u1, z):
@@ -435,19 +613,19 @@ def soffit_z(f, teal_zone):
 # ---------------------------------------------------------------------------
 def build_rdc():
     lo, g0, g1 = 2.90, 3.30, 5.00
-    front = [O(0.37, 3.38, 0, 3.90, "shutter"),          # garage
+    front = [O(0.37, 3.38, 0, 3.90, "void"),             # garage bay: ramp to the basement
              O(4.00, 6.20, 0, 5.00, "entrance"),         # building entrance
              O(7.25, 10.15, 0, lo, "shutter"), O(7.25, 10.15, g0, g1, "shop"),
              O(11.10, 15.10, 0, lo, "shutter"), O(11.10, 15.10, g0, g1, "shop")]
     zt = H_RDC - 0.20
-    wall("marble", "Y", 0.0, -1, 0.0, RDC_W, 0.0, zt, front, t=0.30)
+    wall("marble", "Y", 0.0, -1, 0.0, RDC_W, 0.0, zt, front, t=0.30, inner="paint")
     side = []
     for a, b in [(0.66, 5.57), (6.29, 10.73), (13.60, 16.97), (17.80, 21.76)]:
         side += [O(a, b, 0, lo, "shutter"), O(a, b, g0, g1, "shop")]
-    wall("marble", "X", RDC_W, +1, 0.30, RDC_D, 0.0, zt, side, t=0.30)
-    wall("party", "X", 0.0, -1, 0.30, RDC_D - T, 0.0, zt)
-    wall("party", "Y", RDC_D, +1, 0.0, RDC_W - 0.30, 0.0, zt)
-    box("white", 0.0, RDC_W, 0.0, RDC_D, zt, H_RDC)                   # RDC roof slab
+    wall("marble", "X", RDC_W, +1, 0.30, RDC_D, 0.0, zt, side, t=0.30, inner="paint")
+    wall("party", "X", 0.0, -1, 0.30, RDC_D - 0.30, 0.0, zt, t=0.30, inner="paint")
+    wall("party", "Y", RDC_D, +1, 0.0, RDC_W - 0.30, 0.0, zt, t=0.30, inner="paint")
+    # the slab over the ground floor (floor of level 1, with the courtyard) is built by imara_interior
     # door leaf inside the entrance and floor mat of the lobby
     pbox("door", "Y", 0.0, -1, 4.55, 5.65, 0.12, 0.14, 0.0, 2.35)
     # downlights under the overhangs
@@ -461,60 +639,82 @@ def build_rdc():
 # Typical floors 1-6
 # ---------------------------------------------------------------------------
 def build_floor(f):
+    """Envelope of floor f as on the plan; the inside comes from imara_interior.typical_floor."""
     z0, z1 = FL[f - 1], FL[f]
     if f == 6:
         z1 = ROOF - 0.40          # the roof slab caps the walls
+    P = "paint"
 
     # --- MAIN STREET (outer face Y = -1.50, main line Y = 0) -----------------
-    # a. pier by the left party wall + b. loggia (balcon 1.90)
-    box(mat_c(f), 0.0, 0.90, 0.0, 1.60, z0, z1)
-    wall("white", "Y", 1.60, -1, 0.90, 2.02, z0, z1, [door(1.05, 1.87, f)])
-    wall("white", "X", 2.02, -1, 0.0, 1.60, z0, z1)
-    balcony_slab(0.90, 2.02, -0.05, 1.60, f, False, lift=0.02 if f == 1 else 0.0)
+    # a. stone pier by the left party wall + b. loggia (balcon 1.90) of flat 118
+    box(mat_c(f), 0.0, 0.90, 0.0, 0.20, z0, z1)
+    wall("white", "Y", 1.82, -1, 0.15, 2.02, z0, z1, [door(0.40, 1.90, f)], t=0.20, inner=P)
+    wall("white", "X", 2.02, -1, 0.0, 1.82, z0, z1, t=0.20, inner=P)
     railing("Y", 0.0, -1, 0.90, 2.02, z0)
 
-    # c. bedroom in encorbellement, X 2.02-6.33 (window 2.50)
-    wall(mat_c(f), "Y", Y_OUT, -1, 2.02, 6.33, z0, z1, [win(2.92, 5.42, f)])
-    wall(mat_c(f), "X", 2.02, -1, Y_OUT + T, 0.0, z0, z1)
-    wall(mat_c(f), "X", 6.33, +1, Y_OUT + T, 0.0, z0, z1)
+    # c. bedroom in encorbellement, X 2.02-6.33 (window 2.50), sliding door to the balcony on its side
+    wall(mat_c(f), "Y", Y_OUT, -1, 2.02, 6.33, z0, z1, [win(2.92, 5.42, f)], inner=P)
+    wall(mat_c(f), "X", 2.02, -1, Y_OUT + T, 0.0, z0, z1, inner=P)
+    wall(mat_c(f), "X", 6.33, +1, Y_OUT + T, 0.0, z0, z1, inner=P)
+    wall("wood", "X", 6.33, +1, 0.0, 1.85, z0, z1, [door(0.35, 1.72, f)], t=0.18, inner=P)
 
-    # d. balcony 4.18 (salon + SAM), wood-clad back wall with two sliding doors
-    wall("wood", "Y", 0.0, -1, 6.33, 10.51, z0, z1, [door(6.60, 8.10, f), door(8.80, 10.30, f)])
+    # d. balcony 4.18, recessed to the salon (Y 1.85) and the dining room (Y 0.48) of flat 118
+    wall("wood", "Y", 1.85, -1, 6.33, 7.80, z0, z1, [door(6.42, 7.62, f)], t=0.17, inner=P)
+    wall("wood", "X", 7.80, -1, 0.48, 2.02, z0, z1, t=0.10, inner=P)
+    wall("wood", "Y", 0.48, -1, 7.80, 10.51, z0, z1, [door(8.45, 9.95, f)], t=0.14, inner=P)
     balcony_slab(6.33, 10.51, Y_OUT - 0.05, 0.0, f, True)
     railing("Y", Y_OUT, -1, 6.33, 10.51, z0)
 
-    # e. bedroom in encorbellement, X 10.51-13.96 (window 2.50)
-    wall(mat_e(f), "Y", Y_OUT, -1, 10.51, 13.96, z0, z1, [win(10.96, 13.46, f)])
-    wall(mat_e(f), "X", 10.51, -1, Y_OUT + T, 0.0, z0, z1)
-    wall(mat_e(f), "X", 13.96, +1, Y_OUT + T, 0.0, z0, z1)
+    # e. bedroom in encorbellement, X 10.51-13.96 (window 2.50), door to the corner balcony
+    wall(mat_e(f), "Y", Y_OUT, -1, 10.51, 13.96, z0, z1, [win(10.96, 13.46, f)], inner=P)
+    wall(mat_e(f), "X", 10.51, -1, Y_OUT + T, 0.0, z0, z1, inner=P)
+    wall(mat_e(f), "X", 13.96, +1, Y_OUT + T, 0.0, z0, z1, [door(-1.05, -0.25, f)], inner=P)
 
-    # f. corner balcony X 13.96-17.25
-    wall(mat_f(f), "Y", 0.0, -1, 13.96, RDC_W, z0, z1, [door(14.20, 15.50, f)])
-    wall(mat_e(f), "Y", 0.0, -1, RDC_W, X_OUT - T, z0, z1, [door(15.95, 16.85, f)])
+    # f. corner balcony X 13.96-17.25, sliding door of the corner bedroom
+    wall(mat_f(f), "Y", 0.0, -1, 13.96, RDC_W, z0, z1, t=0.20, inner=P)
+    wall(mat_e(f), "Y", 0.0, -1, RDC_W, X_OUT - T, z0, z1, [door(15.85, 16.95, f)], t=0.20, inner=P)
     balcony_slab(13.96, X_OUT + 0.05, Y_OUT - 0.05, 0.0, f, True)
     railing("Y", Y_OUT, -1, 13.96, X_OUT, z0)
     railing("X", X_OUT, +1, Y_OUT, 0.0, z0)
 
     # --- SIDE STREET (outer face X = 17.25, main line X = 15.75) -------------
-    # A. two bedrooms in encorbellement, Y 0-7.02
-    wall(mat_e(f), "X", X_OUT, +1, 0.0, 7.02, z0, z1, [win(0.50, 3.00, f), win(3.84, 6.34, f)])
-    wall(mat_e(f), "Y", 7.02, +1, RDC_W, X_OUT - T, z0, z1)
-    # B. balcony 1.90 in front of kitchen / SAM, wood-clad, Y 7.02-12.76
-    wall("wood", "X", RDC_W, +1, 7.02, 12.76, z0, z1, [door(7.50, 9.00, f), door(10.00, 12.30, f)])
-    balcony_slab(RDC_W, X_OUT + 0.05, 7.02, 12.76, f, True)
-    railing("X", X_OUT, +1, 7.02, 12.76, z0)
-    # C. salon marocain in encorbellement, Y 12.76-16.26 (window 2.50)
-    wall(mat_c(f), "X", X_OUT, +1, 12.76, 16.26, z0, z1, [win(13.26, 15.76, f)])
-    wall(mat_c(f), "Y", 12.76, -1, RDC_W, X_OUT - T, z0, z1)
-    wall(mat_c(f), "Y", 16.26, +1, RDC_W, X_OUT - T, z0, z1)
-    # D. bedroom balconies (balcon 1.40), Y 16.26-21.50
-    wall("white", "X", RDC_W, +1, 16.26, 21.50, z0, z1, [door(16.90, 18.90, f), door(19.50, 21.20, f)])
-    balcony_slab(RDC_W, X_OUT + 0.05, 16.26, 21.50, f, False)
+    # A. two bedrooms of flat 110 in encorbellement, Y 0-6.85, door to balcony B
+    wall(mat_e(f), "X", X_OUT, +1, 0.0, 6.85, z0, z1, [win(0.50, 3.00, f), win(3.84, 6.34, f)], inner=P)
+    wall(mat_e(f), "Y", 6.85, +1, RDC_W, X_OUT - T, z0, z1, [door(16.05, 16.85, f)], t=0.23, inner=P)
+    # B. balcony in front of the kitchen (1.30) and the salon (1.90) of flat 110, wood-clad
+    wall("wood", "X", 15.97, +1, 6.85, 9.63, z0, z1, [door(7.00, 8.75, f)], t=0.22, inner=P)
+    box("wood", 15.08, 15.97, 9.47, 9.63, z0, z1, faces={"-Y": P})
+    wall("wood", "X", 15.27, +1, 9.63, 12.76, z0, z1, [door(9.95, 12.40, f)], t=0.19, inner=P)
+    box("wood", 15.27, 15.75, 12.76, 12.96, z0, z1, faces={"+Y": P})
+    balcony_slab(15.97, X_OUT + 0.05, 6.85, 9.63, f, True)
+    balcony_slab(RDC_W, X_OUT + 0.05, 9.63, 12.76, f, True)
+    railing("X", X_OUT, +1, 6.85, 12.76, z0)
+    # C. salon marocain of flat 106 in encorbellement, Y 12.76-16.26 (window 2.50)
+    wall(mat_c(f), "X", X_OUT, +1, 12.76, 16.26, z0, z1, [win(13.26, 15.76, f)], inner=P)
+    wall(mat_c(f), "Y", 12.76, -1, RDC_W, X_OUT - T, z0, z1, inner=P)
+    wall(mat_c(f), "Y", 16.26, +1, RDC_W, X_OUT - T, z0, z1, inner=P)
+    # D. balcony of the two bedrooms of flat 106 (balcon 1.40), Y 16.26-22.30
+    wall("white", "X", 15.86, +1, 16.26, 22.30, z0, z1, [door(17.00, 18.90, f), door(19.85, 21.80, f)],
+         t=0.14, inner=P)
+    balcony_slab(15.86, X_OUT + 0.05, 16.26, 21.50, f, False)
+    balcony_slab(15.86, 17.00, 21.50, 22.30, f, False)
     railing("X", X_OUT, +1, 16.26, 21.50, z0)
 
-    # --- BACK AND LEFT: blind walls, full block (the courtyard is filled in) ---
-    wall("party", "X", 0.0, -1, 1.60, RDC_D - T, z0, z1)
-    wall("party", "Y", RDC_D, +1, 0.0, RDC_W, z0, z1)
+    # --- BACK AND LEFT: party walls; the plan's courtyard behind the stair -----
+    wall("party", "X", 0.0, -1, 0.20, 15.87, z0, z1, t=0.15, inner=P)
+    wall("party", "X", 0.0, -1, 15.87, 22.30, z0, z1, t=0.15)
+    wall("party", "Y", RDC_D, +1, 0.0, 5.62, z0, z1, t=0.20)
+    wall("party", "Y", RDC_D, +1, 5.62, 15.72, z0, z1, t=0.20, inner=P)
+    wall("party", "Y", RDC_D, +1, 15.72, 17.00, z0, z1, t=0.20)
+    # courtyard faces: bedroom of flat 106 and its balcony, the stair window, the balcony of flat 118
+    wall("white", "X", 5.59, -1, 19.02, 22.30, z0, z1, [win(19.85, 21.80, f)], t=0.19, inner=P)
+    wall("white", "Y", 18.88, -1, 5.59, 6.85, z0, z1, t=0.14, inner=P)
+    wall("white", "X", 6.70, -1, 16.70, 18.88, z0, z1, [door(17.05, 18.85, f)], t=0.15, inner=P)
+    wall("white", "Y", 16.70, +1, 3.65, 6.85, z0, z1, [O(4.00, 5.03, z0 + 2.05, z0 + 2.85, "win")], t=0.20, inner=P)
+    wall("white", "Y", 14.35, +1, 0.15, 3.65, z0, z1, [door(0.85, 2.90, f)], t=0.19, inner=P)
+    if f >= 2:                    # floor 1 is level with the courtyard
+        railing("Y", 15.87, +1, 0.15, 3.65, z0)
+        railing("X", 5.62, -1, 16.70, 18.88, z0)
 
     # --- plants and downlights on the balconies -----------------------------
     zt = soffit_z(f, True)
@@ -530,7 +730,7 @@ def build_floor(f):
     plant(6.75, -1.10, z0, 0.9)
     plant(16.85, -1.10, z0, 1.0)
     plant(16.85, 12.35, z0, 0.9)
-    plant(16.85, 21.05, z0, 1.0)
+    plant(16.70, 21.05, z0, 1.0)
     if f % 2:
         plant(16.85, 16.70, z0, 0.8)
         plant(10.05, -1.10, z0, 0.8)
@@ -539,22 +739,29 @@ def build_floor(f):
 # ---------------------------------------------------------------------------
 # Teal bands, F5 frame, fins, back band, roof
 # ---------------------------------------------------------------------------
+def teal_band(L):
+    xo, yo = X_OUT + TEAL_PROJ, Y_OUT - TEAL_PROJ
+    box("teal", FRONT_TEAL_X0, xo, yo, 0.0, L - TEAL_SLAB, L)
+    box("teal", RDC_W, xo, 0.0, SIDE_TEAL_Y1, L - TEAL_SLAB, L)
+    # downlights on the projecting teal soffit
+    for x in np.arange(6.8, X_OUT + 0.2, 2.6):
+        downlight(float(x), Y_OUT - TEAL_PROJ / 2, L - TEAL_SLAB)
+    for y in np.arange(0.8, SIDE_TEAL_Y1 - 0.3, 2.6):
+        downlight(X_OUT + TEAL_PROJ / 2, float(y), L - TEAL_SLAB)
+
+
 def build_teal():
     xo, yo = X_OUT + TEAL_PROJ, Y_OUT - TEAL_PROJ
     for L in TEAL_LEVELS:
-        box("teal", FRONT_TEAL_X0, xo, yo, 0.0, L - TEAL_SLAB, L)
-        box("teal", RDC_W, xo, 0.0, SIDE_TEAL_Y1, L - TEAL_SLAB, L)
-        # downlights on the projecting teal soffit
-        for x in np.arange(6.8, X_OUT + 0.2, 2.6):
-            downlight(float(x), Y_OUT - TEAL_PROJ / 2, L - TEAL_SLAB)
-        for y in np.arange(0.8, SIDE_TEAL_Y1 - 0.3, 2.6):
-            downlight(X_OUT + TEAL_PROJ / 2, float(y), L - TEAL_SLAB)
+        teal_band(L)
     # F5 frame end plates
     zb, zt = FL[4], FL[5] - TEAL_SLAB
     box("teal", FRONT_TEAL_X0, FRONT_TEAL_X0 + 0.40, yo, Y_OUT, zb, zt)
     box("teal", X_OUT, xo, SIDE_TEAL_Y1 - 0.40, SIDE_TEAL_Y1, zb, zt)
-    # back band on the side street (party-wall end), full height up to the cap
-    box("teal", RDC_W, X_OUT + 0.20, 21.50, RDC_D, H_RDC - 0.40, TEAL_TOP)
+    # back band on the side street (party-wall end), full height up to the cap, one piece per level
+    zs = [H_RDC - 0.40] + FL[1:6] + [ROOF, TEAL_TOP]
+    for za, zb in zip(zs[:-1], zs[1:]):
+        box("teal", 17.00, X_OUT + 0.20, 21.50, RDC_D, za, zb)
     # cap along the side-street roof edge
     box("teal", X_OUT - 0.40, X_OUT + 0.20, Y_OUT - 0.05, 21.50, ROOF, TEAL_TOP)
 
@@ -567,32 +774,23 @@ def fins(ax, plane, n, u0, count, z0, z1):
 
 
 def build_fins():
-    zf0, zf1 = FL[2], FL[4] - TEAL_SLAB          # F3-F4 between the teal bands
-    fins("Y", Y_OUT, -1, 9.90, 4, zf0, zf1)
-    fins("X", X_OUT, +1, 7.10, 4, zf0, zf1)
+    for zf0, zf1 in ((FL[2], FL[3]), (FL[3], FL[4] - TEAL_SLAB)):   # F3-F4 between the teal bands
+        fins("Y", Y_OUT, -1, 9.90, 4, zf0, zf1)
+        fins("X", X_OUT, +1, 7.10, 4, zf0, zf1)
     zg0, zg1 = FL[4], FL[5] - TEAL_SLAB          # inside the F5 frame
     fins("Y", Y_OUT, -1, 6.40, 4, zg0, zg1)
     fins("X", X_OUT, +1, 12.20, 4, zg0, zg1)
 
 
 def build_roof():
+    I.roof_slab()                                 # slab with the courtyard, stair house and lift overrun
     e = 0.05
-    rects = [(2.02, X_OUT + e, Y_OUT - e, 0.0),
-             (0.0, RDC_W, 0.0, RDC_D),
-             (RDC_W, X_OUT + e, 0.0, 21.50)]      # stops at the teal back band
-    for x0, x1, y0, y1 in rects:
-        box("white", x0, x1, y0, y1, ROOF - 0.40, ROOF)
-        box("roof", x0 + 0.1, x1 - 0.3, y0 + 0.1, y1 - 0.1, ROOF, ROOF + 0.02)
     top = ROOF + PARAPET
     box("white", 2.02, X_OUT - 0.40, Y_OUT - e, Y_OUT + 0.20, ROOF, top)
     box("white", 2.02, 2.22, Y_OUT + 0.20, 0.0, ROOF, top)
     box("white", 0.0, 2.02, 0.0, 0.20, ROOF, top)
     box("white", 0.0, 0.20, 0.20, RDC_D, ROOF, top)
-    box("white", 0.20, RDC_W, RDC_D - 0.20, RDC_D, ROOF, top)
-    # stair house (cage d'escalier) — plan X 3.60-6.80, Y 11.20-16.60
-    box("white", 3.60, 6.80, 11.20, 16.60, ROOF, ROOF + 2.60)
-    box("white", 3.50, 6.90, 11.10, 16.70, ROOF + 2.60, ROOF + 2.75)
-    box("door", 6.80, 6.84, 13.40, 14.40, ROOF + 0.02, ROOF + 2.20)
+    box("white", 0.20, 17.00, RDC_D - 0.20, RDC_D, ROOF, top)
     # rooftop planters seen in the renders
     for x0, x1 in [(2.40, 5.80), (10.80, 13.60)]:
         box("white", x0, x1, Y_OUT + 0.30, Y_OUT + 1.00, ROOF, ROOF + 0.60)
@@ -606,7 +804,9 @@ def build_site():
     box("paver", RDC_W, X_OUT + 4.5, 0.0, RDC_D + 4.0, -0.15, 0.0)
     box("asphalt", -30.0, 50.0, -16.0, -4.0, -0.30, -0.15)
     box("asphalt", X_OUT + 4.5, 32.0, -4.0, 45.0, -0.30, -0.15)
-    box("asphalt", -150.0, 150.0, -150.0, 150.0, -0.40, -0.31)
+    for x0, x1, y0, y1 in ((-150.0, 0.0, -150.0, 150.0), (RDC_W, 150.0, -150.0, 150.0),
+                           (0.0, RDC_W, -150.0, 0.0), (0.0, RDC_W, RDC_D, 150.0)):   # around the basement
+        box("asphalt", x0, x1, y0, y1, -0.40, -0.31)
     SITE[0] = False
 
 
@@ -644,6 +844,9 @@ def make_material(key):
                 setattr(m, attr, val)
             except (AttributeError, TypeError):
                 pass
+    if extra.get("transmit"):
+        bsdf.inputs["Transmission Weight"].default_value = 1.0
+        bsdf.inputs["IOR"].default_value = 1.45
     if "emit" in extra:
         rgb = [srgb_to_lin(float(v)) for v in hexrgb(src)]
         bsdf.inputs["Emission Color"].default_value = (*rgb, 1.0)
@@ -653,17 +856,24 @@ def make_material(key):
 
 
 def build_objects():
+    sc = bpy.context.scene
     root = bpy.data.objects.new(NAME, None)
-    bpy.context.scene.collection.objects.link(root)
-    site_col = bpy.data.collections.new("Site_Context")
-    bpy.context.scene.collection.children.link(site_col)
+    sc.collection.objects.link(root)
+    cols = {}
+    for name in LEVELS + [PLAN3D, "Site"]:
+        c = bpy.data.collections.new("Site_Context" if name == "Site" else name)
+        sc.collection.children.link(c)
+        cols[name] = c
+    cols[PLAN3D].hide_render = True
+    bpy.context.view_layer.layer_collection.children[PLAN3D].exclude = True
     mats = {}
     building = []
-    for (key, site), (V, F, U) in sorted(G.items()):
+    order = {n: i for i, n in enumerate(LEVELS + [PLAN3D, "Site"])}
+    for (key, grp), (V, F, U) in sorted(G.items(), key=lambda kv: (order[kv[0][1]], kv[0][0])):
         if key not in mats:
             mats[key] = make_material(key)
         label = MAT_DEF[key][0]
-        me = bpy.data.meshes.new(("Site_" if site else "Imara_") + label)
+        me = bpy.data.meshes.new(("Site_" if grp == "Site" else SHORT[grp] + "_") + label)
         me.from_pydata(V, [], F)
         uvl = me.uv_layers.new(name="UVMap")
         for poly_ in me.polygons:
@@ -673,13 +883,21 @@ def build_objects():
         me.validate()
         me.update()
         ob = bpy.data.objects.new(me.name, me)
-        if site:
-            site_col.objects.link(ob)
-        else:
-            bpy.context.scene.collection.objects.link(ob)
+        cols[grp].objects.link(ob)
+        if grp not in ("Site", PLAN3D):
             ob.parent = root
             building.append(ob)
-    return root, building
+    for i, (kind, loc, power, size, color, grp) in enumerate(LAMPS):
+        li = bpy.data.lights.new("%s_Lamp_%03d" % (SHORT[grp], i), kind)
+        li.energy, li.color = power, color
+        if kind == "AREA":
+            li.shape, li.size, li.size_y = "RECTANGLE", size[0], size[1]
+        else:
+            li.shadow_soft_size = size
+        ob = bpy.data.objects.new(li.name, li)
+        ob.location = loc
+        cols[grp].objects.link(ob)
+    return root, building, cols
 
 
 # ---------------------------------------------------------------------------
@@ -780,13 +998,20 @@ def add_drone_orbit():
     return ob
 
 
-def render_still(cam_ob, name, res):
+def render_still(cam_ob, name, res, hide=(), samples=48, show=()):
     sc = bpy.context.scene
+    hidden = [c for c in hide if not c.hide_render]
+    for c in hidden:
+        c.hide_render = True
+    lcs = bpy.context.view_layer.layer_collection.children
+    for c in show:
+        lcs[c.name].exclude = False
+        c.hide_render = False
     keep = (sc.camera, sc.cycles.device, sc.cycles.samples, sc.render.filepath,
             sc.render.resolution_x, sc.render.resolution_y, sc.render.image_settings.file_format,
             sc.render.image_settings.color_depth)
     sc.camera = cam_ob
-    sc.cycles.device, sc.cycles.samples = "CPU", 48
+    sc.cycles.device, sc.cycles.samples = "CPU", samples
     sc.render.resolution_x, sc.render.resolution_y = res
     sc.render.image_settings.file_format = "JPEG"
     sc.render.image_settings.quality = 90
@@ -796,18 +1021,33 @@ def render_still(cam_ob, name, res):
      sc.render.resolution_x, sc.render.resolution_y, sc.render.image_settings.file_format,
      depth) = keep
     sc.render.image_settings.color_depth = depth
+    for c in hidden:
+        c.hide_render = False
+    for c in show:
+        c.hide_render = True
+        lcs[c.name].exclude = True
 
 
 def main():
     bpy.ops.wm.read_factory_settings(use_empty=True)
+    I.attach(sys.modules[__name__])
     build_rdc()
+    I.build_all()                                 # lobby and shops, basement parking and ramp, street entrance
     for f in range(1, 7):
         build_floor(f)
+        I.typical_floor(f)
     build_teal()
     build_fins()
     build_roof()
     build_site()
-    root, building = build_objects()
+    LEVEL[0], CUT[0] = PLAN3D, FL[2] + 1.40          # the 3rd floor again, cut at 1.40 m, for the 3D plans
+    build_floor(3)
+    I.typical_floor(3)
+    teal_band(FL[2])
+    fins("Y", Y_OUT, -1, 9.90, 4, FL[2], FL[3])
+    fins("X", X_OUT, +1, 7.10, 4, FL[2], FL[3])
+    LEVEL[0], CUT[0] = None, None
+    root, building, cols = build_objects()
 
     blend_path = os.path.join(OUT, NAME + ".blend")
     glb_path = os.path.join(OUT, NAME + ".glb")
@@ -822,23 +1062,46 @@ def main():
                               export_yup=True, export_apply=True)
 
     setup_scene()
-    cams = [
-        (add_camera("corner_view", (31.0, -22.0, 1.7), (11.0, 4.0, 14.0), lens=22), (1100, 1300)),
-        (add_camera("side_street_view", (40.0, -6.0, 1.7), (15.5, 10.5, 14.0), lens=22), (1100, 1300)),
-        (add_camera("aerial_back_view", (-22.0, 48.0, 44.0), (9.0, 10.0, 12.0), lens=30), (1300, 1100)),
-        (add_camera("elevation_principale", (8.625, -60.0, 13.1), (8.625, 0.0, 13.1), ortho=30.0),
-         (1000, 1100)),
-        (add_camera("elevation_laterale_droite", (70.0, 11.25, 13.1), (0.0, 11.25, 13.1), ortho=30.0),
-         (1100, 1100)),
+
+    def above(k):                                 # the levels above LEVELS[k]
+        return [cols[n] for n in LEVELS[k + 1:]]
+
+    z3 = FL[2] + 0.02                             # 3rd floor, for the interior views
+    views = [  # name, eye, target, lens or ortho, resolution, hidden levels, samples
+        ("corner_view", (31.0, -22.0, 1.7), (11.0, 4.0, 14.0), 22, (1100, 1300), [], 40),
+        ("side_street_view", (40.0, -6.0, 1.7), (15.5, 10.5, 14.0), 22, (1100, 1300), [], 40),
+        ("aerial_back_view", (-22.0, 48.0, 44.0), (9.0, 10.0, 12.0), 30, (1300, 1100), [], 40),
+        ("elevation_principale", (8.625, -60.0, 13.1), (8.625, 0.0, 13.1), -30.0, (1000, 1100), [], 40),
+        ("elevation_laterale_droite", (70.0, 11.25, 13.1), (0.0, 11.25, 13.1), -30.0, (1100, 1100), [], 40),
+        ("plan_etage_type", (8.6, 10.6, 60.0), (8.6, 10.6, 0.0), -26.5, (1000, 1350), above(3), 40),
+        ("axo_etage_type", (24.0, -12.0, FL[2] + 23.0), (8.4, 10.6, FL[2] + 0.3), 32, (1400, 1100), above(3), 48),
+        ("plan_rdc", (8.6, 10.6, 60.0), (8.6, 10.6, 0.0), -26.5, (1000, 1350), above(1), 40),
+        ("plan_sous_sol", (8.0, 11.0, 60.0), (8.0, 11.0, 0.0), -25.5, (1000, 1350), above(0), 40),
+        ("axo_sous_sol", (23.0, -12.0, 15.0), (8.0, 11.0, -2.4), 30, (1400, 1100), above(0), 48),
+        ("entree_parking", (6.2, -9.5, 1.6), (1.9, 0.8, 1.9), 26, (1280, 900), [], 48),
+        ("rampe_descente", (1.9, 0.6, 1.65), (1.9, 15.0, -1.9), 20, (1280, 900), [], 64),
+        ("parking_allee", (8.2, 11.1, -0.95), (15.0, 4.6, -1.9), 17, (1280, 800), [], 64),
+        ("parking_fond", (1.7, 18.4, -0.85), (13.0, 13.8, -1.8), 17, (1280, 800), [], 64),
+        ("hall_rdc", (5.3, 0.9, 1.65), (6.4, 11.0, 1.9), 18, (1280, 900), [], 64),
+        ("salon_110", (9.6, 9.95, z3 + 1.55), (14.6, 12.2, z3 + 0.85), 18, (1280, 800), [], 64),
+        ("cuisine_sam_106", (9.75, 18.65, z3 + 1.60), (7.0, 14.9, z3 + 0.85), 18, (1280, 800), [], 64),
+        ("chambre_106", (12.0, 19.05, z3 + 1.60), (14.6, 16.6, z3 + 0.70), 20, (1280, 800), [], 64),
     ]
+    cams = []
+    for name, eye, target, lens, res, hide, smp in views:
+        cam = add_camera(name, eye, target, ortho=-lens) if lens < 0 else add_camera(name, eye, target, lens=lens)
+        cams.append((cam, res, hide, smp, [cols[PLAN3D]] if name.endswith("etage_type") else []))
     drone = add_drone_orbit()
     if RENDER:
+        only = sys.argv[sys.argv.index("--only") + 1].split(",") if "--only" in sys.argv else None
         os.makedirs(os.path.join(OUT, "previews"), exist_ok=True)
-        for cam_ob, res in cams:
-            render_still(cam_ob, cam_ob.name[4:], res)
-        bpy.context.scene.frame_set(125)
-        render_still(drone, "drone_orbit_frame125", (1280, 720))
-        bpy.context.scene.frame_set(1)
+        for cam_ob, res, hide, smp, show in cams:
+            if only is None or cam_ob.name[4:] in only:
+                render_still(cam_ob, cam_ob.name[4:], res, hide, smp, show)
+        if only is None or "drone_orbit_frame125" in only:
+            bpy.context.scene.frame_set(125)
+            render_still(drone, "drone_orbit_frame125", (1280, 720))
+            bpy.context.scene.frame_set(1)
     bpy.context.scene.camera = drone
     bpy.ops.wm.save_as_mainfile(filepath=blend_path, compress=True)
     if os.path.exists(blend_path + "1"):
