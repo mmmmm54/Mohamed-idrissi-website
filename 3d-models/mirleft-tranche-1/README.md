@@ -172,8 +172,10 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
   - The site outline then lies on the graded patch beside the north–south road, and the coast is about 1 km west, as on the map.
 - **Terrain**: AWS Terrain Tiles (SRTM on land, ETOPO1 under the sea).
   - ±3 km at 20 m, and a ring out to ±12 km at 150 m.
-  - Inside the site boundary it keeps the site's own heights (contours).
-  - Outside, the survey heights are moved to meet them at the boundary. They agree to 1.4 m on average; the correction fades out over 300 m.
+  - Outside the site, the survey heights are moved to meet the site's own heights (contours) at the boundary. They agree to 1.4 m on average; the correction fades out over 300 m.
+- **The project's land (16-10)**: inside the site boundary, the land keeps the site's own heights, in its own brown soil (`T16_Site_Land_Soil`, object `TERRAIN_SITE_EMPTY_LAND`), so the parcel reads within its limits on the satellite ground.
+  - The real ground drops 0.60 m along the boundary, fading out over 15 m, so a short cut face (`T10_Terrain_Cut_Soil`) marks the limits. The boundary posts stand at its corners.
+  - This step and the soil colour are for presentation. They are not on the plan.
 - **Image**: Sentinel-2 L2A true colour, 10 m, from 14 July 2025. It is the least cloudy summer scene, picked by measuring cloud over Mirleft.
   - Contains modified Copernicus Sentinel data 2025.
 - **Ocean**: a surface at sea level (altitude 0, z = −50) wherever the survey ground is under 1.5 m, so it meets the real shoreline. The seabed is set under it.

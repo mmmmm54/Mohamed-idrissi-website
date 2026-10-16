@@ -92,6 +92,7 @@ TEX = {
     "M09_Terrace_Stone": (tinted(os.path.join(D5, "M09_Terrace_Stone_COL.jpg"), "terrace"), 2.4),
     "M10_Pool_Mosaic": (tinted(os.path.join(D5, "M10_Pool_Mosaic_COL.jpg"), "pool_mosaic", size=512), 0.5),
     "T01_Terrain_Soil_Sand_Rock": (tinted(os.path.join(D5, "T01_Terrain_Soil_Sand_Rock_COL.jpg"), "terrain"), 9.0),
+    "T16_Site_Land_Soil": (tinted(os.path.join(D5, "T01_Terrain_Soil_Sand_Rock_COL.jpg"), "site_land", "#FFFFFF", "#CFB6A8"), 18.0),
     "T03_Lawn": (tinted(os.path.join(TIL, "TEX_LAWN_COL.jpg"), "lawn"), 2.0),
     "Kerb_Concrete": (tinted(os.path.join(TIL, "TEX_CONCRETE_COL.jpg"), "paving", size=512), 2.0),
     "M12_Roof_Gravel": (tinted(os.path.join(TIL, "TEX_GRAVEL_COL.jpg"), "roof", size=512), 1.0),
