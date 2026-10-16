@@ -9,6 +9,8 @@ This is a Blender model of the 1er TRANCHE of the Mirleft project, built from th
 
 The rest of the site is empty land: the exact site boundary and the natural slope from the contours. Everything is exterior only (no interiors).
 
+Round the site, the real surroundings: the terrain out to 12 km with a satellite image on it, and the Atlantic at sea level (see **Surroundings** below).
+
 | File | Contents |
 |---|---|
 | `Mirleft_Tranche_1_PACKED_2K.blend` | The scene with every texture packed inside at 2K (14 MB): the light copy to send or open anywhere. |
@@ -26,6 +28,7 @@ The rest of the site is empty land: the exact site boundary and the natural slop
 | `blender/04_pool.py` | The pool court. |
 | `blender/05_build_scene.py` | Builds, saves and renders the scene: `python 05_build_scene.py --render all`. |
 | `blender/lib.py` | Shared helpers; reuses the Mirleft Bay materials, plants and sun. |
+| `blender/10_fetch_geo.py` | Downloads the heights and the satellite image round the site into `data/geo/` (run once, outside Blender; needs pyproj and rasterio). |
 | `tools/` | `dwg2json.mjs` (DWG reader), `flatten.py` (primitives with their block path), `inserts.py` (block placements). |
 
 ## Sources used
@@ -162,6 +165,20 @@ The rest of the site is empty land: the exact site boundary and the natural slop
   - The level walk between the flights takes the rest of the length.
   - The long stair north of the pool goes down from the row C lane into the pool court (revision 15-10). It lands on the deck at the court's north-east corner, by the showers.
     - Retaining walls hold the higher ground on its north side and at its end.
+
+## Surroundings (16-10)
+- **Georeference**: the plan's coordinates are local. The centre of the tranche is put at the point the client placed on the map: 29°32'54.74"N 10°03'10.50"W (Google Earth ground 60.88 m, as the model's levels).
+  - The plan's north arrow is taken as true north, at 1:1 scale.
+  - The site outline then lies on the graded patch beside the north–south road, and the coast is about 1 km west, as on the map.
+- **Terrain**: AWS Terrain Tiles (SRTM on land, ETOPO1 under the sea).
+  - ±3 km at 20 m, and a ring out to ±12 km at 150 m.
+  - Inside the site boundary it keeps the site's own heights (contours).
+  - Outside, the survey heights are moved to meet them at the boundary. They agree to 1.4 m on average; the correction fades out over 300 m.
+- **Image**: Sentinel-2 L2A true colour, 10 m, from 14 July 2025. It is the least cloudy summer scene, picked by measuring cloud over Mirleft.
+  - Contains modified Copernicus Sentinel data 2025.
+- **Ocean**: a surface at sea level (altitude 0, z = −50) wherever the survey ground is under 1.5 m, so it meets the real shoreline. The seabed is set under it.
+- `data/geo/` keeps the downloaded data, so the scene builds offline. `python 10_fetch_geo.py` refreshes it.
+- To confirm: the exact position and orientation of the site on the map. A survey point on site would fix them.
 
 ## Removed (client, 13-10)
 Direction arrows and cars. The zebra crossings were put back as paint (15-10).

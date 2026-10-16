@@ -124,6 +124,7 @@ FLAT = {   # plain colours (hex), roughness, metallic
     "T10_Terrain_Cut_Soil": ("#8C6E52", 0.95, 0.0), "T11_Road_Paint_White": ("#E9E7E0", 0.6, 0.0),
     "T14_Lounger_White_Resin": ("#F1EFE9", 0.35, 0.0), "T15_Parasol_Canvas": ("#D9C8A9", 0.85, 0.0),
     "V09_Agave_Leaf": ("#7E9B8A", 0.6, 0.0), "V04_Ornamental_Grass": ("#B7A56E", 0.75, 0.0),
+    "H04_Ocean_Atlantic": ("#1E5A6C", 0.08, 0.0),
 }
 ALPHA = {"D01_Mashrabiya_Wood": "#3B2414", "V01_Palm_Fan": None, "V03_Olive_Foliage": None,
          "V07_Pink_Blossom_Tree": None, "V08_Green_Shade_Tree": None}
@@ -202,8 +203,8 @@ def main():
         for i, old in enumerate(list(me.materials)):
             if old is None:
                 continue
-            if old.name not in swapped:
-                swapped[old.name] = new_mat(old)
+            if old.name not in swapped:                 # satellite terrain: already an image material
+                swapped[old.name] = (old, None) if old.name.startswith("GEO_") else new_mat(old)
             newm, tile = swapped[old.name]
             me.materials[i] = newm
             if tile:

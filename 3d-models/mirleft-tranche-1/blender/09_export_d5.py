@@ -55,8 +55,8 @@ def d5_materials(vl):
         for i, old in enumerate(list(me.materials)):
             if old is None:
                 continue
-            if old.name not in swapped:
-                swapped[old.name] = G.new_mat(old)
+            if old.name not in swapped:                 # satellite terrain: already an image material
+                swapped[old.name] = (old, None) if old.name.startswith("GEO_") else G.new_mat(old)
             newm, tile = swapped[old.name]
             me.materials[i] = newm
             if tile:
@@ -65,8 +65,9 @@ def d5_materials(vl):
             G.box_uv(me, face_tiles)
         done.add(me.name)
     for name, (m, tile) in swapped.items():
-        bpy.data.materials[name].name = name + "_blender"
-        m.name = name
+        if m.name != name or not name.startswith("GEO_"):
+            bpy.data.materials[name].name = name + "_blender"
+            m.name = name
         nt = m.node_tree
         b = nt.nodes["Principled BSDF"]
         imgs = [n for n in nt.nodes if n.type == "TEX_IMAGE" and n.image]
@@ -117,7 +118,13 @@ Both FBX files carry their textures inside. The same images are in `textures/`: 
 
 ## Recommended D5 material swaps
 - `M10_Pool_Water` (pools, bassins, fountain) → D5 Water. The blue tiled floor and walls under it show through.
+- `H04_Ocean_Atlantic` (the ocean, at sea level) → D5 Water (ocean preset).
 - `M06_Glass` → D5 Glass.
+
+## Terrain and ocean round the site
+The real surroundings come in with the model (collection `00_SURROUNDINGS`): the terrain over ±3 km (20 m) and out to
+±12 km (150 m), with a Sentinel-2 satellite image on it (`GEO_Satellite_Near`, `GEO_Satellite_Far`), and the ocean.
+The heights are AWS Terrain Tiles (SRTM). Image: Contains modified Copernicus Sentinel data 2025.
 - `T03_Lawn` → D5 Grass (scatter) if you want real grass.
 
 UVs are box-projected in metres divided by each texture's tile size, so the textures sit at true scale with D5 tiling = 1.

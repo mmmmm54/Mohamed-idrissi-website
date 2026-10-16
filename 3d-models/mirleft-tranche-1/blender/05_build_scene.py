@@ -142,13 +142,16 @@ def natural_terrain(bounds):
     return RegularGridInterpolator((xs, ys), Z, bounds_error=False, fill_value=None)
 
 
-def build_terrain(M, col, site, t1):
+def build_terrain(M, col, site, t1, geo=False):
+    """The site's empty land (natural terrain of the contours, blended into the graded tranche over 25 m),
+    the cut faces at its edge and the boundary posts. With geo, the land and the cut faces are left to
+    build_surroundings (the real terrain round the site), only the posts are built; returns H."""
     import shapely
     Hn = natural_terrain(site.bounds)
-    land = site.difference(t1)
+    land = site.difference(t1) if not geo else Polygon()
     mb = C.MeshBuilder()
     step = 3.0
-    x0, y0, x1, y1 = land.bounds
+    x0, y0, x1, y1 = land.bounds if not land.is_empty else (0, 0, 0, 0)
 
     def H(xy):
         xy = np.atleast_2d(xy)
@@ -157,40 +160,186 @@ def build_terrain(M, col, site, t1):
         w = w * w * (3 - 2 * w)
         return (1 - w) * np.array([hz(x, y) for x, y in xy]) + w * Hn(xy)
 
-    from shapely.prepared import prep
-    pl = prep(land)
-    tris = []
-    for i in range(int((x1 - x0) / step) + 1):
-        for j in range(int((y1 - y0) / step) + 1):
-            cell = box(x0 + i * step, y0 + j * step, x0 + (i + 1) * step, y0 + (j + 1) * step)
-            if pl.contains(cell):
-                a, b, c, d = cell.exterior.coords[:4]
-                tris += [(a, b, c), (a, c, d)]
-            elif pl.intersects(cell):
-                for g in L.as_polys(land.intersection(cell)):
-                    tris += [tuple(t) for t in L.tri_poly(g)]
-    V = np.array([p for t in tris for p in t])
-    Z = H(V)
-    for k in range(len(tris)):
-        pts = [(V[3 * k + m][0], V[3 * k + m][1], Z[3 * k + m]) for m in range(3)]
-        mb.poly("terrain", pts, [(p[0], p[1]) for p in pts])
-    ring = list(site.exterior.coords)
-    if not site.exterior.is_ccw:
-        ring = ring[::-1]
-    for a, b in zip(ring, ring[1:]):
-        n = max(1, int(math.dist(a, b) / step))
-        for k in range(n):
-            p = np.array(a) + (np.array(b) - np.array(a)) * k / n
-            q = np.array(a) + (np.array(b) - np.array(a)) * (k + 1) / n
-            zp, zq = H(np.array([p, q]))
-            if t1.buffer(0.5).contains(Point(*((p + q) / 2))):
-                zp, zq = hz(*p) - 0.65, hz(*q) - 0.65
-            mb.poly("terrain_cut", [(p[0], p[1], zp - 3.0), (q[0], q[1], zq - 3.0), (q[0], q[1], zq), (p[0], p[1], zp)])
+    if not geo:
+        from shapely.prepared import prep
+        pl = prep(land)
+        tris = []
+        for i in range(int((x1 - x0) / step) + 1):
+            for j in range(int((y1 - y0) / step) + 1):
+                cell = box(x0 + i * step, y0 + j * step, x0 + (i + 1) * step, y0 + (j + 1) * step)
+                if pl.contains(cell):
+                    a, b, c, d = cell.exterior.coords[:4]
+                    tris += [(a, b, c), (a, c, d)]
+                elif pl.intersects(cell):
+                    for g in L.as_polys(land.intersection(cell)):
+                        tris += [tuple(t) for t in L.tri_poly(g)]
+        V = np.array([p for t in tris for p in t])
+        Z = H(V)
+        for k in range(len(tris)):
+            pts = [(V[3 * k + m][0], V[3 * k + m][1], Z[3 * k + m]) for m in range(3)]
+            mb.poly("terrain", pts, [(p[0], p[1]) for p in pts])
+        ring = list(site.exterior.coords)
+        if not site.exterior.is_ccw:
+            ring = ring[::-1]
+        for a, b in zip(ring, ring[1:]):
+            n = max(1, int(math.dist(a, b) / step))
+            for k in range(n):
+                p = np.array(a) + (np.array(b) - np.array(a)) * k / n
+                q = np.array(a) + (np.array(b) - np.array(a)) * (k + 1) / n
+                zp, zq = H(np.array([p, q]))
+                if t1.buffer(0.5).contains(Point(*((p + q) / 2))):
+                    zp, zq = hz(*p) - 0.65, hz(*q) - 0.65
+                mb.poly("terrain_cut", [(p[0], p[1], zp - 3.0), (q[0], q[1], zq - 3.0), (q[0], q[1], zq), (p[0], p[1], zp)])
+    else:
+        ring = list(site.exterior.coords)
     for (x, y) in ring[:-1]:
         z = float(H(np.array([[x, y]]))[0]) if not t1.buffer(0.5).contains(Point(x, y)) else hz(x, y)
         mb.box("kerb", x - 0.15, x + 0.15, y - 0.15, y + 0.15, z - 0.3, z + 0.45)
     obs = mb.build("TERRAIN", col, M)
-    return L.join(obs, "TERRAIN_SITE_EMPTY_LAND")
+    L.join(obs, "TERRAIN_SITE_EMPTY_LAND" if not geo else "SITE_BOUNDARY_POSTS")
+    return H
+
+
+GEO = os.path.join(ROOT, "data", "geo")
+
+
+def geo_material(name, img):
+    """Principled BSDF with the satellite image on Base Color (UV), the way D5 and glTF read it."""
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    b = nt.nodes["Principled BSDF"]
+    t = nt.nodes.new("ShaderNodeTexImage")
+    t.image = bpy.data.images.load(os.path.join(GEO, img), check_existing=True)
+    t.extension = "EXTEND"
+    nt.links.new(t.outputs["Color"], b.inputs["Base Color"])
+    b.inputs["Roughness"].default_value = 0.95
+    return m
+
+
+def build_surroundings(M, col, site, t1, Hsite):
+    """The real surroundings from data/geo (10_fetch_geo.py): terrain on the AWS Terrain Tiles heights
+    with the Sentinel-2 image on it, ±3 km at 20 m and a far ring to ±12 km at 150 m, and the ocean at
+    sea level (altitude 0 = z -50). Inside the site boundary the terrain keeps the site's own heights
+    (contours, blended into the graded tranche); outside, the survey heights are moved to meet them
+    at the boundary, the correction fading out over 300 m. The tranche's region is left open."""
+    import shapely
+    from scipy.interpolate import RegularGridInterpolator
+    from scipy.spatial import cKDTree
+    G = json.load(open(os.path.join(GEO, "geo.json")))
+    dn, df = np.load(os.path.join(GEO, "dem_near.npz")), np.load(os.path.join(GEO, "dem_far.npz"))
+    In = RegularGridInterpolator((dn["ys"], dn["xs"]), dn["h"], bounds_error=False, fill_value=None)
+    If = RegularGridInterpolator((df["ys"], df["xs"]), df["h"], bounds_error=False, fill_value=None)
+    ring = site.exterior
+    bp = np.array([ring.interpolate(d).coords[0][:2] for d in np.arange(0, ring.length, 5.0)])
+    dB = Hsite(bp) - (In(bp[:, ::-1]) - Z0)
+    tree_ = cKDTree(bp)
+    print(f"  surroundings: survey vs site heights at the boundary {dB.mean():+.2f} m (min {dB.min():+.2f}, max {dB.max():+.2f})")
+
+    # ocean at sea level: wherever a grid cell has a corner under 1.5 m (the terrain dips under the water
+    # there), at 20 m near the site and 150 m beyond; past the far grid, west of its end rows' coast
+    def land(xs, ys, h, thr=1.5):
+        cells = []
+        ok = (h[:-1, :-1] >= thr) & (h[:-1, 1:] >= thr) & (h[1:, :-1] >= thr) & (h[1:, 1:] >= thr)
+        for j in range(ok.shape[0]):
+            k = 0
+            while k < ok.shape[1]:
+                if ok[j, k]:
+                    k0 = k
+                    while k < ok.shape[1] and ok[j, k]:
+                        k += 1
+                    cells.append(box(xs[k0], ys[j], xs[k], ys[j + 1]))
+                else:
+                    k += 1
+        return unary_union(cells)
+    nsq = box(*G["near"])
+    xs, ys, h = df["xs"], df["ys"], df["h"]
+    ground = unary_union([land(dn["xs"], dn["ys"], dn["h"]), land(xs, ys, h).difference(nsq)])
+    def coast_x(j):
+        k = 0
+        while k < len(xs) - 3 and not (h[j, k] > 2.5 and h[j, k + 1] > 2.5 and h[j, k + 2] > 2.5):
+            k += 1
+        return xs[k] + 300.0
+    E = 40000.0
+    sea = box(-E, ys[0], xs[-1], ys[-1]).difference(ground)
+    sea = unary_union([sea, box(-E, -E, coast_x(0), ys[0]), box(-E, ys[-1], coast_x(len(ys) - 1), E)])
+    sea = unary_union([Polygon(pg.exterior) for pg in L.as_polys(sea)] )   # specks of 'land' out at sea go under
+    land_ = box(-E, -E, E, E).difference(sea)
+    from shapely.prepared import prep as _prep
+    psea = _prep(sea.buffer(-5.0))
+
+    def H(xy, far=False):
+        xy = np.atleast_2d(xy)
+        h = (If if far else In)(xy[:, ::-1])
+        h = h - 7.0 * np.clip((1.5 - h) / 1.5, 0, 1) - Z0          # the survey's sea at 0 m: seabed under the water
+        sea_v = shapely.contains_xy(sea.buffer(-5.0), xy[:, 0], xy[:, 1])
+        h[sea_v] = np.minimum(h[sea_v], -Z0 - 7.0)
+        dist, idx = tree_.query(xy)
+        w = np.clip(1 - dist / 300.0, 0, 1)
+        h = h + dB[idx] * w * w * (3 - 2 * w)
+        if not far:
+            ins = shapely.contains_xy(site, xy[:, 0], xy[:, 1])
+            if ins.any():
+                h[ins] = Hsite(xy[ins])
+        return h
+
+    from shapely.prepared import prep
+    pt1 = prep(t1)
+    out = []
+    for key, d, far, img in (("NEAR", dn, False, "sat_near.jpg"), ("FAR", df, True, "sat_far.jpg")):
+        xs, ys = d["xs"], d["ys"]
+        X0, X1, Y0, Y1 = xs[0], xs[-1], ys[0], ys[-1]
+        nx0, ny0, nx1, ny1 = G["near"]
+        M["geo_" + key] = geo_material(f"GEO_Satellite_{key.title()}", img)
+        mat = "geo_" + key
+        tris = []
+        for i in range(len(xs) - 1):
+            for j in range(len(ys) - 1):
+                cx0, cx1, cy0, cy1 = xs[i], xs[i + 1], ys[j], ys[j + 1]
+                if far and cx0 >= nx0 - 1e-3 and cx1 <= nx1 + 1e-3 and cy0 >= ny0 - 1e-3 and cy1 <= ny1 + 1e-3:
+                    continue                                       # inside the near square
+                cell = box(cx0, cy0, cx1, cy1)
+                if not far and pt1.intersects(cell):
+                    if pt1.contains(cell):
+                        continue
+                    for g in L.as_polys(cell.difference(t1)):
+                        tris += [tuple(t) for t in L.tri_poly(g)]
+                else:
+                    a, b, c, e = (cx0, cy0), (cx1, cy0), (cx1, cy1), (cx0, cy1)
+                    tris += [(a, b, c), (a, c, e)]
+        V = np.array([p for t in tris for p in t])
+        Z = H(V, far)
+        mb = C.MeshBuilder()
+        uv = lambda x, y: ((x - X0) / (X1 - X0), (y - Y0) / (Y1 - Y0))
+        for k in range(len(tris)):
+            pts = [(V[3 * k + m][0], V[3 * k + m][1], Z[3 * k + m]) for m in range(3)]
+            mb.poly(mat, pts, [uv(p[0], p[1]) for p in pts])
+        edge = [(X0, Y0), (X1, Y0), (X1, Y1), (X0, Y1), (X0, Y0)]          # skirt round the square
+        step = xs[1] - xs[0]
+        for a, b in zip(edge, edge[1:]):
+            n = max(1, int(round(math.dist(a, b) / step)))
+            P_ = [np.array(a) + (np.array(b) - np.array(a)) * k / n for k in range(n + 1)]
+            zz = H(np.array(P_), far)
+            for k in range(n):
+                p, q = P_[k], P_[k + 1]
+                lo = -Z0 - 60.0 if far else min(zz[k], zz[k + 1]) - 6.0
+                mb.poly(mat, [(p[0], p[1], lo), (q[0], q[1], lo), (q[0], q[1], zz[k + 1]), (p[0], p[1], zz[k])],
+                        [uv(*p), uv(*q), uv(*q), uv(*p)])
+        obs = mb.build("TERRAIN_SURROUND_" + key, col, M)
+        ob = L.join(obs, "TERRAIN_SURROUND_" + key)
+        L.weld(ob, 0.001)
+        out.append(ob)
+        print(f"  surroundings {key}: {len(tris)} triangles")
+    mb = C.MeshBuilder()
+    M["ocean_t1"] = M["mod"].simple("H04_Ocean_Atlantic", "#1E5A6C", 0.10, 0.0, 0.04, 0.20, 0.25)
+    for pg in L.as_polys(sea):
+        if pg.area > 50:
+            L.prism(mb, "ocean_t1", pg, -Z0 - 0.02, -Z0, sides=False)
+    ob = L.join(mb.build("OCEAN", col, M), "OCEAN_ATLANTIC")
+    out.append(ob)
+    coast = [(coast_x(j) - 300.0, 0) for j in range(len(ys))]
+    print(f"  ocean at sea level, coast {np.mean([c[0] for c in coast]):.0f} m west of the centre on average")
+    return out
 
 
 # ---------------------------------------------------------------------------------------------
@@ -437,14 +586,17 @@ def main():
     M["kerb_paving"] = M["kerb"]
     site = Polygon(SITE["boundary"])
     t1 = P(SITE["t1_region"])
-    cols = {k: C.collection(k) for k in ("01_TERRAIN", "02_GROUND", "03_DUPLEX", "04_PUBLIC", "05_POOL", "06_LANDSCAPE", "06_TREES_PALMS", "07_CAMERAS", "SRC")}
+    cols = {k: C.collection(k) for k in ("00_SURROUNDINGS", "01_TERRAIN", "02_GROUND", "03_DUPLEX", "04_PUBLIC", "05_POOL", "06_LANDSCAPE", "06_TREES_PALMS", "07_CAMERAS", "SRC")}
     cols["SRC"].hide_render = True
 
     POOL = load("04_pool.py")
     pc = SITE["pool"]
     fw = frame(pc["c"], pc["rot_deg"])
     z_deck = hg(*fw(POOL.GRAD_F[3], 0.0)) - POOL.RISE - POOL_DROP
-    build_terrain(M, cols["01_TERRAIN"], site, t1)
+    geo = os.path.exists(os.path.join(GEO, "geo.json"))
+    Hsite = build_terrain(M, cols["01_TERRAIN"], site, t1, geo=geo)
+    if geo:                                   # the real terrain and the ocean round the site (10_fetch_geo)
+        build_surroundings(M, cols["00_SURROUNDINGS"], site, t1, Hsite)
 
     # ---- duplexes ------------------------------------------------------------------------------
     DPX = load("02_duplex.py")
@@ -852,7 +1004,7 @@ def make_cameras(col, z_deck):
             cam.data.type = "ORTHO"
             cam.data.ortho_scale = 240
             cam.rotation_euler = (0, 0, 0)
-        cam.data.clip_end = 3000
+        cam.data.clip_end = 40000
         cams[n] = cam
     return cams
 

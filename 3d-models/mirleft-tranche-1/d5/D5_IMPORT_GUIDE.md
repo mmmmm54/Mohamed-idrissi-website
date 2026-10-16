@@ -14,7 +14,13 @@ Both FBX files carry their textures inside. The same images are in `textures/`: 
 
 ## Recommended D5 material swaps
 - `M10_Pool_Water` (pools, bassins, fountain) → D5 Water. The blue tiled floor and walls under it show through.
+- `H04_Ocean_Atlantic` (the ocean, at sea level) → D5 Water (ocean preset).
 - `M06_Glass` → D5 Glass.
+
+## Terrain and ocean round the site
+The real surroundings come in with the model (collection `00_SURROUNDINGS`): the terrain over ±3 km (20 m) and out to
+±12 km (150 m), with a Sentinel-2 satellite image on it (`GEO_Satellite_Near`, `GEO_Satellite_Far`), and the ocean.
+The heights are AWS Terrain Tiles (SRTM). Image: Contains modified Copernicus Sentinel data 2025.
 - `T03_Lawn` → D5 Grass (scatter) if you want real grass.
 
 UVs are box-projected in metres divided by each texture's tile size, so the textures sit at true scale with D5 tiling = 1.
