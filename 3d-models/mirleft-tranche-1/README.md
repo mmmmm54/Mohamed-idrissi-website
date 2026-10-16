@@ -90,13 +90,17 @@ The rest of the site is empty land: the exact site boundary and the natural slop
   - The plan's cour anglaise (the sunken court with a railing on the left side) is left out at the client's request (15-10). The deck covers it.
   - The water the plan draws behind the pavilion (the strip along the rear and the two by the pergolas) is left out at the client's request (15-10). The deck covers it.
   - The base of the platform, which shows above the paving on the pool side, is in rubble stone like the pool court's walls.
-  - It stands on the axis of the 12-10 restaurant block, moved 1.30 m back so the whole platform fits the plan's TERRASSE RESTAURANT.
+  - It stands on the axis of the 12-10 restaurant block, moved 1.30 m back.
+  - Round it, the 12-10 plan de masse (client, 15-10, last round). There is no raised platform and no long front bassin.
+    - The plan's two bassins with their planters are at the front corners, beside the portal.
+    - Its two pergolas stand on a rear terrace behind the rear towers.
+    - The TERRASSE RESTAURANT paving runs all round. The floor (+0.20) is at the highest ground; the stone base shows downhill.
   - Six trees of the 12-10 layout fall in its bassins or pergolas or against its walls. They are left out.
 - **Commerces**
   - The four towers ('départ tours') and the two bodies.
   - The north block of Commerce 2.
   - The light wells to the sous-sol ('vide d'aération sous sol').
-  - The entrances on the east side (from the plan's arrows), and the two stair runs.
+  - The entrances on the east side (from the plan's arrows), and the stair run on the north side. The south stair down to the sous-sol is left out (client, 15-10).
 - **Pool court**
   - The basin is 21.71 × 7.50 m, with Roman steps in two corners.
   - The children's pool is 9.6 × 3.8 m, against the basin. The plan's hatch is drawn askew; it is built square to the basin (15-10).

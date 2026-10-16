@@ -342,12 +342,16 @@ PASSAGE = box(-2.50, -7.18, 2.50, -3.18)
 COUR = box(-12.70, -3.10, -8.62, 3.20)
 
 
-def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80, cour=False):
+def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80, cour=False, site_bassins=None):
     """The pavilion with its platform: front bassins and planters, bridge, cour anglaise, rear terrace,
     timber pergolas at the rear corners. rear_bassin: the plan's water behind it (the strip along the
     rear and the two by the pergolas), left out at the client's request (15-10): the deck covers it.
     cour: the plan's cour anglaise (sunken court with a railing on the left side), left out at the
     client's request (15-10): the deck covers it.
+    site_bassins: the bassins of the 12-10 plan de masse (pavilion frame, planters as holes). When given,
+    the building stands on the terrace as the plan de masse draws it (15-10, last round): no platform
+    and no long front bassin; the two bassins at the front corners, the two pergolas behind the rear
+    towers on a rear terrace; the building's base in stone shows downhill.
     plinth: depth of the platform's base below the pad, down to the lowest ground under its edge."""
     mb = C.MeshBuilder()
     plat = PLATFORM if rear_bassin else PLATFORM_FULL
@@ -359,13 +363,6 @@ def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80, cou
     solids = unary_union([box(t[0], t[1], t[2], t[3]) for t in towers] + [PORTAL, PASSAGE, BODY])
     bridge = box(-1.10, -12.18, 1.10, -3.18)
     planters = [box(-8.90, -8.58, -5.40, -7.48), box(5.40, -8.58, 8.90, -7.48)]
-    water = water.difference(solids.buffer(0.0)).difference(bridge).difference(unary_union(planters))
-    # the deck runs 2 cm under the walls and planters; kept 5 mm off the water so that its edge never lies
-    # in the plane of a wall face (coplanar faces render as a black band)
-    deck = plat.difference(water.buffer(0.005, join_style=2)).difference(COUR if cour else Polygon()).difference(solids.buffer(-0.02))
-    deck = deck.difference(unary_union(planters).buffer(-0.02, join_style=2))
-    L.prism(mb, "terrace", deck, plinth, 0.20)
-    L.prism(mb, "slate", bridge, 0.20, 0.22, sides=False)
     # inside the portal: the bridge runs through, 'Bassin' each side of it (RDC plan), under the arches
     inner = PORTAL.buffer(-0.40, join_style=2)
     L.prism(mb, "terrace", bridge.intersection(PORTAL.buffer(-0.02, join_style=2)), plinth, 0.20)
@@ -373,22 +370,47 @@ def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80, cou
     L.prism(mb, "pool_water", inner.difference(bridge), -0.12, -0.10, sides=False)
     L.prism(mb, "render", PORTAL.difference(inner), -0.60, 0.0)
     L.prism(mb, "terrace", box(-2.20, -6.90, 2.20, -3.20), plinth, 0.20)      # floor of the passage
-    for w in L.as_polys(water):
-        L.prism(mb, "pool_tile", w, -0.60, -0.55, sides=False)
-        L.prism(mb, "pool_water", w, -0.12, -0.10, sides=False)
-    if rear_bassin:
-        rim = box(-14.775, 11.32, 14.775, 13.62).difference(box(-14.575, 11.32, 14.575, 13.42))
-        L.prism(mb, "stone", rim, plinth, 0.25)                    # its outer face is the platform's base
-        L.prism(mb, "deck_stone", rim.buffer(0.02, join_style=2), 0.25, 0.28)
-        L.prism(mb, "pool_tile", box(-14.565, 11.33, 14.565, 13.41).difference(box(-14.555, 11.34, 14.555, 13.40)), -0.55, -0.10)
-        L.prism(mb, "pool_tile", box(-14.575, 11.32, 14.575, 13.42), -0.60, -0.55, sides=False)
-        L.prism(mb, "pool_water", box(-14.575, 11.32, 14.575, 13.42), -0.12, -0.10, sides=False)
-    edge = plat.buffer(0.15, join_style=2).difference(plat.buffer(-0.15, join_style=2))
-    L.prism(mb, "stone", edge, plinth, 0.25)                         # base of the platform: rubble stone
-    L.prism(mb, "deck_stone", edge.buffer(0.02, join_style=2), 0.25, 0.28)
-    for p in planters:
-        L.prism(mb, "render_dark", p, -0.60, 0.65)
-        L.prism(mb, "lawn", p.buffer(-0.12, join_style=2), 0.60, 0.62, sides=False)
+    if site_bassins is None:                       # the platform of 3-PLAN_RESTAURANT_PAVILLON
+        L.prism(mb, "slate", bridge, 0.20, 0.22, sides=False)
+        water = water.difference(solids.buffer(0.0)).difference(bridge).difference(unary_union(planters))
+        # the deck runs 2 cm under the walls and planters; kept 5 mm off the water so that its edge never lies
+        # in the plane of a wall face (coplanar faces render as a black band)
+        deck = plat.difference(water.buffer(0.005, join_style=2)).difference(COUR if cour else Polygon()).difference(solids.buffer(-0.02))
+        deck = deck.difference(unary_union(planters).buffer(-0.02, join_style=2))
+        L.prism(mb, "terrace", deck, plinth, 0.20)
+        for w in L.as_polys(water):
+            L.prism(mb, "pool_tile", w, -0.60, -0.55, sides=False)
+            L.prism(mb, "pool_water", w, -0.12, -0.10, sides=False)
+        if rear_bassin:
+            rim = box(-14.775, 11.32, 14.775, 13.62).difference(box(-14.575, 11.32, 14.575, 13.42))
+            L.prism(mb, "stone", rim, plinth, 0.25)                    # its outer face is the platform's base
+            L.prism(mb, "deck_stone", rim.buffer(0.02, join_style=2), 0.25, 0.28)
+            L.prism(mb, "pool_tile", box(-14.565, 11.33, 14.565, 13.41).difference(box(-14.555, 11.34, 14.555, 13.40)), -0.55, -0.10)
+            L.prism(mb, "pool_tile", box(-14.575, 11.32, 14.575, 13.42), -0.60, -0.55, sides=False)
+            L.prism(mb, "pool_water", box(-14.575, 11.32, 14.575, 13.42), -0.12, -0.10, sides=False)
+        edge = plat.buffer(0.15, join_style=2).difference(plat.buffer(-0.15, join_style=2))
+        L.prism(mb, "stone", edge, plinth, 0.25)                         # base of the platform: rubble stone
+        L.prism(mb, "deck_stone", edge.buffer(0.02, join_style=2), 0.25, 0.28)
+        for p in planters:
+            L.prism(mb, "render_dark", p, -0.60, 0.65)
+            L.prism(mb, "lawn", p.buffer(-0.12, join_style=2), 0.60, 0.62, sides=False)
+    else:                                          # the 12-10 plan de masse round the building
+        L.prism(mb, "slate", bridge.intersection(unary_union([PORTAL, PASSAGE])), 0.20, 0.22, sides=False)
+        base = unary_union([box(t[0], t[1], t[2], t[3]) for t in towers] + [BODY, REAR]).buffer(-0.02, join_style=2)
+        L.prism(mb, "stone", base, plinth, 0.20)                     # the building's base, showing downhill
+        for b in site_bassins:                                      # bassins with their planters
+            outer = Polygon(b.exterior).difference(PORTAL)
+            beds = unary_union([Polygon(h) for h in b.interiors]) if b.interiors else Polygon()
+            w = outer.difference(beds)
+            L.prism(mb, "pool_tile", w, -0.60, -0.55, sides=False)
+            L.prism(mb, "pool_water", w, -0.12, -0.10, sides=False)
+            rim = Polygon(b.exterior).buffer(0.25, join_style=2).difference(Polygon(b.exterior)).difference(solids)
+            L.prism(mb, "coping", rim, plinth, 0.28)
+            for h in L.as_polys(beds):
+                L.prism(mb, "stone", L.ring_poly(h, 0.08), -0.60, 0.40)
+                L.prism(mb, "lawn", h.buffer(-0.08, join_style=2), -0.60, 0.38, sides=False)
+        L.prism(mb, "stone", REAR_TERRACE, plinth, 0.19)            # rear terrace under the pergolas
+        L.prism(mb, "terrace", REAR_TERRACE, 0.19, 0.20)
     # cour anglaise: walls down to the sous-sol and a bronze railing
     if cour:
         L.prism(mb, "render", L.ring_poly(COUR, 0.01), -3.20, 0.20)
@@ -477,18 +499,18 @@ def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80, cou
     for x0, y0, x1, y1, outer in towers:
         tower(mb, x0, y0, x1, y1, 10.90, 12.20, outer)
 
-    # ---- pergolas en bois at the rear corners ---------------------------------------------------
-    for s in (-1, 1):
-        a, b = sorted((s * 14.40, s * TX1))
-        mb.box("timber", a, b, 7.85, 8.05, 4.30, 4.55)
-        mb.box("timber", a, b, 11.05, 11.25, 4.30, 4.55)
-        n = int((b - a) / 0.30)
+    # ---- pergolas en bois: at the rear corners of the platform, or where the 12-10 plan draws them ------
+    for g in (PERGOLAS_1210 if site_bassins is not None else PAV_PERGOLAS):
+        a_, y0, b_, y1 = g.bounds
+        mb.box("timber", a_, b_, y0, y0 + 0.20, 4.30, 4.55)
+        mb.box("timber", a_, b_, y1 - 0.20, y1, 4.30, 4.55)
+        n = int((b_ - a_) / 0.30)
         for i in range(n + 1):
-            x = a + (b - a - 0.08) * i / n
-            mb.box("timber", x, x + 0.08, 7.85, 11.25, 4.55, 4.65)
-        px = s * 14.25
-        for y in (7.95, 11.15):
-            mb.box("timber", px - 0.08, px + 0.08, y - 0.08, y + 0.08, 0.20, 4.30)
+            x = a_ + (b_ - a_ - 0.08) * i / n
+            mb.box("timber", x, x + 0.08, y0, y1, 4.55, 4.65)
+        for px in ((a_ + 0.10, b_ - 0.10) if site_bassins is not None else ((14.25 if a_ > 0 else -14.25),)):
+            for y in (y0 + 0.10, y1 - 0.10):
+                mb.box("timber", px - 0.08, px + 0.08, y - 0.08, y + 0.08, 0.20, 4.30)
 
     obs = mb.build("PAV", col, M)
     ob = L.join(obs, name)
@@ -500,6 +522,10 @@ PAV_TOWERS = [box(-TX1, FT[0], -TX0, FT[1]), box(TX0, FT[0], TX1, FT[1]), box(-T
 PAV_SOLIDS = unary_union(PAV_TOWERS + [BODY, REAR, PORTAL, PASSAGE])
 PAV_WATER = box(-14.775, -12.18, 14.775, -3.18).difference(PAV_SOLIDS)      # front bassins (the rear water is left out)
 PAV_PERGOLAS = [box(-14.40, 7.85, -TX1, 11.25), box(TX1, 7.85, 14.40, 11.25)]
+# 12-10 plan de masse: its two pergolas (blue hatch, 5.24 x 3.98 m), drawn behind its smaller building,
+# set behind the pavilion's rear towers; the rear terrace that carries them
+PERGOLAS_1210 = [box(-8.64, 7.57, -3.40, 11.55), box(3.40, 7.57, 8.64, 11.55)]
+REAR_TERRACE = unary_union([box(-TX1, RT[1] - 0.02, TX1, 11.80), box(-TX0, REAR.bounds[3] - 0.02, TX0, RT[1])])
 
 
 # ---------------------------------------------------------------------------------------------
@@ -512,7 +538,7 @@ C_NORTH = box(-1.15, 10.05, 1.75, 14.55)
 C2_BODY = unary_union([box(-4.15, 0.80, 5.70, 10.05), box(-4.40, -3.75, 5.70, 0.80), box(4.55, 1.20, 6.10, 4.00)])
 C1_BODY = box(-4.10, -11.85, 4.30, -3.75)
 C_WELLS = [box(-6.00, -7.10, -4.10, -3.75), box(4.30, -7.10, 6.30, -3.75)]
-C_STAIRS = [("south", box(-1.75, -13.85, 2.05, -12.30)), ("north", box(-5.05, 10.05, -2.10, 14.60))]
+C_STAIRS = [("north", box(-5.05, 10.05, -2.10, 14.60))]   # the south stair down (front) left out (client, 15-10)
 C_FOOT = unary_union([box(*t[:4]) for t in C_TOWERS] + [C_NORTH, C2_BODY, C1_BODY])
 
 

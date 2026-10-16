@@ -458,18 +458,22 @@ def main():
     cut = []
     r = SITE["restaurant"]
     # restaurant = the pavilion of its own plan (15-10 request), on the axis of the 12-10 block, moved
-    # 1.30 m back so that its platform (rear bassin included) lies inside the plan's TERRASSE RESTAURANT;
-    # its deck (+0.20) level with the highest ground at the platform edge, the plinth showing downhill
+    # 1.30 m back; round it the 12-10 plan de masse (last round of 15-10): no platform, the plan's two
+    # bassins at its front corners, its two pergolas behind the rear towers on a rear terrace, the
+    # TERRASSE RESTAURANT paving all round. Floor (+0.20) at the highest ground under it, stone base downhill
     fr_ = frame(r["c"], r["rot_deg"])
     pav_c = fr_(0.0, PAV_DY)
-    plat = PUB.PLATFORM_FULL.buffer(0.15, join_style=2)
-    z_pav = max(hz(*fr_(x, y + PAV_DY)) for x, y in plat.exterior.coords[:-1]) - 0.20
-    edge = plat.exterior
-    z_low = min(hz(*fr_(*edge.interpolate(d).coords[0][:2] + np.array([0.0, PAV_DY]))) for d in np.linspace(0, edge.length, 80))
-    plinth = min(-1.80, z_low - z_pav - 0.30)          # its base below the lowest ground at its edge
-    place(PUB.pavilion(M, cols["SRC"], plinth=plinth), "RESTAURANT", pav_c, r["rot_deg"], cols["04_PUBLIC"], z=z_pav)
-    print(f"  restaurant platform: deck {z_pav + 0.20 + Z0:.2f} m, base {plinth:.2f} m below the pad")
-    cut.append(to_world(plat, pav_c, r["rot_deg"]))
+    bassins = [to_local(Polygon(w["poly"]["ext"], w["poly"]["holes"]).buffer(0), pav_c, r["rot_deg"])
+               for w in SITE["water"] if w["kind"] == "resto_bassin"]
+    rfoot = unary_union([PUB.PAV_SOLIDS, PUB.REAR_TERRACE] + [Polygon(b.exterior).buffer(0.25, join_style=2) for b in bassins])
+    fl = to_world(rfoot, pav_c, r["rot_deg"])
+    z_pav = max(hz(x, y) for x, y in fl.exterior.coords[:-1]) - 0.20
+    z_low = min(hz(*fl.exterior.interpolate(d).coords[0][:2]) for d in np.linspace(0, fl.exterior.length, 120))
+    plinth = min(-1.00, z_low - z_pav - 0.30)          # its base below the lowest ground round it
+    place(PUB.pavilion(M, cols["SRC"], plinth=plinth, site_bassins=bassins), "RESTAURANT", pav_c, r["rot_deg"], cols["04_PUBLIC"], z=z_pav)
+    print(f"  restaurant: floor {z_pav + 0.20 + Z0:.2f} m, base {plinth:.2f} m below it")
+    cut.append(to_world(unary_union([PUB.PAV_SOLIDS.buffer(-0.01, join_style=2), PUB.REAR_TERRACE]
+                                    + [Polygon(b.exterior).buffer(0.25, join_style=2) for b in bassins]), pav_c, r["rot_deg"]))
     # pads of the commerces: the entrance side at the ground level (the slope rises to the east)
     c = SITE["commerces"]
     place(PUB.commerces(M, cols["SRC"]), "COMMERCES_1_2", c["c"], c["rot_deg"], cols["04_PUBLIC"], z=hz(*frame(c["c"], c["rot_deg"])(6.0, -4.0)))
@@ -619,14 +623,11 @@ def main():
     for t in SITE["trees"]:
         xy = t["c"]
         q = to_local(Point(xy), pav_c, r["rot_deg"])            # trees of the 12-10 layout on the pavilion:
-        if PUB.PLATFORM_FULL.contains(q) and (PUB.PAV_WATER.contains(q) or PUB.COUR.buffer(0.5).contains(q)
-                                              or PUB.PAV_SOLIDS.distance(q) < (1.8 if t["kind"] == "palm" else 2.6)
-                                              or any(pg.buffer(0.6).contains(q) for pg in PUB.PAV_PERGOLAS)):
+        if (rfoot.buffer(0.6).contains(q) or PUB.PAV_SOLIDS.distance(q) < (1.8 if t["kind"] == "palm" else 2.6)
+                or any(pg.buffer(0.6).contains(q) for pg in PUB.PERGOLAS_1210)):
             n_skip += 1                                          # in its bassins, pergolas or against its walls
             continue
         z = z_deck + POOL.BAC_SOIL if court.buffer(0.5).contains(Point(xy)) else None
-        if PUB.PLATFORM_FULL.contains(q):
-            z = z_pav + 0.20                                     # on the pavilion's deck
         if t["kind"] == "palm":                                 # symbol 0.23-0.68 m radius on the plan: young palms
             plant("date", xy, 0.38 + 0.45 * min(t["r"], 0.7), z)
         elif t["kind"] == "olive":
