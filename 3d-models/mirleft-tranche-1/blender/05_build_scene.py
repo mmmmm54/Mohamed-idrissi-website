@@ -22,6 +22,13 @@ garden walled, the 'JARDIN' plots beside it in 0.60 m stone planters.
 Third round of 15-10: the restaurant's windows, portal arch and frames as FACADE PRINCIPALE draws
 them; no water behind the restaurant; the lawn between the pool, the restaurant and the road paved;
 the children's pool square to the basin, the in-pool loungers moved to the west deck's row.
+Rev 4 (remarks on the D5 model): the duplexes rebuilt to the VILLA N°09 drawing and its reference
+images (02_duplex), one design for the twelve pairs; every road and lane of the tranche in beige
+herringbone pavers ('pavé beige'), as the commerces' and the restaurant's surrounds; the paved area
+between the pool, the restaurant and the road (the playground) in beige slate-look tiles ('carrelage
+beige', AZUVI Ardesia Nature type); the pools tiled in green ('carrelage vert', La Platera Jade
+type); the commerces at the restaurant's height, all towers in the buildings' colour, the restaurant's
+rear entrance as its main door (03_public).
 """
 import importlib.util
 import json
@@ -50,15 +57,15 @@ RNG = random.Random(20261014)
 
 
 def pave_restaurant_lawn():
-    """15-10 (third round): the lawn between the pool court, the restaurant and the road is paved like
-    the restaurant terrace (light herringbone), as the other paved areas round it."""
+    """15-10 (third round): the lawn between the pool court, the restaurant and the road is paved.
+    Rev 4 (slide 5): that ground, where the playground is, in beige tiles ('court_tile')."""
     r = Point(SITE["restaurant"]["c"])
     keep, move = [], []
     for p in SITE["surfaces"]["lawn"]:
         g = Polygon(p["ext"], p["holes"]).buffer(0)
         (move if g.area > 800 and g.distance(r) < 40 else keep).append(p)
     SITE["surfaces"]["lawn"] = keep
-    SITE["surfaces"].setdefault("terrace", []).extend(move)
+    SITE["surfaces"].setdefault("court_tile", []).extend(move)
     return sum(Polygon(p["ext"], p["holes"]).buffer(0).area for p in move)
 
 
@@ -381,9 +388,12 @@ def build_surroundings(M, col, site, t1, Hsite):
 
 
 # ---------------------------------------------------------------------------------------------
-# ground of the tranche: one asphalt base, the plan's surfaces 2-15 cm above it
-OFFS = [("lane", 0.02, "lane"), ("ramp", 0.03, "concrete"), ("stabilise", 0.08, "stabilise"), ("concrete", 0.12, "concrete"),
-        ("paving", 0.15, "kerb_paving"), ("terrace", 0.15, "terrace_hb"), ("terracotta", 0.15, "terracotta"), ("lawn", 0.12, "lawn")]
+# ground of the tranche: one base (the roads), the plan's surfaces 2-15 cm above it. Rev 4: roads, lanes
+# and the surrounds of the commerces and the restaurant in beige herringbone pavers, the playground
+# ground in beige tiles
+OFFS = [("lane", 0.02, "pave_beige"), ("ramp", 0.03, "concrete"), ("stabilise", 0.08, "stabilise"), ("concrete", 0.12, "concrete"),
+        ("paving", 0.15, "kerb_paving"), ("terrace", 0.15, "pave_beige"), ("terracotta", 0.15, "pave_beige"),
+        ("court_tile", 0.15, "tile_ardesia"), ("lawn", 0.12, "lawn")]
 MIN_AREA = {"paving": 0.6, "lawn": 0.5}
 
 
@@ -392,8 +402,8 @@ def build_ground(M, col, t1, cut):
     S = SITE["surfaces"]
     out = []
     mb = C.MeshBuilder()
-    L.prism(mb, "asphalt", t1.difference(cut), -0.65, 0.0, zf=zf)
-    out += mb.build("GROUND_ASPHALT_BASE", col, M)
+    L.prism(mb, "pave_beige", t1.difference(cut), -0.65, 0.0, zf=zf)
+    out += mb.build("GROUND_ROADS_PAVERS", col, M)
     for key, off, mat in OFFS:
         keep = [g for g in polys(S.get(key, [])) if g.area >= MIN_AREA.get(key, 0.05)]
         g = unary_union(keep).difference(cut) if keep else Polygon()
@@ -640,7 +650,8 @@ def main():
     # ---- duplexes ------------------------------------------------------------------------------
     DPX = load("02_duplex.py")
     PUB = load("03_public.py")
-    src = {"A": DPX.build(M, cols["SRC"], "A"), "B": DPX.build(M, cols["SRC"], "B")}
+    dpx = DPX.build(M, cols["SRC"], "N09")                 # one design (villa N°09) for both blocks
+    src = {"A": dpx, "B": dpx}
     for d in SITE["duplexes"]:
         name = "DUPLEX_" + "_".join(u.replace("-", "") for u in d["units"])
         place(src[d["type"]], name, d["c"], d["rot_deg"], cols["03_DUPLEX"])
@@ -808,8 +819,7 @@ def main():
         nveg[0] += 1
 
     court = to_world(POOL.COURT, pc["c"], pc["rot_deg"])
-    rdc = unary_union([box(-8.10, -3.47, 8.10, 5.35), box(-3.52, -7.27, 3.52, -3.47)])   # permit ground floor, as in 01
-    bld = unary_union([to_world(rdc, d["c"], d["rot_deg"]) for d in SITE["duplexes"]])
+    bld = unary_union([to_world(DPX.FOOT, d["c"], d["rot_deg"]) for d in SITE["duplexes"]])   # villa N°09 + rear terrace
     n_skip = 0
     for t in SITE["trees"]:
         xy = t["c"]
@@ -832,6 +842,12 @@ def main():
         else:
             plant("pit", xy, RNG.uniform(0.85, 1.0), hz(*xy) + 0.09)
     print("  trees of the 12-10 layout left out on the pavilion:", n_skip)
+    # rev 4: a low planted strip behind each villa's stone front wall (front reference image)
+    for d in SITE["duplexes"]:
+        fd = frame(d["c"], d["rot_deg"])
+        for s in (1, -1):
+            for x in np.arange(5.75, 8.50, 0.70):
+                plant("shrub", fd(s * x, -6.80), RNG.uniform(0.75, 0.95))
     for u, v, z, kind, s in spots:                                   # pool court beds (reference images)
         plant(RNG.choice(("agave", "agave_b")) if kind == "agave" else kind, fw(u, v), s, z_deck + z)
     print("  pool court plants:", len(spots))

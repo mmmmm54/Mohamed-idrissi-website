@@ -117,7 +117,8 @@ Both FBX files carry their textures inside. The same images are in `textures/`: 
 3. If a material still shows white, set Base Color to `textures/<material>_COL.jpg` and Normal to `textures/<material>_NRM.jpg`.
 
 ## Recommended D5 material swaps
-- `M10_Pool_Water` (pools, bassins, fountain) → D5 Water. The blue tiled floor and walls under it show through.
+- `M10_Pool_Water` (pools, bassins, fountain) → D5 Water. The tiled floor and walls under it show through: green
+  `T19_Tile_Jade_Green` in the two pools, blue mosaic in the bassins and the fountain.
 - `H04_Ocean_Atlantic` (the ocean, at sea level) → D5 Water (ocean preset).
 - `T16_Site_Land_Soil` (the project's land inside its boundary) can take any D5 soil material; keep it darker than the satellite ground so the limits read.
 - `M06_Glass` → D5 Glass.
@@ -133,6 +134,15 @@ a short cut face (`T10_Terrain_Cut_Soil`) marks the boundary, with the boundary 
 
 UVs are box-projected in metres divided by each texture's tile size, so the textures sit at true scale with D5 tiling = 1.
 The material names are the Blender ones: `T13_Travertine_Planks` (pool deck), `M04_Stone_Rubble` (stone walls), `D05_Bejmat_Terre_De_Sienne`, and so on.
+
+## Rev 4 finishes (remarks on the D5 model)
+- `T17_Pavers_Beige_Herringbone`: every road and lane of the tranche, and the surrounds of the commerces and the restaurant.
+- `T18_Tile_Ardesia_Beige`: the ground of the playground area by the pool (AZUVI Ardesia Nature type, 30 x 60).
+  In D5 it can be swapped for the real product's texture if you have it.
+- `T19_Tile_Jade_Green`: the two pools (La Platera Jade type, 30 x 60).
+- Duplexes (villa N°09): `D13_Render_Villa_Beige` walls, `D14_Stone_Surround_Taupe` window and door surrounds,
+  `D15_Stone_Ledge_Grey` and `D16_Stone_Band_Ochre` cornice, `D17_Frame_Cream` frames, `D18_Stone_Cladding_Beige`
+  front garden walls with `D19_Coping_Beige_Stone`, `M03_Timber_Pergola` pergolas and railings.
 """
 
 

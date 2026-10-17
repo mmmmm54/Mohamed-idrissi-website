@@ -3,16 +3,20 @@
 
 RESTAURANT   the pavilion of 3-PLAN_RESTAURANT_PAVILLON.DWG (15-10 request), as modelled for Tranche
              A+B: plans RDC / ETAGE / TERRASSE-MASSE, four facades, coupes A-A, B-B, C-C. Four
-             tapered corner towers to +12.20 (terre de sienne, bejmat panels), body to +9.20 (etage
-             +4.40, roof +7.85), portal with a horseshoe arch to +7.70, passage with water walls
-             (+5.60), skylight, front and rear bassins, bridge, planters, cour anglaise, timber
-             pergolas at the rear corners. Placed on the axis of the 12-10 block 'dfhgfdjjj', its
-             platform inside the plan's TERRASSE RESTAURANT (scene script).
+             tapered corner towers to +12.20, body to +9.20 (etage +4.40, roof +7.85), portal with a
+             horseshoe arch to +7.70, passage with water walls (+5.60), skylight, front and rear
+             bassins, bridge, planters, cour anglaise, timber pergolas at the rear corners. Placed on
+             the axis of the 12-10 block 'dfhgfdjjj', its platform inside the plan's TERRASSE
+             RESTAURANT (scene script).
+             Remarks rev 4: the towers in the building's colour (no more terre de sienne / bejmat on
+             them); the rear entrance between the rear towers is the main façade's door: the same
+             pointed horseshoe arch in the same frame (mouldings, bejmat field), glazed.
 COMMERCES    'COMMERCES MIRLEFT': Commerce 1 (superette) and Commerce 2 (glacier), towers ('départ
              tours'), bodies, light wells to the sous-sol ('vide d'aération sous sol'), the stair down
-             on the south and the external stair of Commerce 2. Heights are not on the drawings:
-             single storey to +4.40 with a crown to +5.20, towers to +8.10 (INFERRED, the pavilion's
-             proportions).
+             on the south and the external stair of Commerce 2. Heights are not on their drawings;
+             remark rev 4: the same height as the restaurant, so bodies to +7.85 with the crown to
+             +9.20 and towers to +12.20 as the pavilion, an upper row of windows like its etage, the
+             towers in the building's colour.
 TOILETTE     the 3 x 3 m block on the plaza: flat-roofed kiosk, 3.20 m (INFERRED height).
 LOCAL TECHNIQUE  walls of the pool block (toilettes, local technique, bâche à eau), 3.00 m (INFERRED).
 PETANQUE     timber pergola (posts, beams, slats as drawn), court edgings, benches.
@@ -198,9 +202,10 @@ def cornice(mb, poly, z0, z1, pd):
     L.prism(mb, "trim", poly.buffer(pd, join_style=2).difference(poly.buffer(-0.05, join_style=2)), z0, z1, bottom=True)
 
 
-def tower(mb, x0, y0, x1, y1, z_wall, z_top, outer, taper=0.40, panels=True, wall_mat="sienna"):
-    """Kasbah tower: battered walls, cornice, parapet with a railing, bejmat panels with an arched
-    door and an arched window (mashrabiya screens) on the `outer` faces."""
+def tower(mb, x0, y0, x1, y1, z_wall, z_top, outer, taper=0.40, panels=True, wall_mat="render"):
+    """Kasbah tower: battered walls, cornice, parapet with a railing, panels with an arched door and an
+    arched window (mashrabiya screens) on the `outer` faces. Walls and panels in the building's colour
+    (remark rev 4: the towers the same colour as the building)."""
     E = rect_edges(x0, y0, x1, y1)
     for k, (p, q) in E.items():
         holes = []
@@ -209,8 +214,8 @@ def tower(mb, x0, y0, x1, y1, z_wall, z_top, outer, taper=0.40, panels=True, wal
                      {"s0": -0.431, "s1": 0.431, "z0": 6.096, "z1": 7.202, "shape": "poly", "pts": WIN_UP, "kind": "glass", "n": 2}]
         X = face(mb, wall_mat, p, q, 0.0, z_wall, holes, taper=taper)
         if k in outer and panels:
-            # bejmat panel (trapezoid 2.79 -> 2.11 m, +0.43 to +8.21) with the plain window surrounds
-            panel(mb, "bejmat", X, 1.395, 1.056, 0.426, 8.21, [{"s0": -0.748, "s1": 0.748, "z0": 1.426, "z1": 3.026},
+            # panel (trapezoid 2.79 -> 2.11 m, +0.43 to +8.21), standing proud, with the plain window surrounds
+            panel(mb, wall_mat, X, 1.395, 1.056, 0.426, 8.21, [{"s0": -0.748, "s1": 0.748, "z0": 1.426, "z1": 3.026},
                                                              {"s0": -0.498, "s1": 0.498, "z0": 6.096, "z1": 7.427}])
             for sr, w in ((SURR_LOW, WIN_LOW), (SURR_UP, WIN_UP)):
                 relief(mb, "trim", X, sr.difference(Polygon(w)), 0.03)
@@ -410,7 +415,7 @@ def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80, cou
                 L.prism(mb, "stone", L.ring_poly(h, 0.08), -0.60, 0.40)
                 L.prism(mb, "lawn", h.buffer(-0.08, join_style=2), -0.60, 0.38, sides=False)
         L.prism(mb, "stone", REAR_TERRACE, plinth, 0.19)            # rear terrace under the pergolas
-        L.prism(mb, "terrace", REAR_TERRACE, 0.19, 0.20)
+        L.prism(mb, "pave_beige", REAR_TERRACE, 0.19, 0.20)          # rev 4: the surround in beige pavers
     # cour anglaise: walls down to the sous-sol and a bronze railing
     if cour:
         L.prism(mb, "render", L.ring_poly(COUR, 0.01), -3.20, 0.20)
@@ -435,12 +440,18 @@ def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80, cou
             {"s0": -1.90, "s1": -0.70, "z0": 5.20, "z1": 6.95, "n": 2, "surround": 0.12},
             {"s0": 0.40, "s1": 0.95, "z0": 5.20, "z1": 6.95, "surround": 0.12},
             {"s0": 1.40, "s1": 1.95, "z0": 5.20, "z1": 6.95, "surround": 0.12}]
+    # rear entrance (remark rev 4): the main façade's door, the pointed horseshoe arch in its frame,
+    # glazed; the etage window above it raised clear of the frame
     holes[edge_index(body, (4.20, 6.22), (-4.20, 6.22))] = [
-        {"s0": -2.80, "s1": 2.80, "z0": 0.20, "z1": 3.80, "n": 4},
-        {"s0": -2.65, "s1": 2.65, "z0": 5.20, "z1": 7.10, "n": 4}]
+        {"s0": -1.242, "s1": 1.242, "z0": 0.20, "z1": 4.79, "shape": "poly", "pts": ARCH_PTS, "n": 2},
+        {"s0": -2.65, "s1": 2.65, "z0": 6.10, "z1": 7.40, "n": 4}]
     Xs = body_walls(mb, body, 0.0, 7.85, holes)
     rear_X = Xs[edge_index(body, (4.20, 6.22), (-4.20, 6.22))]
-    screen(mb, rear_X, -2.65, 2.65, 4.55, 5.20, 0.30)
+    fa, fb, fc = ARCH_FRAMES
+    sh_r = hole_shape({"s0": -1.242, "s1": 1.242, "z0": 0.20, "z1": 4.79, "shape": "poly", "pts": ARCH_PTS})
+    relief(mb, "trim", rear_X, fa.difference(fb), 0.07)
+    relief(mb, "render", rear_X, fb.difference(fc), 0.05)
+    relief(mb, "bejmat", rear_X, fc.difference(sh_r), 0.03)
     front = edge_index(body, (-8.60, -3.18), (8.60, -3.18))
     for k, X in enumerate(Xs):
         if k == front:                      # FACADE PRINCIPALE: twelve 0.25 m squares at +8.03, and the
@@ -545,19 +556,21 @@ C_FOOT = unary_union([box(*t[:4]) for t in C_TOWERS] + [C_NORTH, C2_BODY, C1_BOD
 def commerces(M, col, name="SRC_COMMERCES"):
     mb = C.MeshBuilder()
     towers = unary_union([box(*t[:4]) for t in C_TOWERS])
-    L.prism(mb, "terrace", C_FOOT.buffer(0.15, join_style=2).difference(unary_union(C_WELLS)), -1.20, 0.20)
+    L.prism(mb, "pave_beige", C_FOOT.buffer(0.15, join_style=2).difference(unary_union(C_WELLS)), -1.20, 0.20)
 
     def rule(p, q, nx, ny, Lg):
+        up = windows(Lg, 5.20, 6.95, w=0.80, gap=1.80, n_max=4) if Lg > 2.0 else []   # upper row, as the pavilion's etage
         if nx > 0.9 and Lg > 3.0:                    # east: shopfront with the entrance (glacier)
-            return [{"s0": -min(2.2, Lg / 2 - 0.5), "s1": min(2.2, Lg / 2 - 0.5), "z0": 0.20, "z1": 3.20, "n": 4, "surround": 0.15}]
+            return [{"s0": -min(2.2, Lg / 2 - 0.5), "s1": min(2.2, Lg / 2 - 0.5), "z0": 0.20, "z1": 3.20, "n": 4, "surround": 0.15}] + up
         if Lg > 2.0:
-            return windows(Lg, 1.00, 2.90, w=0.80, gap=1.80, n_max=4)
+            return windows(Lg, 1.00, 2.90, w=0.80, gap=1.80, n_max=4) + up
         return []
+    # remark rev 4: the restaurant's height (roof +7.85, crown to +9.20, towers to +12.20)
     for body in (C2_BODY.difference(towers), C1_BODY.difference(towers), C_NORTH):
         for pg in L.as_polys(body):
-            block(mb, pg, 4.40, rule, crown_h=0.80, squares_z=3.90)
+            block(mb, pg, 7.85, rule, crown_h=1.35, squares_z=8.45)
     for x0, y0, x1, y1, outer in C_TOWERS:
-        tower(mb, x0 - 0.20, y0 - 0.20, x1 + 0.20, y1 + 0.20, 7.20, 8.10, outer, taper=0.35)
+        tower(mb, x0 - 0.20, y0 - 0.20, x1 + 0.20, y1 + 0.20, 10.90, 12.20, outer, taper=0.40)
     # light wells to the sous-sol: walls down, floor, bronze railing
     for w in C_WELLS:
         L.prism(mb, "render", L.ring_poly(w, 0.01), -3.20, 0.20)

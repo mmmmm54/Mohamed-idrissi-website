@@ -224,16 +224,17 @@ def build(M, col, ground, water_polys, name="POOL_COURT", north_steps=(), north_
     divider = basin.difference(pool).difference(kids)
     rim = basin.difference(basin.buffer(-0.05, join_style=2)).union(divider)
     L.prism(mb, "grille", grille, -0.30, -0.01)
-    L.prism(mb, "pool_tile", divider, -1.45, -0.12)
+    # rev 4 (slide 6): both pools tiled in green stone-look porcelain ('carrelage vert', La Platera Jade type)
+    L.prism(mb, "tile_jade", divider, -1.45, -0.12)
     L.prism(mb, "coping", rim, -0.12, -0.015)
     for w, depth in ((pool, 1.40), (kids, 0.45)):
-        L.prism(mb, "pool_tile", w, -depth - 0.05, -depth, sides=False)
-        L.prism(mb, "pool_tile", w.buffer(0.01, join_style=2).difference(w.buffer(-0.01, join_style=2)), -depth, -0.03)
+        L.prism(mb, "tile_jade", w, -depth - 0.05, -depth, sides=False)
+        L.prism(mb, "tile_jade", w.buffer(0.01, join_style=2).difference(w.buffer(-0.01, join_style=2)), -depth, -0.03)
         L.prism(mb, "pool_water", w.buffer(-0.01, join_style=2), -0.05, -0.03, sides=False)
     for (cx, cy), (su, sv) in CUVE_CORNERS:                     # Roman steps: quarter discs
         for r, z in ((1.75, -1.05), (1.30, -0.70), (0.85, -0.35)):
             q = Point(cx, cy).buffer(r, 32).intersection(box(min(cx, cx + su * 3), min(cy, cy + sv * 3), max(cx, cx + su * 3), max(cy, cy + sv * 3)))
-            L.prism(mb, "pool_tile", q.intersection(pool), -1.40, z)
+            L.prism(mb, "tile_jade", q.intersection(pool), -1.40, z)
     # ---- deck: travertine planks -----------------------------------------------------------------
     bacs = unary_union([box(u0, va, u1, vb) for u0, u1, va, vb in BACS])
     beds = unary_union([BED_N, BED_W, BED_SW])

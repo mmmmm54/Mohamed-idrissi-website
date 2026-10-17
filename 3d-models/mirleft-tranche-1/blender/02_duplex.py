@@ -1,39 +1,60 @@
 """
-02_duplex — "DUPLEX JUMELEE" of the 1er TRANCHE, exterior only.
+02_duplex — the 'DUPLEX JUMELEE' of the 1er TRANCHE (12 pairs), exterior.
 
-Envelope, levels, openings, mashrabiya and ornaments from the permit drawings (2-DUPLEX.DWG): plans
-RDC / ETAGE / TERRASSE, FACADE PRINCIPALE / ARRIERE / GAUCHE / DROIT, coupes A-A and B-B.
-What the plan de masse 12-10 changes is applied on top, per block:
+Rev 4 (remarks on the D5 model, slides 7, 9 and 10): rebuilt to the architect's VILLA N°09 drawing
+(DUPLRX_N__09.dwg: plans RDC / 1er étage / terrasse, coupe A-A, façades principale, arrière and
+droite) and to the two reference images sent with the remarks (front view, rear view). One design for
+every pair; the drawing shows one villa, its neighbour is its mirror across the 'Axe limite villa'.
 
-  variant "A"  block 'ghghhg' (D-5 ... D-24, ten pairs): no stair cages on the roof; each house has a
-               spiral stair (diameter 1.65 m) on its etage terrace, next to the joint, up to the roof;
-               a timber pergola covers the whole etage terrace (slats every 0.395 m, beams on the rear
-               parapet line); technical shafts ('GT') at the front corners of the roof.
-  variant "B"  block 'jjjsdrf1554' (D-1 ... D-4, two pairs): as the permit, stair cages on the roof
-               ('Toiture-cage d'escalier'), pergola over the wing terrace ('V/Terrasse'), and the same
-               pergola over the etage terrace as variant A; 'GT' shafts.
-Both: the permit's garden-level rear pergola and terrace are not on the plan de masse (lawn up to
-the house), so they are not built; garden walls come from the plan (scene script).
+  RDC 84.32 m2: the front wing (bedroom), entrance door with its canopy next to the wing, kitchen
+      window (allège 1.00), salon window on the side, 4-leaf sliding door onto the garden; a row of
+      eight square niches across the rear at the terrace level.
+  1er 54.36 m2: set back 1.36 m behind the wing (front terrace, solid parapet with three niches) and
+      3.44 m behind the rear (rear terrace: masonry piers and wooden geometric railings, 'Cadre en
+      bois'); one window over the wing, one in the side part, a 2-leaf sliding door onto the rear
+      terrace; niches under the cornice.
+  Roof +7.10, cornice = grey stone ledge / ochre stone band / grey stone ledge, acrotère to +8.30
+      with a rounded coping; stair cage of the two villas over their stairs (+9.80) with the same
+      cornice, its roof door on the side, a small window at the back and horned corners; 'GT' ducts.
+  Timber pergolas over both terraces ('Pergola en bois', plan TERRASSE 'V/Terrasse').
+  Remark of slide 10: the two villas' terraces are separated by a wall on the joint (front terrace,
+      rear terrace and roof terrace), as the drawing shows it on the joint.
+  Window and door surrounds in taupe stone, cream frames, studded timber entrance door: from the
+      reference images. Low stone-clad front garden wall with its coping, gate pillars and gate
+      (façade principale), paved rear terrace (plan RDC).
 
-Local frame (metres): origin = joint axis on the line of the side-part front faces moved 3.47 m back,
-x along the pair (-8.10 .. +8.10, joint de dilatation at x = 0), y towards the rear garden, front
-(access side) = -y. z = 0 at the house pad, RDC floor +0.20, etage floor +3.70, roof +7.50,
-acrotère +8.30, stair cages +9.80.
-Interiors are not modelled (dark interior proxy behind the glass).
+Local frame (metres): origin on the joint axis, x along the pair (joint at x = 0, side faces at
++-8.19), y towards the rear garden with the side-part front faces at y = -3.47 (same origin as the
+previous model, so the plan de masse placements are unchanged): wing front -7.32, rear 5.55.
+z = 0 at the house pad (+0.00 of the drawing), RDC floor +0.20, terraces +3.90, roof +7.10,
+acrotère +8.30, stair cage +9.80. Interiors are not modelled (dark interior proxy behind the glass).
 """
 import math
 
+from shapely import affinity
 from shapely.geometry import Point, Polygon, box
 from shapely.ops import unary_union
 
 L = globals()["L"]          # lib module, injected by the scene script
 C = L.C
 
-Z_FL, Z1, Z2, Z_ACRO, Z_CAGE = 0.20, 3.70, 7.50, 8.30, 9.14
-RDC = unary_union([box(-8.10, -3.47, 8.10, 5.35), box(-3.52, -7.27, 3.52, -3.47)])
-ET = unary_union([box(-8.10, -3.47, 8.10, 2.05), box(-3.52, -5.87, 3.52, -3.47)])
-CAGE = box(-3.37, -1.91, 3.37, 2.04)
-REV = 0.20                  # reveal depth (outer leaf); frames sit 0.10 behind the face
+HX, WX = 8.19, 3.50                          # half width of the pair, half width of the two wings
+YW, YF, YR = -7.32, -3.47, 5.55              # RDC: wing front, side-part fronts, rear
+YWE, YRE = -5.96, 2.11                       # 1er étage: wing front, rear
+Z_FL, Z1, Z2 = 0.20, 3.90, 7.10              # RDC floor, terraces / 1er floor, roof
+Z_PF, Z_PR, Z_CURB = 4.90, 4.70, 3.98        # front parapet, rear piers and side parapets, railing curb
+Z_ACRO, Z_CW, Z_CTOP = 8.30, 9.03, 9.78      # acrotère, stair cage walls, stair cage top
+CX, CY0 = 3.09, -1.82                        # stair cage: half width, front face (rear = YRE)
+SEP = 0.17                                   # half thickness of the separation wall on the joint
+
+RDC = unary_union([box(-HX, YF, HX, YR), box(-WX, YW, WX, YF)])
+ET = unary_union([box(-HX, YF, HX, YRE), box(-WX, YWE, WX, YF)])
+CAGE = box(-CX, CY0, CX, YRE)
+REAR_TERRACE = box(-HX, YR, HX, 7.60)        # paved terrace behind the salons (plan RDC)
+FOOT = unary_union([RDC, REAR_TERRACE])      # what the scene keeps clear of trees
+PIERS = [(SEP, 0.40), (3.70, 4.50), (7.80, HX)]   # rear terrace edge, between them the railings
+REV = 0.20                                   # reveal depth; frames sit 0.10 behind the face
+COP = 0.04                                   # rounded coping on the parapets (height)
 
 
 def mirror_x(ops):
@@ -49,44 +70,56 @@ def mirror_x(ops):
     return out
 
 
+def mirror(g):
+    return unary_union([g, affinity.scale(g, xfact=-1.0, origin=(0, 0))])
+
+
 def op(axis, c, u0, u1, z0, z1, kind, n=1):
     return {"axis": axis, "c": c, "u0": u0, "u1": u1, "z0": z0, "z1": z1, "kind": kind, "n": n}
 
 
-# openings: axis 'y' = wall in the plane y = c (u = x); axis 'x' = wall in the plane x = c (u = y)
-OPENINGS = mirror_x([
-    # RDC front of the wing (FACADE PRINCIPALE): two french windows
-    op("y", -7.27, -2.65, -0.90, Z_FL, 2.70, "french", 2),
-    # RDC front of the side parts: entrance door next to the wing + glazed door
-    op("y", -3.47, -4.55, -3.70, Z_FL, 2.75, "door"),
-    # etage front of the side parts: two narrow windows each
-    op("y", -3.47, -6.78, -6.23, 4.10, 6.05, "window", 1),
-    op("y", -3.47, -5.43, -4.88, 4.10, 6.05, "window", 1),
-    # etage front of the wing: double windows behind the wing terrace
-    op("y", -5.87, -2.60, -0.85, 4.63, 6.00, "window", 2),
-    # RDC rear (FACADE ARRIERE): 6-leaf glazing per house onto the garden terrace
-    op("y", 5.35, -6.98, -0.65, Z_FL, 2.70, "slider", 6),
-    # etage rear: double window, glazed door to the terrace, narrow window
-    op("y", 2.05, -7.45, -5.20, 4.73, 6.12, "window", 2),
-    op("y", 2.05, -4.95, -4.00, 3.75, 6.20, "french", 1),
-    op("y", 2.05, -1.32, -0.87, 4.73, 6.00, "window", 1),
-    # end walls (FACADE GAUCHE / DROIT sizes, positions from the RDC plan)
-    op("x", -8.10, -2.27, -0.48, 0.96, 2.66, "window", 2),
-    op("x", -8.10, 1.03, 1.62, 0.82, 2.66, "window", 1),
-    op("x", -8.10, 3.46, 4.05, 0.82, 2.66, "window", 1),
-]) + [
-    # asymmetric on the drawing: left house double glazed door, right house single
-    op("y", -3.47, -6.87, -5.12, Z_FL, 2.70, "french", 2),
-    op("y", -3.47, 5.12, 6.02, Z_FL, 2.70, "french", 1),
-]
+def niche(axis, c, uc, z0, z1, w=0.20):
+    return op(axis, c, uc - w / 2, uc + w / 2, z0, z1, "niche")
 
-# mashrabiya gaps in parapets: (axis, c, u0, u1)
-GAP_RDC = [("y", 5.35, a, b) for a, b in [(-7.20, -4.60), (-3.53, -0.93), (0.93, 3.53), (4.60, 7.20)]] + \
-          [("y", -7.27, a, b) for a, b in [(-3.00, -0.52), (0.52, 3.00)]]
-GAP_ACRO = [("y", -3.47, a, b) for a, b in [(-6.76, -4.31), (4.31, 6.76)]] + \
-           [("y", -5.87, a, b) for a, b in [(-3.00, -0.55), (0.55, 3.00)]] + \
-           [("y", 2.05, a, b) for a, b in [(-6.95, -4.50), (4.50, 6.95)]] + \
-           [("x", -8.10, -1.91, 0.49), ("x", 8.10, -1.91, 0.49)]
+
+# openings of the east villa (x > 0), mirrored: axis 'y' = wall in the plane y = c (u = x),
+# axis 'x' = wall in the plane x = c (u = y). Sizes from the façades, positions from the plans.
+OPENINGS = mirror_x([
+    op("y", YW, 1.03, 2.51, 1.20, 2.35, "window", 2),          # RDC wing front (Ch 1)
+    op("y", YF, 3.65, 4.78, Z_FL, 2.55, "door"),               # entrance
+    op("y", YF, 5.20, 6.70, 1.20, 2.40, "window", 2),          # kitchen, allège 1.00
+    op("x", HX, 3.40, 4.90, 1.18, 2.38, "window", 2),          # salon, side
+    op("y", YR, 2.12, 6.14, Z_FL, 2.64, "slider", 4),          # salon onto the garden
+    op("y", YWE, 1.07, 2.48, 4.92, 6.04, "window", 2),         # 1er, over the wing (Ch 3)
+    op("y", YF, 5.69, 6.29, 4.92, 6.04, "sash"),               # 1er, side part (SDB)
+    op("y", YRE, 5.09, 7.59, Z1 + 0.02, 5.74, "slider", 2),    # Ch 2 onto the rear terrace
+    op("x", CX, -1.24, -0.54, Z2 + 0.02, 9.00, "roofdoor"),    # stair cage, roof door
+    op("y", YRE, 1.76, 2.14, 8.30, 8.70, "window"),            # stair cage, small rear window
+    # square niches (0.20 x 0.20, 0.10 deep)
+    *[niche("y", YW, x, 4.30, 4.50) for x in (0.675, 1.675, 2.675)],                 # front parapet
+    *[niche("y", YF, x, 6.71, 6.91) for x in (4.40, 5.16, 5.92, 6.68, 7.44)],         # under the cornice
+    *[niche("y", YR, x, 3.10, 3.30) for x in (0.43, 1.43, 2.43, 3.43, 4.43, 5.55, 6.55, 7.55)],
+    *[niche("x", HX, y, 6.23, 6.43) for y in (-2.27, -1.27, -0.26, 0.73, 1.74)],     # side, 1er
+    *[niche("x", WX, y, 6.23, 6.43) for y in (-5.59, -4.59)],                         # wing side, 1er
+    *[niche("x", CX, y, 8.80, 8.98) for y in (-0.10, 0.50, 1.10, 1.70)],              # stair cage
+])
+
+BREAK_X = sorted({s * v for v in (0.0, SEP, 0.40, 3.70, 4.50, 7.80, WX, HX, CX) for s in (1, -1)})
+BREAK_Y = sorted({YW, YWE, YF, YRE, YR, CY0})
+
+
+def rdc_top(x, y):
+    """Top of the RDC wall face at (x, y): the parapets of the two terraces carry the façade up."""
+    ax = abs(x)
+    if ax < SEP - 1e-6 and (y < YWE or y > YRE):
+        return Z1                                           # the separation wall takes over
+    if y < YWE - 1e-6 and ax <= WX + 1e-6:
+        return Z_PF - COP                                   # front terrace parapet
+    if y > YRE + 1e-6:
+        if abs(y - YR) < 1e-3:                              # rear edge: piers, railings between them
+            return Z_PR - COP if any(a - 1e-6 <= ax <= b + 1e-6 for a, b in PIERS) else Z_CURB
+        return Z_PR - COP                                   # side parapet of the rear terrace
+    return Z1
 
 
 def edges(poly):
@@ -96,89 +129,53 @@ def edges(poly):
     return list(zip(c, c[1:]))
 
 
-def wall(mb, p, q, z0, z1, mat="render"):
-    """Outer wall face p->q (CCW outline, outward normal on the right) with its openings."""
+def wall(mb, p, q, z0, ztop, mat="villa"):
+    """Outer wall face p->q (CCW outline, outward normal on the right) with its openings and niches.
+    ztop: a height, or a function (x, y) -> height, constant between the BREAK_X / BREAK_Y lines."""
     (ax, ay), (bx, by) = p, q
     Lg = math.dist(p, q)
     ux, uy = (bx - ax) / Lg, (by - ay) / Lg
     nx, ny = uy, -ux                                  # outward normal
     axis = "y" if abs(uy) < 1e-6 else "x"
     cst = ay if axis == "y" else ax
+    org, du = (ax, ux) if axis == "y" else (ay, uy)
+    if callable(ztop):
+        cuts = {0.0, Lg}
+        for v in (BREAK_X if axis == "y" else BREAK_Y):
+            s = (v - org) / du
+            if 1e-6 < s < Lg - 1e-6:
+                cuts.add(s)
+        cuts = sorted(cuts)
+        face = unary_union([box(a, z0, b, ztop(ax + ux * (a + b) / 2, ay + uy * (a + b) / 2))
+                            for a, b in zip(cuts, cuts[1:])])
+    else:
+        face = box(0, z0, Lg, ztop)
+    z1 = face.bounds[3]
     holes = []
     for o in OPENINGS:
         if o["axis"] != axis or abs(o["c"] - cst) > 0.03 or o["z1"] <= z0 or o["z0"] >= z1:
             continue
-        # u along the face from p
-        a = (o["u0"] - (ax if axis == "y" else ay)) / (ux if axis == "y" else uy)
-        b = (o["u1"] - (ax if axis == "y" else ay)) / (ux if axis == "y" else uy)
-        s0, s1 = sorted((a, b))
+        s0, s1 = sorted(((o["u0"] - org) / du, (o["u1"] - org) / du))
         if s0 < -0.01 or s1 > Lg + 0.01:
             continue
-        holes.append((s0, s1, max(o["z0"], z0), min(o["z1"], z1), o))
-    face = box(0, z0, Lg, z1)
+        holes.append((s0, s1, o["z0"], o["z1"], o))
     for s0, s1, h0, h1, _ in holes:
         face = face.difference(box(s0, h0, s1, h1))
     P3 = lambda s, z, d=0.0: (ax + ux * s - nx * d, ay + uy * s - ny * d, z)
     for t in L.tri_poly(face):
         mb.poly(mat, [P3(s, z) for s, z in t], [(s, z) for s, z in t])
     for s0, s1, h0, h1, o in holes:
-        # reveals (jambs, head, sill) facing into the opening
+        dep = 0.10 if o["kind"] == "niche" else REV
         for (sa, za), (sb, zb) in [((s0, h1), (s0, h0)), ((s1, h0), (s1, h1)), ((s1, h1), (s0, h1)), ((s0, h0), (s1, h0))]:
-            mb.poly(mat, [P3(sa, za), P3(sb, zb), P3(sb, zb, REV), P3(sa, za, REV)])
-        insert(mb, P3, s0, s1, h0, h1, o)
+            mb.poly(mat, [P3(sa, za), P3(sb, zb), P3(sb, zb, dep), P3(sa, za, dep)])
+        insert(mb, P3, s0, s1, h0, h1, o, mat)
     return holes
 
 
-def insert(mb, P3, s0, s1, z0, z1, o):
-    """Frame, mullions, glass, interior proxy, sill; or a timber door."""
-    d = 0.10
-    fr = 0.06
-
-    def rect(mat, a0, a1, b0, b1, dd, flip=False):
-        pts = [P3(a0, b0, dd), P3(a1, b0, dd), P3(a1, b1, dd), P3(a0, b1, dd)]
-        mb.poly(mat, pts[::-1] if flip else pts, [(a0, b0), (a1, b0), (a1, b1), (a0, b1)])
-
-    def frame_box(a0, a1, b0, b1, mat="bronze"):
-        for dd in (d - 0.03, d + 0.03):
-            rect(mat, a0, a1, b0, b1, dd, flip=dd > d)
-        mb.poly(mat, [P3(a0, b1, d - 0.03), P3(a1, b1, d - 0.03), P3(a1, b1, d + 0.03), P3(a0, b1, d + 0.03)])
-        mb.poly(mat, [P3(a1, b0, d - 0.03), P3(a0, b0, d - 0.03), P3(a0, b0, d + 0.03), P3(a1, b0, d + 0.03)])
-        mb.poly(mat, [P3(a0, b0, d - 0.03), P3(a0, b1, d - 0.03), P3(a0, b1, d + 0.03), P3(a0, b0, d + 0.03)])
-        mb.poly(mat, [P3(a1, b1, d - 0.03), P3(a1, b0, d - 0.03), P3(a1, b0, d + 0.03), P3(a1, b1, d + 0.03)])
-
-    rect("interior", s0 - 0.3, s1 + 0.3, z0 - 0.3, z1 + 0.3, 0.75)
-    if o["kind"] == "door":
-        rect("door_wood", s0, s1, z0, z1, d)
-        w = s1 - s0
-        rect("glass", s0 + w * 0.62, s0 + w * 0.80, z0 + 0.25, z1 - 0.25, d - 0.01)
-        frame_box(s0, s1, z1 - fr, z1)
-        frame_box(s0, s0 + fr, z0, z1)
-        frame_box(s1 - fr, s1, z0, z1)
-        return
-    rect("glass", s0, s1, z0, z1, d)
-    frame_box(s0, s1, z0, z0 + fr)
-    frame_box(s0, s1, z1 - fr, z1)
-    frame_box(s0, s0 + fr, z0, z1)
-    frame_box(s1 - fr, s1, z0, z1)
-    n = o["n"]
-    for k in range(1, n):
-        s = s0 + (s1 - s0) * k / n
-        frame_box(s - fr / 2, s + fr / 2, z0, z1)
-    if o["kind"] == "window":
-        # stone sill + moulded surround (trim), proud of the face
-        for (a0, a1, b0, b1, pd) in [(s0 - 0.12, s1 + 0.12, z0 - 0.08, z0, 0.06),
-                                     (s0 - 0.12, s0, z0, z1 + 0.12, 0.035), (s1, s1 + 0.12, z0, z1 + 0.12, 0.035),
-                                     (s0, s1, z1, z1 + 0.12, 0.035)]:
-            proud_box(mb, P3, a0, a1, b0, b1, pd, "trim")
-    else:
-        for (a0, a1, b0, b1) in [(s0 - 0.10, s0, z0, z1 + 0.10), (s1, s1 + 0.10, z0, z1 + 0.10), (s0, s1, z1, z1 + 0.10)]:
-            proud_box(mb, P3, a0, a1, b0, b1, 0.03, "trim")
-
-
-def proud_box(mb, P3, a0, a1, b0, b1, pd, mat):
-    """Box standing proud of the wall face by pd (face plane d = 0)."""
-    f = lambda a, b: P3(a, b, -pd)
-    w = lambda a, b: P3(a, b, 0.02)
+def pbox(mb, P3, a0, a1, b0, b1, df, db, mat):
+    """Box in wall coordinates between depths df (front, < db) and db; df < 0 stands proud."""
+    f = lambda a, b: P3(a, b, df)
+    w = lambda a, b: P3(a, b, db)
     mb.poly(mat, [f(a0, b0), f(a1, b0), f(a1, b1), f(a0, b1)], [(a0, b0), (a1, b0), (a1, b1), (a0, b1)])
     mb.poly(mat, [w(a0, b1), f(a0, b1), f(a1, b1), w(a1, b1)])
     mb.poly(mat, [w(a1, b0), f(a1, b0), f(a0, b0), w(a0, b0)])
@@ -186,209 +183,283 @@ def proud_box(mb, P3, a0, a1, b0, b1, pd, mat):
     mb.poly(mat, [w(a1, b1), f(a1, b1), f(a1, b0), w(a1, b0)])
 
 
-def face_box(mb, axis, c, out_sign, u0, u1, z0, z1, pd, mat):
-    """Proud box on a wall plane: axis 'y' -> plane y=c, outward = out_sign * y."""
-    if axis == "y":
-        y0, y1 = sorted((c - out_sign * 0.02, c + out_sign * pd))
-        mb.box(mat, u0, u1, y0, y1, z0, z1)
-    else:
-        x0, x1 = sorted((c - out_sign * 0.02, c + out_sign * pd))
-        mb.box(mat, x0, x1, u0, u1, z0, z1)
+def insert(mb, P3, s0, s1, z0, z1, o, wall_mat):
+    """What fills an opening: niche back, or frame + leaves + glass + curtains + stone surround,
+    or the studded entrance door with its canopy, or the stair cage's roof door."""
+    kind = o["kind"]
+    d = 0.10                                          # frame plane
+    fr = 0.06
+
+    def rect(mat, a0, a1, b0, b1, dd):
+        mb.poly(mat, [P3(a0, b0, dd), P3(a1, b0, dd), P3(a1, b1, dd), P3(a0, b1, dd)], [(a0, b0), (a1, b0), (a1, b1), (a0, b1)])
+
+    def frame(a0, a1, b0, b1, mat="frame"):
+        pbox(mb, P3, a0, a1, b0, b1, d - 0.03, d + 0.03, mat)
+
+    if kind == "niche":
+        rect(wall_mat, s0, s1, z0, z1, 0.10)
+        return
+    rect("interior", s0 - 0.3, s1 + 0.3, z0 - 0.3, z1 + 0.3, 0.75)
+    if kind == "door":
+        rect("surround", s0, s1, z0, z1, d + 0.03)                         # stone behind the arched head
+        fw, rise = 0.07, 0.16
+        a0, a1, top = s0 + fw, s1 - fw, z1 - fw
+        arc = [(a0 + (a1 - a0) * k / 12, top - rise + rise * math.sin(math.pi * k / 12)) for k in range(13)]
+        leaf = Polygon([(a0, z0), (a1, z0)] + arc[::-1]).buffer(0)
+        for t in L.tri_poly(leaf):
+            mb.poly("door_wood", [P3(a, b, d) for a, b in t], [(a, b) for a, b in t])
+        frame(s0, s0 + fw, z0, z1 - fw, "surround")
+        frame(s1 - fw, s1, z0, z1 - fw, "surround")
+        frame(s0, s1, z1 - fw, z1, "surround")
+        nx_, nz_ = 6, 13                                                   # studs
+        for i in range(nx_):
+            for j in range(nz_):
+                a = a0 + 0.10 + (a1 - a0 - 0.20) * i / (nx_ - 1)
+                b = z0 + 0.15 + (top - rise - z0 - 0.25) * j / (nz_ - 1)
+                pbox(mb, P3, a - 0.012, a + 0.012, b - 0.012, b + 0.012, d - 0.018, d, "metal_dark")
+        hz_ = z0 + 1.05
+        pbox(mb, P3, a1 - 0.16, a1 - 0.12, hz_ - 0.12, hz_ + 0.12, d - 0.05, d, "metal_dark")   # ring pull
+        # canopy (façade principale +2.67 / +2.96, reference images): stone slab with a sloped top
+        c0, c1 = s0 - 0.15, s1 + 0.17
+        prof = Polygon([(-0.02, z1 + 0.10), (-0.02, z1 + 0.42), (0.20, z1 + 0.40), (0.44, z1 + 0.27), (0.44, z1 + 0.10)])
+        ext(mb, "surround", prof, lambda a, b, w: P3(w, b, -a), c0, c1)
+        return
+    if kind == "roofdoor":
+        rect("door_wood", s0, s1, z0, z1, d)
+        frame(s0, s1, z1 - fr, z1)
+        frame(s0, s0 + fr, z0, z1 - fr)
+        frame(s1 - fr, s1, z0, z1 - fr)
+        return
+    rect("glass", s0, s1, z0, z1, d)
+    frame(s0, s1, z0, z0 + fr)                        # frames butt-jointed: no overlapping faces
+    frame(s0, s1, z1 - fr, z1)
+    frame(s0, s0 + fr, z0 + fr, z1 - fr)
+    frame(s1 - fr, s1, z0 + fr, z1 - fr)
+    n = o["n"]
+    for k in range(1, n):
+        s = s0 + (s1 - s0) * k / n
+        frame(s - fr / 2, s + fr / 2, z0 + fr, z1 - fr)
+    if kind == "sash":
+        zm = z0 + (z1 - z0) * 0.52
+        frame(s0 + fr, s1 - fr, zm - fr / 2, zm + fr / 2)
+        frame((s0 + s1) / 2 - 0.015, (s0 + s1) / 2 + 0.015, zm + fr / 2, z1 - fr)
+    # curtains drawn to the sides (reference images)
+    cw = (s1 - s0) * (0.17 if kind == "slider" else 0.26)
+    rect("curtain", s0 + fr, s0 + fr + cw, z0 + 0.03, z1 - 0.03, 0.30)
+    rect("curtain", s1 - fr - cw, s1 - fr, z0 + 0.03, z1 - 0.03, 0.30)
+    # stone surround, 0.20 wide, standing 0.04 proud; windows also get the sill piece
+    w_, top = (0.18, 0.20) if kind == "slider" else (0.20, 0.23)
+    b0 = z0 if kind == "slider" else z0 - 0.20
+    pbox(mb, P3, s0 - w_, s0, b0, z1 + top, -0.04, 0.02, "surround")
+    pbox(mb, P3, s1, s1 + w_, b0, z1 + top, -0.04, 0.02, "surround")
+    pbox(mb, P3, s0, s1, z1, z1 + top, -0.04, 0.02, "surround")
+    if kind != "slider":
+        pbox(mb, P3, s0, s1, z0 - 0.20, z0, -0.04, 0.02, "surround")
 
 
-def gap_rects(gaps, t_in, t_out=0.3):
-    out = []
-    for axis, c, a, b in gaps:
-        if axis == "y":
-            out.append(box(a, c - t_in - t_out if c > 0 else c - t_out, b, c + t_out if c > 0 else c + t_in + t_out))
-        else:
-            out.append(box(c - t_in - t_out if c > 0 else c - t_out, a, c + t_out if c > 0 else c + t_in + t_out, b))
-    return unary_union(out)
+def ext(mb, mat, poly, P, w0, w1):
+    """Extrude a 2D (Multi)Polygon in (a, b) from w0 to w1; P(a, b, w) -> (x, y, z), any affine map."""
+    o = P(0.0, 0.0, 0.0)
+    A = [P(1.0, 0.0, 0.0)[i] - o[i] for i in range(3)]
+    B = [P(0.0, 1.0, 0.0)[i] - o[i] for i in range(3)]
+    W = [P(0.0, 0.0, 1.0)[i] - o[i] for i in range(3)]
+    cr = (A[1] * B[2] - A[2] * B[1], A[2] * B[0] - A[0] * B[2], A[0] * B[1] - A[1] * B[0])
+    flip = (cr[0] * W[0] + cr[1] * W[1] + cr[2] * W[2]) * (w1 - w0) < 0
+    fix = (lambda pts: pts[::-1]) if flip else (lambda pts: pts)
+    for pg in L.as_polys(poly):
+        for t in L.tri_poly(pg):
+            mb.poly(mat, fix([P(a, b, w1) for a, b in t]), fix([(a, b) for a, b in t]))
+            mb.poly(mat, fix([P(a, b, w0) for a, b in t[::-1]]), fix([(a, b) for a, b in t[::-1]]))
+        for k, ring in enumerate([pg.exterior] + list(pg.interiors)):
+            c = list(ring.coords)
+            if ring.is_ccw == (k > 0):
+                c = c[::-1]
+            u = 0.0
+            for (pa, pb), (qa, qb) in zip(c, c[1:]):
+                lg = math.dist((pa, pb), (qa, qb))
+                if lg < 1e-6:
+                    continue
+                mb.poly(mat, fix([P(pa, pb, w0), P(qa, qb, w0), P(qa, qb, w1), P(pa, pb, w1)]),
+                        fix([(u, w0), (u + lg, w0), (u + lg, w1), (u, w1)]))
+                u += lg
 
 
-def mashrabiya(mb, axis, c, u0, u1, z0, z1, inset):
-    """Lattice panel (alpha-cut texture) as two faces 3 cm apart, inset from the face."""
-    sgn = 1 if c > 0 else -1
-    for k, off in enumerate((inset, inset + 0.03)):
-        cc = c - sgn * off
-        uv = [(u0 / 0.5, z0 / 0.5), (u1 / 0.5, z0 / 0.5), (u1 / 0.5, z1 / 0.5), (u0 / 0.5, z1 / 0.5)]
-        if axis == "y":
-            pts = [(u0, cc, z0), (u1, cc, z0), (u1, cc, z1), (u0, cc, z1)]
-        else:
-            pts = [(cc, u0, z0), (cc, u1, z0), (cc, u1, z1), (cc, u0, z1)]
-        if (sgn < 0) == (k == 0) if axis == "y" else (sgn > 0) == (k == 0):
-            mb.poly("mashrabiya", pts, uv)
-        else:
-            mb.poly("mashrabiya", pts[::-1], uv[::-1])
-    # thin timber frame around the panel
-    for (a0, a1, b0, b1) in [(u0, u1, z0 - 0.04, z0), (u0, u1, z1, z1 + 0.04), (u0 - 0.04, u0, z0 - 0.04, z1 + 0.04), (u1, u1 + 0.04, z0 - 0.04, z1 + 0.04)]:
-        if axis == "y":
-            mb.box("mashrabiya_frame", a0, a1, c - sgn * (inset + 0.05), c - sgn * (inset - 0.02), b0, b1)
-        else:
-            mb.box("mashrabiya_frame", c - sgn * (inset + 0.05), c - sgn * (inset - 0.02), a0, a1, b0, b1)
+def prism_open(mb, mat, poly, z0, z1):
+    """L.prism without the side faces that lie on the RDC outline (those come from wall())."""
+    bound = RDC.exterior
+    for pg in L.as_polys(poly):
+        for t in L.tri_poly(pg):
+            mb.poly(mat, [(x, y, z1) for x, y in t], [(x, y) for x, y in t])
+        for k, ring in enumerate([pg.exterior] + list(pg.interiors)):
+            c = list(ring.coords)
+            if ring.is_ccw == (k > 0):
+                c = c[::-1]
+            for (ax_, ay_), (bx_, by_) in zip(c, c[1:]):
+                lg = math.dist((ax_, ay_), (bx_, by_))
+                if lg < 1e-6:
+                    continue
+                mid = ((ax_ + bx_) / 2, (ay_ + by_) / 2)
+                if all(bound.distance(Point(pt)) < 1e-4 for pt in ((ax_, ay_), (bx_, by_), mid)):
+                    continue
+                mb.poly(mat, [(ax_, ay_, z0), (bx_, by_, z0), (bx_, by_, z1), (ax_, ay_, z1)], [(0, z0), (lg, z0), (lg, z1), (0, z1)])
 
 
-def spiral(mb, c, R, z0, z1, hand):
-    """Steel spiral stair: central post, 19 timber treads (16 per turn), helical handrail on
-    balusters; the last tread points to the roof (-y)."""
-    cx, cy = c
-    n = int(round((z1 - z0) / 0.20))
-    rise = (z1 - z0) / n
-    step = 2 * math.pi / 16
-    a_end = -math.pi / 2                                     # last tread towards -y (the roof)
-    a0 = a_end - hand * step * (n - 1)
-    seg = 4
+def coping(mb, mat, poly, ztop, h=COP):
+    """Rounded top: two thinner slices above the wall body (which stops at ztop - h)."""
+    L.prism(mb, mat, poly.buffer(-0.022, join_style=1), ztop - h, ztop - h * 0.35)
+    L.prism(mb, mat, poly.buffer(-0.065, join_style=1), ztop - h * 0.35, ztop)
+
+
+def rafter(mb, s, x0, x1, ya, yb, z0, z1, mat="timber"):
+    """Pergola rafter along y from ya (wall) to yb (free end, cut with a bevel underneath)."""
+    sg = 1 if yb > ya else -1
+    prof = Polygon([(ya, z0), (yb - sg * 0.16, z0), (yb, z1 - 0.06), (yb, z1), (ya, z1)])
+    ext(mb, mat, prof, lambda a, b, w: (s * w, a, b), x0, x1)
+
+
+def railing(mb, s, a, b, y0, y1, z0, z1, mat="timber"):
+    """Wooden geometric railing ('Cadre en bois', façade arrière) between x = a and x = b."""
+    t = 0.05
+    X = lambda u: s * u
+    n = max(1, round((b - a) / 1.10))
+    wpan = (b - a) / n
+    h = z1 - z0
+    for i in range(n + 1):                                          # posts
+        u = a + wpan * i
+        mb.box(mat, X(max(a, u - t / 2)), X(min(b, u + t / 2)), y0, y1, z0, z1)
+    for zz in (z0, z0 + h / 3 - t / 2, z0 + 2 * h / 3 - t / 2, z1 - t):   # rails
+        mb.box(mat, X(a), X(b), y0, y1, zz, zz + t)
     for i in range(n):
-        a = a0 + hand * step * i
-        z = z0 + rise * (i + 1)
-        pts = [(cx, cy)] + [(cx + R * math.cos(a + hand * step * k / seg), cy + R * math.sin(a + hand * step * k / seg)) for k in range(seg + 1)]
-        L.prism(mb, "timber", Polygon(pts).buffer(0), z - 0.05, z)
-        bx, by = cx + (R - 0.05) * math.cos(a), cy + (R - 0.05) * math.sin(a)
-        mb.box("metal_dark", bx - 0.015, bx + 0.015, by - 0.015, by + 0.015, z, z + 0.90)
-    L.prism(mb, "metal_dark", Point(cx, cy).buffer(0.07, 12), z0, z1 + 1.0)
-    prev = None
-    for i in range(n * 4 + 1):
-        a = a0 + hand * step * i / 4
-        z = z0 + rise * (1 + i / 4) + 0.90
-        p = (cx + (R - 0.05) * math.cos(a), cy + (R - 0.05) * math.sin(a), z)
-        if prev is not None:
-            q, r = prev, p
-            mb.poly("metal_dark", [(q[0], q[1], q[2] - 0.025), (r[0], r[1], r[2] - 0.025), (r[0], r[1], r[2] + 0.025), (q[0], q[1], q[2] + 0.025)])
-            mb.poly("metal_dark", [(q[0], q[1], q[2] + 0.025), (r[0], r[1], r[2] + 0.025), (r[0], r[1], r[2] - 0.025), (q[0], q[1], q[2] - 0.025)])
-        prev = p
+        u0, u1 = a + wpan * i, a + wpan * (i + 1)
+        for f in (0.30, 0.70):                                      # verticals of the top and bottom bands
+            uc = u0 + (u1 - u0) * f
+            mb.box(mat, X(uc - t / 2), X(uc + t / 2), y0, y1, z0, z0 + h / 3)
+            mb.box(mat, X(uc - t / 2), X(uc + t / 2), y0, y1, z0 + 2 * h / 3, z1)
+        ia, ib = u0 + 0.16, u1 - 0.16                               # nested rectangle in the middle band
+        za, zb = z0 + h / 3 + 0.05, z0 + 2 * h / 3 - 0.08
+        mb.box(mat, X(ia), X(ib), y0, y1, za, za + 0.035)
+        mb.box(mat, X(ia), X(ib), y0, y1, zb - 0.035, zb)
+        mb.box(mat, X(ia), X(ia + 0.035), y0, y1, za, zb)
+        mb.box(mat, X(ib - 0.035), X(ib), y0, y1, za, zb)
+
+
+def horn(mb, poly_uv, P):
+    ext(mb, "villa", poly_uv, P, 0.0, 0.20)
 
 
 def build(M, col, variant="A"):
-    import bpy
+    """One design for the whole tranche (the variant name is kept for the scene's placements)."""
     mb = C.MeshBuilder()
     M = dict(M)
-    M["mashrabiya_frame"] = M["timber"]
-    # ---- walls with openings ------------------------------------------------------------------
+
+    # ---- façades with their openings and niches -----------------------------------------------
     for p, q in edges(RDC):
-        wall(mb, p, q, 0.0, Z1)
+        wall(mb, p, q, -1.00, rdc_top)                       # down to the foundation: the ground slopes
     for p, q in edges(ET):
         wall(mb, p, q, Z1, Z2)
-    # plinth (proud 4 cm) and roof caps
-    L.prism(mb, "render_dark", RDC.buffer(0.04, join_style=2).difference(RDC.buffer(-0.05, join_style=2)), -1.00, Z_FL)
+    for p, q in edges(CAGE):
+        wall(mb, p, q, Z2, Z_CW)
+
+    # ---- terraces: floors, parapets, piers, separation walls on the joint -----------------------
     L.prism(mb, "terrace", RDC.difference(ET.buffer(-0.01, join_style=2)), Z1 - 0.01, Z1, sides=False)
-    cage = CAGE if variant == "B" else Polygon()
-    L.prism(mb, "roof", ET.buffer(-0.19, join_style=2).difference(cage), Z2 - 0.01, Z2, sides=False)
+    front = mirror(unary_union([box(SEP, YW, WX, YW + 0.20), box(WX - 0.20, YW, WX, YWE - 0.002)]))
+    prism_open(mb, "villa", front, Z1, Z_PF - COP)
+    coping(mb, "villa", front, Z_PF)
+    high = [box(HX - 0.20, YRE + 0.002, HX, YR)] + [box(a, YR - 0.20, b, YR) for a, b in PIERS]
+    high = mirror(unary_union(high))
+    prism_open(mb, "villa", high, Z1, Z_PR - COP)
+    coping(mb, "villa", high, Z_PR)
+    spans = [(PIERS[i][1], PIERS[i + 1][0]) for i in range(len(PIERS) - 1)]
+    curb = mirror(unary_union([box(a, YR - 0.20, b, YR) for a, b in spans]))
+    prism_open(mb, "villa", curb, Z1, Z_CURB)
+    for s in (1, -1):
+        for a, b in spans:
+            railing(mb, s, a, b, YR - 0.125, YR - 0.075, Z_CURB, Z_PR)
+    sep_f = box(-SEP, YW, SEP, YWE - 0.002)                  # remark slide 10: up to the pergola
+    L.prism(mb, "villa", sep_f, Z1, 7.20 - COP)
+    coping(mb, "villa", sep_f, 7.20)
+    sep_r = box(-SEP, YRE + 0.002, SEP, YR)
+    L.prism(mb, "villa", sep_r, Z1, 6.90 - COP)
+    coping(mb, "villa", sep_r, 6.90)
 
-    # ---- RDC-roof terrace parapets (rear terrace, wing terrace) -------------------------------
-    t = 0.20
-    rdc_par = unary_union([box(-8.10, 5.35 - t, 8.10, 5.35), box(-8.10, 2.05, -8.10 + t, 5.35), box(8.10 - t, 2.05, 8.10, 5.35),
-                           box(-3.52, -7.27, 3.52, -7.27 + t), box(-3.52, -7.27, -3.52 + t, -5.87), box(3.52 - t, -7.27, 3.52, -5.87)])
-    rdc_par = rdc_par.difference(gap_rects(GAP_RDC, t))
-    L.prism(mb, "render", rdc_par, Z1, 4.90)
-    L.prism(mb, "trim", rdc_par.buffer(0.03, join_style=2), 4.90, 4.97)
-    for axis, c, a, b in GAP_RDC:
-        mashrabiya(mb, axis, c, a, b, 3.85, 4.72, 0.06)
-    # divider between the two houses on the RDC roof (the garden walls come from the plan)
-    mb.box("render", -0.22, 0.22, 2.05, 5.35, Z1, 5.50)
-    mb.box("trim", -0.25, 0.25, 2.05, 5.38, 5.50, 5.57)
+    # ---- cornice (grey ledge / ochre stone band / grey ledge), acrotère with rounded coping -----
+    for z0, z1, pd, mat in [(7.22, 7.30, 0.13, "ledge"), (7.30, 7.46, 0.10, "band"), (7.46, 7.62, 0.16, "ledge")]:
+        L.prism(mb, mat, ET.buffer(pd, join_style=2).difference(ET), z0, z1, bottom=True)
+    ring = ET.difference(ET.buffer(-0.30, join_style=2)).difference(CAGE)
+    L.prism(mb, "villa", ring, Z2, 7.62)
+    soft = ET.buffer(-0.12, join_style=2).buffer(0.12, join_style=1)        # rounded outer corners
+    ring_s = soft.difference(ET.buffer(-0.30, join_style=2)).difference(CAGE)
+    L.prism(mb, "villa", ring_s, 7.62, Z_ACRO - 0.12)
+    L.prism(mb, "villa", ring_s.buffer(-0.02, join_style=1), Z_ACRO - 0.12, Z_ACRO - 0.06)
+    L.prism(mb, "villa", ring_s.buffer(-0.06, join_style=1), Z_ACRO - 0.06, Z_ACRO - 0.02)
+    L.prism(mb, "villa", ring_s.buffer(-0.10, join_style=1), Z_ACRO - 0.02, Z_ACRO)
+    L.prism(mb, "terrace", ET.buffer(-0.30, join_style=2).difference(CAGE), Z2 - 0.01, Z2, sides=False)
+    # roof terraces of the two villas separated on the joint (plan TERRASSE), lower than the acrotère
+    sep_t = box(-0.15, YWE + 0.10, 0.15, CY0 - 0.002)
+    L.prism(mb, "villa", sep_t, Z2, 8.12 - COP)
+    coping(mb, "villa", sep_t, 8.12)
 
-    # ---- acrotère with mashrabiya, cornices ---------------------------------------------------
-    acro = L.ring_poly(ET, 0.20).difference(gap_rects(GAP_ACRO, 0.20))
-    if variant == "A":         # where the spiral stairs reach the roof: openings in the rear acrotère
-        gaps = unary_union([box(min(sx * 0.45, sx * 1.65), 1.70, max(sx * 0.45, sx * 1.65), 2.30) for sx in (-1, 1)])
-        acro = acro.difference(gaps)
-        L.prism(mb, "roof", gaps.intersection(ET).difference(ET.buffer(-0.19, join_style=2)), Z2 - 0.01, Z2, sides=False)
-    L.prism(mb, "render", acro, Z2, 8.19)
-    L.prism(mb, "trim", acro.buffer(0.04, join_style=2).intersection(ET.buffer(0.04, join_style=2)).difference(ET.buffer(-0.24, join_style=2)), 8.19, Z_ACRO)
-    for axis, c, a, b in GAP_ACRO:
-        mashrabiya(mb, axis, c, a, b, 7.52, 7.97, 0.06)
-        g = gap_rects([(axis, c, a, b)], 0.2, 0.0)
-        L.prism(mb, "trim", g.buffer(0.0), 7.97, 8.05)
-    for z0, z1, pd in [(7.05, 7.20, 0.06), (7.20, 7.40, 0.14)]:
-        L.prism(mb, "trim", ET.buffer(pd, join_style=2).difference(ET.buffer(-0.05, join_style=2)), z0, z1)
-    L.prism(mb, "trim", RDC.buffer(0.05, join_style=2).difference(RDC.buffer(-0.05, join_style=2)).difference(ET.buffer(0.2, join_style=2)), 3.52, 3.70)
+    # ---- stair cage (+9.80): cornice, parapet, horned corners ------------------------------------
+    for z0, z1, pd, mat in [(Z_CW, 9.10, 0.08, "ledge"), (9.10, 9.24, 0.07, "band"), (9.24, 9.40, 0.13, "ledge")]:
+        L.prism(mb, mat, CAGE.buffer(pd, join_style=2).difference(CAGE), z0, z1, bottom=True)
+    cring = CAGE.difference(CAGE.buffer(-0.20, join_style=2))
+    L.prism(mb, "villa", cring, Z_CW, Z_CTOP - 0.08)
+    coping(mb, "villa", cring, Z_CTOP, 0.08)
+    L.prism(mb, "roof", CAGE.buffer(-0.20, join_style=2), 9.39, 9.40, sides=False)
+    us = [0.95 - 0.75 * k / 12 for k in range(13)]                         # crest: +9.80 -> about +10.15
+    prof = Polygon([(0.0, 9.70), (0.95, 9.70)] + [(u, Z_CTOP + 0.36 * ((0.95 - u) / 0.75) ** 1.6) for u in us]
+                   + [(0.07, 10.14), (0.0, 10.08)])
+    prof_b = prof.intersection(box(0.20, 9.0, 1.0, 11.0))
+    for sx in (1, -1):
+        for yc, sy in ((CY0, 1), (YRE, -1)):
+            horn(mb, prof, lambda a, b, w, sx=sx, yc=yc, sy=sy: (sx * (CX - a), yc + sy * w, b))
+            horn(mb, prof_b, lambda a, b, w, sx=sx, yc=yc, sy=sy: (sx * (CX - w), yc + sy * a, b))
 
-    # ---- stair cages (+9.80): walls, two-step cornice, crown with corner horns ----------------
-    if variant == "B":
-        L.prism(mb, "render", CAGE, Z2, Z_CAGE)
-        for z0, z1, pd in [(9.14, 9.28, 0.15), (9.28, 9.54, 0.40)]:
-            L.prism(mb, "trim", CAGE.buffer(pd, join_style=2), z0, z1, bottom=True)
-        crown = L.ring_poly(CAGE.buffer(0.10, join_style=2), 0.20)
-        L.prism(mb, "render", crown, 9.54, 9.90)
-        L.prism(mb, "trim", crown.buffer(0.03, join_style=2).difference(CAGE.buffer(-0.13, join_style=2)), 9.90, 9.96)
-        for sx in (-1, 1):
-            for sy, yc in ((-1, -1.91), (1, 2.04)):
-                x0 = sx * 3.49 - (0.49 if sx > 0 else 0)
-                y0 = yc + sy * 0.12 - (0.49 if sy > 0 else 0)
-                mb.box("render", x0, x0 + 0.49, y0, y0 + 0.49, 9.545, 10.12)
-                mb.box("trim", x0 - 0.03, x0 + 0.52, y0 - 0.03, y0 + 0.52, 10.12, 10.20)
-        mb.box("render", -0.20, 0.20, -1.91, 2.04, 9.54, 9.90)       # joint between the two cages
+    # ---- 'GT' ducts on the roof ------------------------------------------------------------------
+    for s in (1, -1):
+        mb.box("villa", s * 7.36, s * 7.89, -3.17, -2.97, Z2, 8.12)
+        ext(mb, "villa", Polygon([(-3.17, 8.12)] + [(-3.07 - 0.10 * math.cos(math.pi * k / 8), 8.12 + 0.10 * math.sin(math.pi * k / 8)) for k in range(9)][1:] + [(-2.97, 8.12)]),
+            lambda a, b, w, s=s: (s * w, a, b), 7.36, 7.89)
+        mb.box("villa", s * 0.23, s * 0.92, -2.25, CY0 - 0.002, Z2, 7.80)
+        mb.box("ledge", s * 0.20, s * 0.95, -2.28, CY0 - 0.002, 7.80, 7.86)
 
-    # ---- square ornaments (0.20 x 0.20) -------------------------------------------------------
-    for x in (-7.43, -6.43, -5.42, -4.43):
-        for s in (1, -1):
-            face_box(mb, "y", -3.47, -1, s * x - 0.10, s * x + 0.10, 6.75, 6.95, 0.03, "trim")
-    for k in range(7):
-        for s in (1, -1):
-            xr = s * (0.41 + k)
-            face_box(mb, "y", 5.35, 1, xr - 0.10, xr + 0.10, 3.18, 3.38, 0.03, "trim")
-            xe = s * (0.85 + k)
-            face_box(mb, "y", 2.05, 1, xe - 0.10, xe + 0.10, 6.54, 6.74, 0.03, "trim")
-    for k in range(-2, 3):
-        y = -0.71 + k
-        for sx in (-8.10, 8.10):
-            face_box(mb, "x", sx, 1 if sx > 0 else -1, y - 0.10, y + 0.10, 6.45, 6.65, 0.03, "trim")
-    for x in (-3, -2, -1, 1, 2, 3) if variant == "B" else ():
-        face_box(mb, "y", -1.91, -1, x - 0.10, x + 0.10, 8.60, 8.80, 0.03, "trim")
-        face_box(mb, "y", 2.04, 1, x - 0.10, x + 0.10, 8.60, 8.80, 0.03, "trim")
-    face_box(mb, "y", 5.35, 1, -0.20, 0.20, 0.0, 7.40, 0.05, "render")          # axis pilaster, rear
-
-    # ---- etage-terrace pergola (plan de masse 12-10, 'Menuiserie Bois' / 'V/Terrasse') ---------
+    # ---- pergolas (timber): rear terrace (15 rafters) and front terrace (7 rafters) ---------------
     T = "timber"
-    stair_zone = [(0.20, 1.95)] if variant == "A" else []        # |x| range kept clear for the spiral stair
-    def clear(x0, x1):
-        return not any(a < abs((x0 + x1) / 2) < b for a, b in stair_zone)
-    # wall plate on the etage rear wall, rear beam on posts standing on the RDC-roof parapet line
-    for a, b in ((-8.10, -1.95), (-0.20, 0.20), (1.95, 8.10)) if variant == "A" else ((-8.10, 8.10),):
-        mb.box(T, a, b, 2.05, 2.20, 6.45, 6.70)
-    mb.box(T, -8.10, 8.10, 4.88, 5.03, 6.45, 6.70)
-    for x in (-7.95, -4.20, -0.32, 0.32, 4.20, 7.95):
-        mb.box(T, x - 0.08, x + 0.08, 4.88, 5.03, Z1, 6.45)
-    xs = [-8.08 + 0.395 * i for i in range(41)]
-    for x in xs:
-        if abs(x + 0.025) < 0.25:
-            continue                                               # joint wall stands there
-        y0 = 2.05 if clear(x, x + 0.05) else 3.80
-        mb.box(T, x, x + 0.05, y0, 5.30, 6.70, 6.85)
-    if variant == "B":
-        # front of the wing (wing etage terrace): wall plate, beam, rafters (permit, plan TERRASSE)
-        mb.box(T, -3.53, 3.47, -6.02, -5.87, 6.45, 6.70)
-        mb.box(T, -3.53, 3.47, -7.18, -7.03, 6.33, 6.70)
-        for i in range(16):
-            x = -3.53 + 0.4686 * i
-            mb.box(T, x, x + 0.15, -7.46, -5.87, 6.70, 6.88)
-        for x in (-3.52, 3.32):
-            mb.box("render", x, x + 0.20, -7.25, -7.05, 4.90, 6.33)
-    # canopies over the side doors (hatched band on FACADE PRINCIPALE, z 2.85-3.65)
-    for s in (-1, 1):
-        a, b = sorted((s * 4.69, s * 7.29))
-        for x in (a, b - 0.10):
-            mb.box(T, x, x + 0.10, -4.47, -3.47, 3.30, 3.62)
-        for i in range(11):
-            x = a + (b - a - 0.06) * i / 10
-            mb.box(T, x, x + 0.06, -4.47, -3.47, 3.62, 3.68)
-        mashrabiya(mb, "y", -4.47, a + 0.10, b - 0.10, 2.92, 3.55, 0.0)
+    for s in (1, -1):
+        X = lambda u, s=s: s * u
+        for xc in (0.30, 3.02, 5.21, 7.96):
+            mb.box(T, X(xc - 0.065), X(xc + 0.065), 4.455, 4.585, Z1, 6.55)
+        mb.box(T, X(SEP), X(HX + 0.10), 4.46, 4.58, 6.55, 6.75)
+        mb.box(T, X(SEP), X(HX), YRE + 0.002, YRE + 0.08, 6.60, 6.75)
+        for k in range(15):
+            xc = 0.28 + 0.549 * k
+            rafter(mb, s, xc - 0.03, xc + 0.03, YRE + 0.002, 4.98, 6.75, 6.90)
+        for xc in (0.24, 3.24):
+            mb.box(T, X(xc - 0.06), X(xc + 0.06), -6.82, -6.70, Z1, 6.85)
+        mb.box(T, X(SEP), X(WX + 0.10), -6.82, -6.70, 6.85, 7.05)
+        mb.box(T, X(SEP), X(WX), YWE - 0.08, YWE - 0.002, 6.90, 7.05)
+        for k in range(7):
+            xc = 0.30 + 0.515 * k
+            rafter(mb, s, xc - 0.03, xc + 0.03, YWE - 0.002, -7.44, 7.05, 7.20)
 
-    # ---- spiral stairs (variant A): etage terrace +3.70 -> roof +7.50 -----------------------------
-    if variant == "A":
-        for sx in (-1, 1):
-            spiral(mb, (sx * 1.055, 2.96), 0.82, 3.70, Z2, sx)
+    # ---- front garden wall (façade principale): stone cladding, coping, gate pillars, gate --------
+    for s in (1, -1):
+        X = lambda u, s=s: s * u
+        for x0, x1, y0, y1 in [(5.35, 8.79, YW, YW + 0.25), (8.54, 8.79, YW + 0.25, -5.80)]:
+            mb.box("cladding", X(x0), X(x1), y0, y1, -0.40, 0.70)
+            mb.box("coping_beige", X(x0 - (0.03 if x0 > 5.4 else 0.0)), X(x1 + 0.03), y0 - 0.03, y1 + 0.03, 0.70, 0.78)
+        for x0, x1 in ((WX + 0.002, 3.88), (4.97, 5.35)):
+            mb.box("cladding", X(x0), X(x1), YW - 0.02, YW + 0.31, -0.40, 1.38)
+            mb.box("coping_beige", X(x0 - 0.03 if x0 > 4 else x0), X(x1 + 0.03), YW - 0.05, YW + 0.34, 1.38, 1.46)
+        for k in range(10):                                          # timber gate, vertical slats
+            u = 3.92 + (4.93 - 3.92 - 0.07) * k / 9
+            mb.box("door_wood", X(u), X(u + 0.07), YW + 0.10, YW + 0.14, 0.12, 1.30)
+        for zz in (0.30, 1.10):
+            mb.box("door_wood", X(3.90), X(4.95), YW + 0.14, YW + 0.18, zz, zz + 0.08)
+        mb.box("coping_beige", X(WX + 0.002), X(4.95), -3.87, YF - 0.002, -0.30, 0.12)   # door step
 
-    # ---- technical shafts 'GT' at the front corners of the roof -----------------------------------
-    for sx in (-1, 1):
-        a, b = sorted((sx * 7.30, sx * 7.98))
-        mb.box("render", a, b, -3.25, -2.89, Z2, 8.40)
-        mb.box("trim", a - 0.04, b + 0.04, -3.29, -2.85, 8.40, 8.46)
-
-    # ---- entrance landings in front of the side parts (permit RDC plan, 'Terrasse') --------------
-    for s in (-1, 1):
-        a, b = sorted((s * 8.10, s * 5.40))
-        mb.box("terrace", a, b, -5.00, -3.47, -0.80, Z_FL)
+    # ---- paved terrace behind the salons (plan RDC) ------------------------------------------------
+    L.prism(mb, "terrace", REAR_TERRACE, -0.30, 0.15)
 
     obs = mb.build("DPX", col, M)
     ob = L.join(obs, f"SRC_DUPLEX_{variant}")

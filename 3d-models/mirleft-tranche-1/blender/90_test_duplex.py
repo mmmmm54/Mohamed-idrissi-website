@@ -12,7 +12,7 @@ M = L.materials()
 col = L.C.collection("DUPLEX")
 var = os.environ.get("VARIANT", "A")
 ob = D.build(M, col, var)
-print("faces", len(ob.data.polygons))
+print("faces", len(ob.data.polygons), [m.name for m in ob.data.materials])
 bpy.ops.mesh.primitive_plane_add(size=60, location=(0, 0, -0.001))
 bpy.context.object.data.materials.append(M["lawn"])
 lt = L.bay("14_build_lighting.py"); lt.apply("LIGHTING_01_DAYLIGHT")
@@ -22,10 +22,13 @@ sc.render.resolution_x, sc.render.resolution_y = 1400, 900
 sc.view_settings.view_transform = "AgX"; sc.view_settings.look = "AgX - Punchy"; sc.view_settings.exposure = -0.6
 out = sys.argv[-1]; os.makedirs(out, exist_ok=True)
 cam = bpy.data.objects.new("CAM", bpy.data.cameras.new("CAM")); sc.collection.objects.link(cam); sc.camera = cam
-cam.data.lens = 32
-views = {"front": ((6, -26, 6), (0, -1, 4.5)), "rear": ((-8, 26, 9), (0, 2, 5.5)), "aerial": ((18, 22, 20), (0, 2, 5.0)), "stair": ((-5, 9, 10.5), (-1, 3, 5.5))}
-for k, (p, t) in views.items():
+# the two reference views of the remarks (front from the left corner, rear of the pair), and two more
+views = {"front": ((-17, -17, 1.7), (-3.5, -4.0, 4.2), 22), "rear": ((-13, 21, 1.7), (-1.5, 3.0, 3.8), 22),
+         "aerial": ((20, -24, 21), (0, 0, 4.0), 30), "roof": ((-6, 12, 14), (0, -1, 7.5), 26),
+         "cornice": ((-11.5, -9.5, 5.2), (-7.0, -3.6, 6.6), 30), "door": ((-6.5, -9.0, 1.7), (-4.3, -3.5, 1.9), 30)}
+for k, (p, t, lens) in views.items():
     if os.environ.get("VIEWS") and k not in os.environ["VIEWS"].split(","): continue
+    cam.data.lens = lens
     cam.location = p
     d = Vector(t) - Vector(p)
     cam.rotation_euler = d.to_track_quat("-Z", "Y").to_euler()

@@ -114,6 +114,174 @@ def uv_tiles(m, rot_deg=0.0):
     return m
 
 
+
+# ---- generated textures (rev 4 remarks): beige herringbone pavers, slate-look porcelain tiles, ochre
+# stone band. Drawn here, cached in data/textures/, used by the scene and by 08/09 for D5 and glTF.
+def hexc(h):
+    h = h.lstrip("#")
+    return np.array([int(h[i:i + 2], 16) for i in (0, 2, 4)], np.float32)
+
+
+def tnoise(n, beta, seed, aniso=1.0):
+    """Tileable fractal noise in [0, 1]: white noise shaped by 1/f^beta in Fourier space.
+    aniso > 1 stretches the features along x (streaks)."""
+    rng = np.random.default_rng(seed)
+    w = rng.normal(size=(n, n))
+    fy = np.fft.fftfreq(n)[:, None]
+    fx = np.fft.fftfreq(n)[None, :]
+    f = np.sqrt((fx * aniso) ** 2 + (fy / aniso) ** 2)
+    f[0, 0] = 1.0
+    s = np.real(np.fft.ifft2(np.fft.fft2(w) / f ** beta))
+    s -= s.min()
+    return s / s.max()
+
+
+def herringbone(path, n=1024, units=8, seed=3):
+    """90-degree herringbone of 2:1 pavers, tileable; units = paver widths (0.10 m) per tile edge."""
+    rng = np.random.default_rng(seed)
+    px = n / units
+    pal = [hexc(c) for c in ("#D9BEA3", "#CFB295", "#DCC5AB", "#C9AA8F", "#D3B59B", "#E0CBB2")]
+    joint = hexc("#A39283")
+    img = np.zeros((n, n, 3), np.float32) + joint
+    grain = tnoise(n, 1.1, seed + 1)[..., None]
+    yy, xx = np.mgrid[0:n, 0:n]
+    bricks = []
+    for k in range(units):
+        for j in range(units // 4):
+            ox, oy = k + 4 * j, k
+            bricks.append((ox, oy, ox + 2, oy + 1))          # horizontal
+            bricks.append((ox, oy + 1, ox + 1, oy + 3))      # vertical
+    e = 3.0
+    for (x0, y0, x1, y1) in bricks:
+        col = pal[rng.integers(len(pal))] * rng.uniform(0.95, 1.04)
+        for dx in (-units, 0, units):
+            for dy in (-units, 0, units):
+                a0, a1 = (x0 + dx) * px + e, (x1 + dx) * px - e
+                b0, b1 = (y0 + dy) * px + e, (y1 + dy) * px - e
+                if a1 < 0 or b1 < 0 or a0 > n or b0 > n:
+                    continue
+                i0, i1 = max(int(np.ceil(a0)), 0), min(int(a1), n)
+                j0, j1 = max(int(np.ceil(b0)), 0), min(int(b1), n)
+                if i1 <= i0 or j1 <= j0:
+                    continue
+                sub = img[j0:j1, i0:i1]
+                # soft chamfer: darker within 4 px of the edge
+                xs = np.minimum(xx[j0:j1, i0:i1] - a0, a1 - xx[j0:j1, i0:i1])
+                ys = np.minimum(yy[j0:j1, i0:i1] - b0, b1 - yy[j0:j1, i0:i1])
+                d = np.clip(np.minimum(xs, ys) / 5.0, 0, 1)[..., None]
+                sub[:] = col * (0.86 + 0.14 * d)
+    img = img * (0.9 + 0.2 * grain)
+    img += np.random.default_rng(seed + 2).normal(0, 3.0, img.shape)
+    from PIL import Image
+    Image.fromarray(np.clip(img, 0, 255).astype(np.uint8)).save(path, quality=90)
+
+
+
+def slate_tiles(path, base, light, vein, grout, seed, n=1024, period=1.2, tw=0.60, th=0.30, aniso=3.0, contrast=1.0):
+    """Stone-look porcelain (slate cleft): 0.30 x 0.60 tiles in half bond, tileable over `period` m."""
+    rng = np.random.default_rng(seed)
+    ppm = n / period
+    base, light, vein, grout = hexc(base), hexc(light), hexc(vein), hexc(grout)
+    big = tnoise(n, 1.7, seed, aniso)
+    mid = tnoise(n, 1.15, seed + 1, aniso * 1.3)
+    cleft = tnoise(n, 0.95, seed + 3, 1.3)
+    fine = tnoise(n, 0.55, seed + 2)
+    t = np.clip((big - 0.5) * 1.8 * contrast + 0.5, 0, 1)[..., None]
+    img = base * (1 - t) + light * t
+    v = np.clip((mid - 0.58) * 4.0, 0, 1)[..., None] * contrast
+    img = img * (1 - 0.6 * v) + vein * 0.6 * v
+    c = np.clip((cleft - 0.5) * 3.0, -1, 1)[..., None]
+    img *= 1.0 + 0.10 * c * contrast                      # cleft relief: patchy light and shade
+    sp = (rng.random((n, n)) < 0.004)[..., None]
+    img = np.where(sp, img * 0.78 + vein * 0.22, img)
+    img *= (0.90 + 0.20 * fine[..., None])
+    # per tile brightness shift, grout lines
+    rows = int(round(period / th))
+    cols = int(round(period / tw))
+    yy, xx = np.mgrid[0:n, 0:n]
+    r = (yy / (th * ppm)).astype(int)
+    off = np.where(r % 2 == 1, tw * ppm / 2, 0)
+    c = (((xx + off) / (tw * ppm)).astype(int)) % cols
+    shift = rng.uniform(0.93, 1.07, (rows + 1, cols + 1))
+    img *= shift[r % rows, c][..., None]
+    g = 2.0
+    gx = np.mod(xx + off, tw * ppm)
+    gy = np.mod(yy, th * ppm)
+    mask = (np.minimum(gx, tw * ppm - gx) < g) | (np.minimum(gy, th * ppm - gy) < g)
+    img[mask] = grout
+    from PIL import Image
+    Image.fromarray(np.clip(img, 0, 255).astype(np.uint8)).save(path, quality=90)
+
+
+def marble_band(path, seed=11, n=1024):
+    """Golden-ochre veined stone for the cornice band (as on the reference renders)."""
+    base, light, dark = hexc("#C0904E"), hexc("#DDBF8A"), hexc("#7E5128")
+    a = tnoise(n, 1.5, seed, 2.5)
+    b = tnoise(n, 1.0, seed + 1, 4.0)
+    t = np.clip((a - 0.45) * 2.0 + 0.5, 0, 1)[..., None]
+    img = base * (1 - t) + light * t
+    veins = np.abs(np.sin(b * 18.0 + a * 6.0))
+    v = np.clip((0.18 - veins) / 0.18, 0, 1)[..., None]
+    img = img * (1 - 0.7 * v) + dark * 0.7 * v
+    img *= (0.94 + 0.12 * tnoise(n, 0.6, seed + 2)[..., None])
+    from PIL import Image
+    Image.fromarray(np.clip(img, 0, 255).astype(np.uint8)).save(path, quality=90)
+
+
+TEXTURES = {
+    "pavers": ("TEX_PAVERS_BEIGE_HERRINGBONE.jpg", 0.80),
+    "ardesia": ("TEX_TILE_ARDESIA_BEIGE.jpg", 1.20),
+    "jade": ("TEX_TILE_JADE_GREEN.jpg", 1.20),
+    "band": ("TEX_STONE_BAND_OCHRE.jpg", 0.80),
+}
+
+
+def texture(key):
+    """Path of a generated texture (drawn on first use) and its tile size in metres."""
+    fname, tile = TEXTURES[key]
+    path = os.path.join(TEX, fname)
+    if not os.path.exists(path):
+        if key == "pavers":
+            herringbone(path)
+        elif key == "ardesia":                  # beige slate-look porcelain, 30 x 60 (AZUVI Ardesia Nature type)
+            slate_tiles(path, "#C4B092", "#DDCFB6", "#B08A55", "#B9B0A4", 21, aniso=1.8)
+        elif key == "jade":                     # green-grey stone-look pool tile, 30 x 60 (La Platera Jade type)
+            slate_tiles(path, "#67716B", "#87918A", "#4A524D", "#525A55", 31, aniso=1.8, contrast=0.9)
+        else:
+            marble_band(path)
+    return path, tile
+
+
+def img_mat(name, key, rough=0.75, bump=0.2):
+    """Image texture at true size on the UVs (metres), with a light bump from its luminance."""
+    path, tile = texture(key)
+    m = bpy.data.materials.get(name) or bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    bs = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    mp = nt.nodes.new("ShaderNodeMapping")
+    mp.inputs["Scale"].default_value = (1.0 / tile, 1.0 / tile, 1.0)
+    im = nt.nodes.new("ShaderNodeTexImage")
+    im.image = bpy.data.images.load(path, check_existing=True)
+    bw = nt.nodes.new("ShaderNodeRGBToBW")
+    bp = nt.nodes.new("ShaderNodeBump")
+    bp.inputs["Strength"].default_value = bump
+    bp.inputs["Distance"].default_value = 0.004
+    nt.links.new(tc.outputs["UV"], mp.inputs["Vector"])
+    nt.links.new(mp.outputs["Vector"], im.inputs["Vector"])
+    nt.links.new(im.outputs["Color"], bs.inputs["Base Color"])
+    nt.links.new(im.outputs["Color"], bw.inputs["Color"])
+    nt.links.new(bw.outputs["Val"], bp.inputs["Height"])
+    nt.links.new(bp.outputs["Normal"], bs.inputs["Normal"])
+    bs.inputs["Roughness"].default_value = rough
+    nt.links.new(bs.outputs["BSDF"], out.inputs["Surface"])
+    m["source"] = "generated in lib.py: " + os.path.basename(path) + ", tile %.2f m" % tile
+    return m
+
+
 def materials():
     mod = bay("07_build_materials.py")
     M = mod.build()
@@ -147,6 +315,19 @@ def materials():
     M["lounger_white"] = mod.simple("T14_Lounger_White_Resin", "#F1EFE9", 0.35, 0.0, 0.0, 0.0, 0.0)
     M["canvas"] = mod.simple("T15_Parasol_Canvas", "#D9C8A9", 0.85, 0.0, 30.0, 0.08, 0.05)
     M["agave"] = mod.simple("V09_Agave_Leaf", "#7E9B8A", 0.55, 0.0, 20.0, 0.12, 0.05)
+    # rev 4 (remarks on the D5 model, villa N°09 drawings and reference images)
+    M["villa"] = (mod.ph_surface("D13_Render_Villa_Beige", "white_plaster_rough_01", 2.5, "#C9AE8F", 0.0, 0.45)
+                  or mod.render_plaster("D13_Render_Villa_Beige", "#D0B697", "#C0A484"))
+    M["surround"] = mod.simple("D14_Stone_Surround_Taupe", "#B09A82", 0.85, 0.0, 45.0, 0.22, 0.35)
+    M["ledge"] = mod.simple("D15_Stone_Ledge_Grey", "#BAB4AB", 0.7, 0.0, 25.0, 0.12, 0.1)
+    M["band"] = img_mat("D16_Stone_Band_Ochre", "band", 0.55, 0.15)
+    M["frame"] = mod.simple("D17_Frame_Cream", "#DDD6CB", 0.4, 0.2)
+    M["cladding"] = (mod.ph_surface("D18_Stone_Cladding_Beige", "stacked_stone_wall", 1.8, "#C3B39D", 0.35, 1.0)
+                     or mod.stone_wall("D18_Stone_Cladding_Beige"))
+    M["coping_beige"] = mod.simple("D19_Coping_Beige_Stone", "#CDBBA6", 0.6, 0.0, 20.0, 0.12, 0.1)
+    M["pave_beige"] = img_mat("T17_Pavers_Beige_Herringbone", "pavers", 0.8, 0.35)
+    M["tile_ardesia"] = img_mat("T18_Tile_Ardesia_Beige", "ardesia", 0.55, 0.25)
+    M["tile_jade"] = img_mat("T19_Tile_Jade_Green", "jade", 0.35, 0.2)
     M["mod"] = mod
     return M
 

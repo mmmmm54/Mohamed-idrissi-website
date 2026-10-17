@@ -81,6 +81,8 @@ def gen_tiles(name, cols, rows, c1, c2, mortar, period_px=512, stagger=True, dia
     return p
 
 
+GEN = os.path.join(ROOT, "data", "textures")          # textures drawn by lib.py (rev 4)
+
 # material -> (texture path, tile size in metres)
 TEX = {
     "M01_Render_Sand": (tinted(os.path.join(D5, "M01_Render_Sand_COL.jpg"), "render_sand"), 2.5),
@@ -110,6 +112,16 @@ TEX = {
     "D09_Sand": (gen_tiles("sand", 0, 0, "#D9C49A", None, (217, 196, 154), noise=10), 2.0),
     "T13_Travertine_Planks": (gen_tiles("planks", 2, 8, "#E5D8C0", "#D7C7AA", (185, 169, 142)), 1.8),
     "T12_Overflow_Grille_Black": (gen_tiles("grille", 16, 16, "#2A2A2C", "#1F1F21", (6, 6, 6), stagger=False), 0.56),
+    # rev 4: villa N°09 finishes, beige pavers, beige and green tiles
+    "D13_Render_Villa_Beige": (tinted(os.path.join(D5, "M01_Render_Sand_COL.jpg"), "render_villa", "#D2B289", "#C9AE8F"), 2.5),
+    "D14_Stone_Surround_Taupe": (gen_tiles("surround", 0, 0, "#B09A82", None, (176, 154, 130), noise=16), 1.0),
+    "D15_Stone_Ledge_Grey": (gen_tiles("ledge", 0, 0, "#BAB4AB", None, (186, 180, 171), noise=10), 1.0),
+    "D16_Stone_Band_Ochre": (tinted(os.path.join(GEN, "TEX_STONE_BAND_OCHRE.jpg"), "band"), 0.8),
+    "D18_Stone_Cladding_Beige": (tinted(os.path.join(D5, "M04_Stone_Rubble_COL.jpg"), "cladding", "#BC9461", "#C3B39D"), 1.8),
+    "D19_Coping_Beige_Stone": (gen_tiles("coping_beige", 0, 0, "#CDBBA6", None, (205, 187, 166), noise=10), 1.0),
+    "T17_Pavers_Beige_Herringbone": (tinted(os.path.join(GEN, "TEX_PAVERS_BEIGE_HERRINGBONE.jpg"), "pave_beige"), 0.8),
+    "T18_Tile_Ardesia_Beige": (tinted(os.path.join(GEN, "TEX_TILE_ARDESIA_BEIGE.jpg"), "tile_ardesia"), 1.2),
+    "T19_Tile_Jade_Green": (tinted(os.path.join(GEN, "TEX_TILE_JADE_GREEN.jpg"), "tile_jade"), 1.2),
 }
 FLAT = {   # plain colours (hex), roughness, metallic
     "A06_Interior_Proxy": ("#4A3A2E", 0.9, 0.0), "D02_Door_Wood_Dark": ("#5C3A22", 0.6, 0.0),
@@ -126,6 +138,7 @@ FLAT = {   # plain colours (hex), roughness, metallic
     "T14_Lounger_White_Resin": ("#F1EFE9", 0.35, 0.0), "T15_Parasol_Canvas": ("#D9C8A9", 0.85, 0.0),
     "V09_Agave_Leaf": ("#7E9B8A", 0.6, 0.0), "V04_Ornamental_Grass": ("#B7A56E", 0.75, 0.0),
     "H04_Ocean_Atlantic": ("#1E5A6C", 0.08, 0.0),
+    "D17_Frame_Cream": ("#DDD6CB", 0.4, 0.2), "A06_Curtain_Linen": ("#E9DFCF", 0.95, 0.0),
 }
 ALPHA = {"D01_Mashrabiya_Wood": "#3B2414", "V01_Palm_Fan": None, "V03_Olive_Foliage": None,
          "V07_Pink_Blossom_Tree": None, "V08_Green_Shade_Tree": None}
