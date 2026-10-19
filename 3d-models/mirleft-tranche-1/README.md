@@ -69,9 +69,8 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
   - The 57 circles of Ø 1.2 m ('1.2m') on the front courts are tree pits, with a kerb ring and soil.
   - There are 20 meter cabinets ('Emplacement compteur') and 7 bin enclosures, at the plan's positions.
 - **Ground surfaces** (from the hatches; rev 4 finishes from the remarks)
-  - The 6 m lanes by the duplexes: beige herringbone pavers, 20 × 10 cm ('pavé beige', slides 3, 8 and 10).
-  - Every road next to the duplexes (within 26 m of a villa: the roads between and along the rows and gardens, the commerce road) is in the same beige pavers (slide 3: 'toutes les voies de circulation attenantes au duplex').
-  - The entrance, the ring road round the fountain, the roads either side of the median and the parking aisles: pavers too ('traitement en pavé', slide 1), in grey herringbone so they read as roads (client, 19-10: 'dir rmadi'); the whole entrance zone (30 m round the fountain, median, restaurant bassins, parking and pétanque) stays grey.
+  - Every road and lane of the tranche (the entrance, the ring road, the roads round the median, the roads between and along the rows, the 6 m lanes, the commerce road, the parking aisles): beige herringbone pavers, 20 × 10 cm ('pavé beige', slides 1, 3, 8 and 10).
+  - The pavements (trottoirs) where people walk: grey herringbone pavers (client, 19-10), so the roads and the pavements read apart.
   - The surrounds of the commerces and of the restaurant (the commerce terrace, the TERRASSE RESTAURANT and the plaza): the same beige pavers (slide 2).
   - The area the plan draws as lawn between the pool court, the restaurant and the road (the playground): beige slate-look tiles, 30 × 60 ('carrelage beige', AZUVI Ardesia Nature type, slide 5).
   - Pétanque: stabilisé.
@@ -191,7 +190,7 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 ## Rev 4: remarks on the D5 model (17-10)
 | Slide | Remark | Done |
 |---|---|---|
-| 1 | Entrance roads in pavers; commerces at the restaurant's height; towers the colour of the building | Roads in grey road pavers; commerces to +7.85 / +9.20, towers to +12.20; all towers (commerces and restaurant) in the building's render |
+| 1 | Entrance roads in pavers; commerces at the restaurant's height; towers the colour of the building | Every road in beige pavers, pavements in grey; commerces to +7.85 / +9.20, towers to +12.20; all towers (commerces and restaurant) in the building's render |
 | 2 | Surround of the commerces and the restaurant in beige pavers | Commerce terrace, TERRASSE RESTAURANT, plaza and the pavilion's rear terrace in beige pavers |
 | 3, 8 | Lanes next to the duplexes in beige pavers | All lanes in beige pavers |
 | 4 | Restaurant rear: the same entrance door as the main façade | Pointed horseshoe arch in its frame, glazed, between the rear towers |

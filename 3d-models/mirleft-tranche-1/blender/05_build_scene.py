@@ -392,7 +392,7 @@ def build_surroundings(M, col, site, t1, Hsite):
 # and the surrounds of the commerces and the restaurant in beige herringbone pavers, the playground
 # ground in beige tiles
 OFFS = [("lane", 0.02, "pave_beige"), ("ramp", 0.03, "concrete"), ("stabilise", 0.08, "stabilise"), ("concrete", 0.12, "concrete"),
-        ("paving", 0.15, "kerb_paving"), ("terrace", 0.15, "pave_beige"), ("terracotta", 0.15, "pave_beige"),
+        ("paving", 0.15, "pave_side"), ("terrace", 0.15, "pave_beige"), ("terracotta", 0.15, "pave_beige"),
         ("court_tile", 0.15, "tile_ardesia"), ("lawn", 0.12, "lawn")]
 MIN_AREA = {"paving": 0.6, "lawn": 0.5}
 
@@ -402,16 +402,8 @@ def build_ground(M, col, t1, cut):
     S = SITE["surfaces"]
     out = []
     mb = C.MeshBuilder()
-    # 19-10: the roads next to the villas in beige pavers like the lanes (slide 3: 'toutes les voies de
-    # circulation attenantes au duplex'); the entrance, the ring road, the median roads and the parking
-    # in grey road pavers so they read as roads
-    near = unary_union([to_world(DPX_FOOT, d["c"], d["rot_deg"]) for d in SITE["duplexes"]]).buffer(26.0)
-    entrance = unary_union([Polygon(w["poly"]["ext"]).buffer(0) for w in SITE["water"] if w["kind"] in ("fountain", "median", "resto_bassin")]
-                           + polys(SITE["surfaces"].get("concrete", [])) + [Point(SITE["petanque"]["c"])]).buffer(30.0)
-    near = near.difference(entrance)          # the entrance zone stays grey (client, 19-10)
-    base = t1.difference(cut)
-    L.prism(mb, "pave_beige", base.intersection(near), -0.65, 0.0, zf=zf)
-    L.prism(mb, "pave_road", base.difference(near), -0.65, 0.0, zf=zf)
+    # every road in beige pavers (remarks, slides 1, 3, 8, 10); the pavements in grey pavers (client, 19-10)
+    L.prism(mb, "pave_beige", t1.difference(cut), -0.65, 0.0, zf=zf)
     out += mb.build("GROUND_ROADS_PAVERS", col, M)
     for key, off, mat in OFFS:
         keep = [g for g in polys(S.get(key, [])) if g.area >= MIN_AREA.get(key, 0.05)]
