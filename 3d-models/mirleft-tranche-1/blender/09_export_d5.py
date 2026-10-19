@@ -136,8 +136,8 @@ UVs are box-projected in metres divided by each texture's tile size, so the text
 The material names are the Blender ones: `T13_Travertine_Planks` (pool deck), `M04_Stone_Rubble` (stone walls), `D05_Bejmat_Terre_De_Sienne`, and so on.
 
 ## Rev 4 finishes (remarks on the D5 model)
-- `T20_Pavers_Road_Grey`: the roads (entrance, ring road round the fountain, roads either side of the median, parking aisles).
-- `T17_Pavers_Beige_Herringbone`: the lanes by the duplexes, and the surrounds of the commerces and the restaurant.
+- `T20_Pavers_Road_Grey`: the entrance, the ring road round the fountain, the roads either side of the median, the parking aisles.
+- `T17_Pavers_Beige_Herringbone`: every lane and road next to the duplexes, and the surrounds of the commerces and the restaurant.
 - `T18_Tile_Ardesia_Beige`: the ground of the playground area by the pool (AZUVI Ardesia Nature type, 30 x 60).
   In D5 it can be swapped for the real product's texture if you have it.
 - `T19_Tile_Jade_Green`: the two pools (La Platera Jade type, 30 x 60).

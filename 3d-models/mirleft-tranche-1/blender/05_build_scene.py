@@ -402,7 +402,13 @@ def build_ground(M, col, t1, cut):
     S = SITE["surfaces"]
     out = []
     mb = C.MeshBuilder()
-    L.prism(mb, "pave_road", t1.difference(cut), -0.65, 0.0, zf=zf)   # 19-10: the roads read as roads again
+    # 19-10: the roads next to the villas in beige pavers like the lanes (slide 3: 'toutes les voies de
+    # circulation attenantes au duplex'); the entrance, the ring road, the median roads and the parking
+    # in grey road pavers so they read as roads
+    near = unary_union([to_world(DPX_FOOT, d["c"], d["rot_deg"]) for d in SITE["duplexes"]]).buffer(26.0)
+    base = t1.difference(cut)
+    L.prism(mb, "pave_beige", base.intersection(near), -0.65, 0.0, zf=zf)
+    L.prism(mb, "pave_road", base.difference(near), -0.65, 0.0, zf=zf)
     out += mb.build("GROUND_ROADS_PAVERS", col, M)
     for key, off, mat in OFFS:
         keep = [g for g in polys(S.get(key, [])) if g.area >= MIN_AREA.get(key, 0.05)]
@@ -544,6 +550,7 @@ def ground_top(x, y):
 
 RISER = 0.15
 POOL_DROP = 1.00       # the pool court lowered 1.00 m more (15-10 request), its gradins top with it
+DPX_FOOT = None
 PAV_DY = 1.30          # restaurant pavilion: its centre on the 12-10 axis, 1.30 m behind the block's centre
 
 
@@ -676,6 +683,8 @@ def main():
     # ---- duplexes ------------------------------------------------------------------------------
     DPX = load("02_duplex.py")
     PUB = load("03_public.py")
+    global DPX_FOOT
+    DPX_FOOT = DPX.FOOT
     dpx = DPX.build(M, cols["SRC"], "N09")                 # one design (villa N°09) for both blocks
     src = {"A": dpx, "B": dpx}
     for d in SITE["duplexes"]:
