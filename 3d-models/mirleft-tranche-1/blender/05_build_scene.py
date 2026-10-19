@@ -15,7 +15,8 @@ Revision 15-10: the restaurant is the pavilion of its own plan (3-PLAN_RESTAURAN
 12-10 axis; the stairs are built (level treads, risers of about 15 cm for the height the ground
 gives, flights where the plan draws them); the entrance median is paved, not water; the pedestrian
 crossings are painted on the road; no garden wall along the paved band round D-3/D-4. The pool area
-is 1.00 m lower; the long stair north of it goes down from the row C lane to its deck.
+is 1.00 m lower; the long stair north of it goes down from the row C lane to its deck (19-10: to
+the upper walk east of the gradins, not into the court).
 Second round of 15-10: the pool court in the style of the reference images (stone, planks, planting,
 parasols, cabanas); the restaurant portal open on its sides as its facades draw it; the D-4 rear
 garden walled, the 'JARDIN' plots beside it in 0.60 m stone planters.
@@ -648,12 +649,13 @@ def stair_level(sp, t):
 POOL_STAIR_MATS = {"tread": "planks", "nose": "coping", "cheek": "stone", "cap": "deck_stone"}
 
 
-def solid_stair(mb, sp, width, pad=0.15, cheeks=(), mats=None):
+def solid_stair(mb, sp, width, pad=0.15, cheeks=(), mats=None, guard=False):
     """The stair of stair_plan(), wall to wall: level treads, vertical risers, a dark stone nosing at
     each step, a slim handrail on the centre line over each flight (the plan's centre line).
     cheeks: sides (+1 left of A->B, -1 right) that get a retaining wall where the ground beside the
     stair is higher than its treads; an end wall closes B the same way. mats: tread / nose / cheek / cap
-    materials (default light pavers, dark stone nosings, render cheeks)."""
+    materials (default light pavers, dark stone nosings, render cheeks). guard: the cheeks and the end wall
+    stand 1 m over the ground where it is 0.45 m or more above the treads (a parapet)."""
     mats = mats or {"tread": "terrace", "nose": "slate", "cheek": "render", "cap": "trim"}
     eA, ax, nr, Lt, zA, zB, h = sp["eA"], sp["ax"], sp["nr"], sp["Lt"], sp["zA"], sp["zB"], sp["h"]
     flights, risers = sp["flights"], sp["risers"]
@@ -700,13 +702,15 @@ def solid_stair(mb, sp, width, pad=0.15, cheeks=(), mats=None):
                 z = zA + h * k
                 if g > z + 0.05:
                     s0, s1 = sorted((side * e_, side * (e_ + 0.20)))
-                    L.prism(mb, mats["cheek"], quad(a_, b_, s0, s1), zb, g + 0.05)
-                    L.prism(mb, mats["cap"], quad(a_, b_, s0, s1).buffer(0.03, join_style=2), g + 0.05, g + 0.10)
+                    gt = g + (1.00 if guard and g > z + 0.45 else 0.05)
+                    L.prism(mb, mats["cheek"], quad(a_, b_, s0, s1), zb, gt)
+                    L.prism(mb, mats["cap"], quad(a_, b_, s0, s1).buffer(0.03, join_style=2), gt, gt + 0.05)
     if cheeks:
         g = ground_top(*(eA + ax * (Lt + 0.45)))
         if g > zB + 0.05:
-            L.prism(mb, mats["cheek"], quad(Lt, Lt + 0.20, -e_ - 0.20, e_ + 0.20), zb, g + 0.05)
-            L.prism(mb, mats["cap"], quad(Lt, Lt + 0.20, -e_ - 0.20, e_ + 0.20).buffer(0.03, join_style=2), g + 0.05, g + 0.10)
+            gt = g + (1.00 if guard and g > zB + 0.45 else 0.05)
+            L.prism(mb, mats["cheek"], quad(Lt, Lt + 0.20, -e_ - 0.20, e_ + 0.20), zb, gt)
+            L.prism(mb, mats["cap"], quad(Lt, Lt + 0.20, -e_ - 0.20, e_ + 0.20).buffer(0.03, join_style=2), gt, gt + 0.05)
     return quad(0.0, Lt, -width / 2 - pad, width / 2 + pad)
 
 
@@ -815,13 +819,15 @@ def main():
     win = box(12.50, -25.0, 20.0, -10.0)
     foot = [to_local(g, pc["c"], pc["rot_deg"]) for g in polys(SITE["surfaces"]["paving"])]
     POOL.layout(ground, unary_union([g for g in foot if g.intersects(win)]))
-    # the long stair north of the court ('ESCALIERS' 1-10 and 11-21): from the row C lane down into the
-    # sunken court, landing on the deck at its north-east corner through an opening in the north wall;
-    # that wall is its 1 m guard over the court
-    sp_n = stair_plan(fw(-12.40, 22.175), fw(8.70, 22.175), [(0.0, 5.50, 10), (14.30, 19.80, 11)], zB=z_deck)
+    # the long stair north of the court ('ESCALIERS' 1-10 and 11-21), along the court's north wall. Client
+    # 19-10: it does not go down into the court; from the upper walk east of the gradins it runs west along
+    # the wall and climbs to the row C lane (plan 12-10, arrow on it). The court's north wall is closed, its
+    # 1 m guard; the flights stay where the plan draws them, with the risers the height gives
+    sp_n = stair_plan(fw(-12.40, 22.175), fw(POOL.WALK[1], 22.175), [(0.0, 0.30, 10), (14.30, 14.90, 11)],
+                      zB=z_deck + POOL.RISE)
     ed = [0.0] + sp_n["risers"] + [sp_n["Lt"]]
     north_steps = [(-12.40 + ed[k], -12.40 + ed[k + 1], sp_n["zA"] + sp_n["h"] * k - z_deck) for k in range(len(ed) - 1)]
-    pool_ob, spots = POOL.build(M, cols["SRC"], ground, wp, north_steps=north_steps, north_gap=(7.40, 8.70))
+    pool_ob, spots = POOL.build(M, cols["SRC"], ground, wp, north_steps=north_steps, north_gap=(8.70, 8.70), north_link=True)
     place(pool_ob, "POOL_COURT", pc["c"], pc["rot_deg"], cols["05_POOL"], z=z_deck)
     pool_ob.users_collection[0].objects.unlink(pool_ob)
     pfoot = to_world(POOL.footprint(), pc["c"], pc["rot_deg"])
@@ -893,11 +899,11 @@ def main():
     print(f"  villa entrance paths through lawn or walls: {len(entries)}")
     # stairs: across the rows ('ESC 16-17', 'ESC V4', flights read from the plan) and the long stair
     # north of the pool court ('ESCALIERS' 1-10 and 11-21, landing between)
-    stair_specs = [(s["name"], stair_plan(s["axis"][0], s["axis"][1], s["flights"]), s["width"], (), None) for s in SITE["stairs"]]
-    stair_specs.append(("ESCALIERS NORD PISCINE", sp_n, 3.45, (1,), POOL_STAIR_MATS))
+    stair_specs = [(s["name"], stair_plan(s["axis"][0], s["axis"][1], s["flights"]), s["width"], (), None, False) for s in SITE["stairs"]]
+    stair_specs.append(("ESCALIERS NORD PISCINE", sp_n, 3.45, (1,), POOL_STAIR_MATS, True))
     mb_st = C.MeshBuilder()
-    for name, sp, w_, cheeks, mats in stair_specs:
-        cut.append(solid_stair(mb_st, sp, w_, cheeks=cheeks, mats=mats))
+    for name, sp, w_, cheeks, mats, guard in stair_specs:
+        cut.append(solid_stair(mb_st, sp, w_, cheeks=cheeks, mats=mats, guard=guard))
         print(f"  stair {name}: rise {sp['dz']:+.2f} m, {sp['n']} risers of {abs(sp['h']):.3f} m")
     mb_st.build("STAIRS", cols["02_GROUND"], M)
     cutp = unary_union(cut)

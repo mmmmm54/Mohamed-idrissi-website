@@ -147,6 +147,9 @@ FLAT = {   # plain colours (hex), roughness, metallic
     "V09_Agave_Leaf": ("#7E9B8A", 0.6, 0.0), "V04_Ornamental_Grass": ("#B7A56E", 0.75, 0.0),
     "H04_Ocean_Atlantic": ("#1E5A6C", 0.08, 0.0),
     "D17_Frame_Cream": ("#DDD6CB", 0.4, 0.2), "A06_Curtain_Linen": ("#E9DFCF", 0.95, 0.0),
+    "D20_Frame_Taupe_Bronze": ("#6F6352", 0.45, 0.3), "A07_Curtain_Sheer": ("#F2ECE1", 0.9, 0.0),
+    "A08_Interior_Warm": ("#A8754E", 0.9, 0.0), "A09_Interior_Floor": ("#C9B394", 0.6, 0.0),
+    "A10_Sofa_Linen": ("#D8CBB4", 0.9, 0.0), "A11_Cushion_Grey": ("#8E857A", 0.9, 0.0),
 }
 ALPHA = {"D01_Mashrabiya_Wood": "#3B2414", "V01_Palm_Fan": None, "V03_Olive_Foliage": None,
          "V07_Pink_Blossom_Tree": None, "V08_Green_Shade_Tree": None}
@@ -190,6 +193,9 @@ def new_mat(old):
         b.inputs["Base Color"].default_value = (*lin(hexcol), 1.0)
         b.inputs["Roughness"].default_value = rough
         b.inputs["Metallic"].default_value = metal
+        if name == "M06_Glass":                   # see-through, so the curtains and the salon show (19-10)
+            b.inputs["Alpha"].default_value = 0.22
+            m.blend_method = "BLEND"
     return m, tile
 
 

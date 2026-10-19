@@ -89,7 +89,7 @@ OPENINGS = mirror_x([
     op("y", YF, 3.65, 4.78, Z_FL, 2.55, "door"),               # entrance
     op("y", YF, 5.20, 6.70, 1.20, 2.40, "window", 2),          # kitchen, allège 1.00
     op("x", HX, 3.40, 4.90, 1.18, 2.38, "window", 2),          # salon, side
-    op("y", YR, 2.12, 6.14, Z_FL, 2.64, "slider", 4),          # salon onto the garden
+    {**op("y", YR, 2.12, 6.14, Z_FL, 2.64, "baie", 4), "rev": 0.36, "rev_mat": "surround"},   # salon onto the garden
     op("y", YWE, 1.07, 2.48, 4.92, 6.04, "window", 2),         # 1er, over the wing (Ch 3)
     op("y", YF, 5.69, 6.29, 4.92, 6.04, "sash"),               # 1er, side part (SDB)
     op("y", YRE, 5.09, 7.59, Z1 + 0.02, 5.74, "slider", 2),    # Ch 2 onto the rear terrace
@@ -165,9 +165,9 @@ def wall(mb, p, q, z0, ztop, mat="villa"):
     for t in L.tri_poly(face):
         mb.poly(mat, [P3(s, z) for s, z in t], [(s, z) for s, z in t])
     for s0, s1, h0, h1, o in holes:
-        dep = 0.10 if o["kind"] == "niche" else REV
+        dep = o.get("rev", 0.10 if o["kind"] == "niche" else REV)
         for (sa, za), (sb, zb) in [((s0, h1), (s0, h0)), ((s1, h0), (s1, h1)), ((s1, h1), (s0, h1)), ((s0, h0), (s1, h0))]:
-            mb.poly(mat, [P3(sa, za), P3(sb, zb), P3(sb, zb, dep), P3(sa, za, dep)])
+            mb.poly(o.get("rev_mat", mat), [P3(sa, za), P3(sb, zb), P3(sb, zb, dep), P3(sa, za, dep)])
         insert(mb, P3, s0, s1, h0, h1, o, mat)
     return holes
 
@@ -198,6 +198,9 @@ def insert(mb, P3, s0, s1, z0, z1, o, wall_mat):
 
     if kind == "niche":
         rect(wall_mat, s0, s1, z0, z1, 0.10)
+        return
+    if kind == "baie":
+        baie(mb, P3, s0, s1, z0, z1, o["n"], rect)
         return
     rect("interior", s0 - 0.3, s1 + 0.3, z0 - 0.3, z1 + 0.3, 0.75)
     if kind == "door":
@@ -255,6 +258,61 @@ def insert(mb, P3, s0, s1, z0, z1, o, wall_mat):
     pbox(mb, P3, s0, s1, z1, z1 + top, -0.04, 0.02, "surround")
     if kind != "slider":
         pbox(mb, P3, s0, s1, z0 - 0.20, z0, -0.04, 0.02, "surround")
+
+
+def baie(mb, P3, s0, s1, z0, z1, n, rect):
+    """Salon sliding door onto the garden (client 19-10, reference photo): set back in a taupe stone
+    reveal, a flat taupe band round it, slim taupe-bronze frames on staggered leaves, sheer linen curtains
+    hanging in folds (the third leaf left open) and the lit salon behind with its sofa."""
+    W = s1 - s0
+    fr, dg = 0.06, 0.30                               # frame width, glazing plane
+    b = 0.26                                          # stone band, standing 0.03 proud
+    pbox(mb, P3, s0 - b, s0, z0, z1 + b, -0.03, 0.02, "surround")
+    pbox(mb, P3, s1, s1 + b, z0, z1 + b, -0.03, 0.02, "surround")
+    pbox(mb, P3, s0, s1, z1, z1 + b, -0.03, 0.02, "surround")
+    fb = lambda a0, a1, c0, c1, d0, d1: pbox(mb, P3, a0, a1, c0, c1, d0, d1, "frame_taupe")
+    fb(s0, s1, z0, z0 + fr, dg - 0.05, dg + 0.05)    # outer frame, butt-jointed
+    fb(s0, s1, z1 - fr, z1, dg - 0.05, dg + 0.05)
+    fb(s0, s0 + fr, z0 + fr, z1 - fr, dg - 0.05, dg + 0.05)
+    fb(s1 - fr, s1, z0 + fr, z1 - fr, dg - 0.05, dg + 0.05)
+    lw = (W - 2 * fr) / n
+    for k in range(n):                                # leaves on two tracks, overlapping 4 cm
+        a0, a1 = s0 + fr + lw * k - (0.02 if k else 0.0), s0 + fr + lw * (k + 1) + (0.02 if k < n - 1 else 0.0)
+        d = dg - 0.02 if k % 2 == 0 else dg + 0.02
+        rect("glass", a0 + fr, a1 - fr, z0 + 2 * fr, z1 - 2 * fr, d)
+        fb(a0, a0 + fr, z0 + fr, z1 - fr, d - 0.015, d + 0.015)
+        fb(a1 - fr, a1, z0 + fr, z1 - fr, d - 0.015, d + 0.015)
+        fb(a0 + fr, a1 - fr, z0 + fr, z0 + 2 * fr, d - 0.015, d + 0.015)
+        fb(a0 + fr, a1 - fr, z1 - 2 * fr, z1 - fr, d - 0.015, d + 0.015)
+
+    def curtain(a0, a1, d=0.46, pitch=0.11, amp=0.035):
+        m = max(2, int((a1 - a0) / pitch))
+        xs = [a0 + (a1 - a0) * j / m for j in range(m + 1)]
+        for j in range(m):
+            da, db = d + (amp if j % 2 else -amp), d + (-amp if j % 2 else amp)
+            mb.poly("sheer", [P3(xs[j], z0 + 0.04, da), P3(xs[j + 1], z0 + 0.04, db),
+                              P3(xs[j + 1], z1 + 0.02, db), P3(xs[j], z1 + 0.02, da)])
+        pbox(mb, P3, a0 - 0.05, a1 + 0.05, z1 + 0.02, z1 + 0.05, d - 0.02, d + 0.02, "frame_taupe")   # rail
+    curtain(s0 + fr, s0 + fr + 1.85 * lw)             # first leaf and most of the second
+    curtain(s0 + fr + 2.95 * lw, s1 - fr)             # the fourth
+    # the salon behind: warm walls, floor, ceiling, a linen sofa and a low table seen through the third leaf
+    D = 3.40
+    zc = z1 + 0.70
+    rect("interior_warm", s0 - 0.40, s1 + 0.40, z0 - 0.01, zc, D)
+    for a in (s0 - 0.40, s1 + 0.40):
+        mb.poly("interior_warm", [P3(a, z0 - 0.01, 0.36), P3(a, z0 - 0.01, D), P3(a, zc, D), P3(a, zc, 0.36)])
+    mb.poly("interior_floor", [P3(s0 - 0.40, z0 - 0.005, 0.36), P3(s1 + 0.40, z0 - 0.005, 0.36), P3(s1 + 0.40, z0 - 0.005, D), P3(s0 - 0.40, z0 - 0.005, D)])
+    mb.poly("interior_warm", [P3(s0 - 0.40, zc, 0.36), P3(s0 - 0.40, zc, D), P3(s1 + 0.40, zc, D), P3(s1 + 0.40, zc, 0.36)])
+    c = s0 + fr + 2.45 * lw                           # centre of the third leaf
+    pbox(mb, P3, c - 1.20, c + 1.20, z0, z0 + 0.42, 2.20, 3.05, "sofa")          # seat
+    pbox(mb, P3, c - 1.20, c + 1.20, z0 + 0.42, z0 + 0.82, 2.85, 3.10, "sofa")   # back
+    for a in (c - 1.20, c + 1.00):                                                 # arms
+        pbox(mb, P3, a, a + 0.20, z0 + 0.42, z0 + 0.62, 2.20, 3.05, "sofa")
+    for k in range(3):                                                             # cushions
+        a = c - 0.98 + 0.66 * k
+        pbox(mb, P3, a, a + 0.62, z0 + 0.42, z0 + 0.56, 2.25, 2.85, "sofa_cushion")
+    pbox(mb, P3, c - 0.55, c + 0.55, z0 + 0.30, z0 + 0.36, 1.25, 1.85, "door_wood")   # low table
+    pbox(mb, P3, c - 0.45, c + 0.45, z0, z0 + 0.30, 1.35, 1.75, "door_wood")
 
 
 def ext(mb, mat, poly, P, w0, w1):

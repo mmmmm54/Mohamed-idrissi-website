@@ -18,6 +18,8 @@ Both FBX files carry their textures inside. The same images are in `textures/`: 
 - `H04_Ocean_Atlantic` (the ocean, at sea level) → D5 Water (ocean preset).
 - `T16_Site_Land_Soil` (the project's land inside its boundary) can take any D5 soil material; keep it darker than the satellite ground so the limits read.
 - `M06_Glass` → D5 Glass.
+  It comes in see-through (opacity 0.22) so the curtains and the salon behind the villas' sliding doors show;
+  `A07_Curtain_Sheer` → D5 Fabric with some translucency for the sheer curtains.
 
 ## Terrain and ocean round the site
 The real surroundings come in with the model (collection `00_SURROUNDINGS`): the terrain over ±3 km (20 m) and out to

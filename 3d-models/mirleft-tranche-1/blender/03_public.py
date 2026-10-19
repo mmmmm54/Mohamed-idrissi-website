@@ -343,8 +343,46 @@ REAR = box(-4.20, 3.22, 4.20, 6.22)
 PLATFORM = box(-14.775, -12.18, 14.775, 11.32)
 PLATFORM_FULL = box(-14.775, -12.18, 14.775, 13.62)   # platform + the rear bassin strip
 PORTAL = box(-2.875, -12.18, 2.875, -6.88)
+PORTAL_R = box(-2.875, 6.22, 2.875, 11.52)       # the same block behind the rear entrance (19-10)
 PASSAGE = box(-2.50, -7.18, 2.50, -3.18)
 COUR = box(-12.70, -3.10, -8.62, 3.20)
+
+
+def portal(mb, rear=False):
+    """The portal block: the same pointed horseshoe arch on its front and both sides, each in a
+    rectangular frame (two mouldings, bejmat field), a frieze of eight 0.25 m squares at +6.37, cornice at
+    +7.04, parapet to +7.62 with horns. rear: mirrored behind the rear entrance (PORTAL_R), without the
+    back face (the rear wall of the building stands there)."""
+    Y = (lambda y: -y - 0.66) if rear else (lambda y: y)
+
+    def F(P0, P1, *a, **k):                      # face with the y mirror; ends swapped to keep it outward
+        p0, p1 = (P0[0], Y(P0[1])), (P1[0], Y(P1[1]))
+        return face(mb, "render", *((p1, p0) if rear else (p0, p1)), *a, **k)
+    arch = {"s0": -1.242, "s1": 1.242, "z0": 0.20, "z1": 4.79, "shape": "poly", "pts": ARCH_PTS, "kind": "open"}
+    sh = hole_shape(arch)
+    Xs = [F((-2.875, -12.18), (2.875, -12.18), 0.0, 7.19, [arch], rev=0.40)]
+    if not rear:
+        F((2.875, -6.88), (-2.875, -6.88), 0.0, 7.19, [dict(arch)], rev=0.40)
+    for x0 in (-2.875, 2.475):
+        xo, xi = (x0, x0 + 0.40) if x0 < 0 else (x0 + 0.40, x0)
+        Xs.append(F((xo, -6.88) if x0 < 0 else (xo, -12.18), (xo, -12.18) if x0 < 0 else (xo, -6.88), 0.0, 7.19,
+                    [dict(arch)], rev=0.40))
+        F((xi, -12.18) if x0 < 0 else (xi, -6.88), (xi, -6.88) if x0 < 0 else (xi, -12.18), 0.0, 6.50,
+          [dict(arch)], rev=0.0)
+    for X in Xs:
+        fa, fb, fc = ARCH_FRAMES
+        relief(mb, "trim", X, fa.difference(fb), 0.07)
+        relief(mb, "render", X, fb.difference(fc), 0.05)
+        relief(mb, "bejmat", X, fc.difference(sh), 0.03)
+        squares(mb, X, [-2.275 + 0.65 * k for k in range(8)], 6.495, size=0.25)
+    for P0, P1 in (((2.475, -11.78), (-2.475, -11.78)), ((-2.475, -7.28), (2.475, -7.28)))[:1 if rear else 2]:
+        F(P0, P1, 0.0, 6.50, [dict(arch)], rev=0.0)     # inner faces, front and back
+    y0, y1 = sorted((Y(-12.17), Y(-6.89)))
+    mb.box("render", -2.865, 2.865, y0, y1, 6.50, 7.19)
+    P = PORTAL_R if rear else PORTAL
+    cornice(mb, P, 6.68, 6.75, 0.04)
+    cornice(mb, P, 6.89, 7.19, 0.10)
+    crown(mb, P.buffer(-0.001, join_style=2), 7.19, 7.56, t=0.25)
 
 
 def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80, cour=False, site_bassins=None):
@@ -482,29 +520,11 @@ def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80, cou
     # portal (FACADE PRINCIPALE, DROITE, GAUCHE): the same pointed horseshoe arch on its front and both
     # sides, each in a rectangular frame (two mouldings, bejmat field), a frieze of eight 0.25 m squares at
     # +6.37, cornice at +7.04, parapet to +7.62 with horns
-    arch = {"s0": -1.242, "s1": 1.242, "z0": 0.20, "z1": 4.79, "shape": "poly", "pts": ARCH_PTS, "kind": "open"}
-    sh = hole_shape(arch)
-    Xf = face(mb, "render", (-2.875, -12.18), (2.875, -12.18), 0.0, 7.19, [arch], rev=0.40)
-    face(mb, "render", (2.875, -6.88), (-2.875, -6.88), 0.0, 7.19, [dict(arch)], rev=0.40)
-    Xs = [Xf]
-    for x0 in (-2.875, 2.475):
-        xo, xi = (x0, x0 + 0.40) if x0 < 0 else (x0 + 0.40, x0)
-        Xs.append(face(mb, "render", (xo, -6.88) if x0 < 0 else (xo, -12.18), (xo, -12.18) if x0 < 0 else (xo, -6.88), 0.0, 7.19,
-                       [dict(arch)], rev=0.40))
-        face(mb, "render", (xi, -12.18) if x0 < 0 else (xi, -6.88), (xi, -6.88) if x0 < 0 else (xi, -12.18), 0.0, 6.50,
-             [dict(arch)], rev=0.0)
-    for X in Xs:
-        fa, fb, fc = ARCH_FRAMES
-        relief(mb, "trim", X, fa.difference(fb), 0.07)
-        relief(mb, "render", X, fb.difference(fc), 0.05)
-        relief(mb, "bejmat", X, fc.difference(sh), 0.03)
-        squares(mb, X, [-2.275 + 0.65 * k for k in range(8)], 6.495, size=0.25)
-    for P0, P1 in (((2.475, -11.78), (-2.475, -11.78)), ((-2.475, -7.28), (2.475, -7.28))):
-        face(mb, "render", P0, P1, 0.0, 6.50, [dict(arch)], rev=0.0)     # inner faces, front and back
-    mb.box("render", -2.865, 2.865, -12.17, -6.89, 6.50, 7.19)
-    cornice(mb, PORTAL, 6.68, 6.75, 0.04)
-    cornice(mb, PORTAL, 6.89, 7.19, 0.10)
-    crown(mb, PORTAL.buffer(-0.001, join_style=2), 7.19, 7.56, t=0.25)
+    portal(mb)
+    # rear (client 19-10): the same portal block behind the rear entrance, its arches open on the rear
+    # terrace; the rear wall with the glazed arch door stands at its back
+    portal(mb, rear=True)
+    L.prism(mb, "render", PORTAL_R.difference(PORTAL_R.buffer(-0.40, join_style=2)), plinth, 0.0)
 
     # ---- towers ---------------------------------------------------------------------------------
     for x0, y0, x1, y1, outer in towers:
@@ -530,7 +550,7 @@ def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80, cou
 
 
 PAV_TOWERS = [box(-TX1, FT[0], -TX0, FT[1]), box(TX0, FT[0], TX1, FT[1]), box(-TX1, RT[0], -TX0, RT[1]), box(TX0, RT[0], TX1, RT[1])]
-PAV_SOLIDS = unary_union(PAV_TOWERS + [BODY, REAR, PORTAL, PASSAGE])
+PAV_SOLIDS = unary_union(PAV_TOWERS + [BODY, REAR, PORTAL, PORTAL_R, PASSAGE])
 PAV_WATER = box(-14.775, -12.18, 14.775, -3.18).difference(PAV_SOLIDS)      # front bassins (the rear water is left out)
 PAV_PERGOLAS = [box(-14.40, 7.85, -TX1, 11.25), box(TX1, 7.85, 14.40, 11.25)]
 # 12-10 plan de masse: its two pergolas (blue hatch, 5.24 x 3.98 m), drawn behind its smaller building,

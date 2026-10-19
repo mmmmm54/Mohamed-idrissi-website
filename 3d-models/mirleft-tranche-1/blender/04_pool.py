@@ -205,11 +205,13 @@ MIX_GRAD = [("grass", 0.45, 0.80, 1.15), ("agave", 0.35, 0.90, 1.25), ("shrub", 
 MIX_BED = [("shrub", 0.40, 0.85, 1.30), ("grass", 0.30, 0.90, 1.20), ("agave", 0.30, 1.00, 1.40)]
 
 
-def build(M, col, ground, water_polys, name="POOL_COURT", north_steps=(), north_gap=(7.40, 8.70)):
+def build(M, col, ground, water_polys, name="POOL_COURT", north_steps=(), north_gap=(7.40, 8.70), north_link=False):
     """ground(u, v): graded ground above the deck at a pool-local point (linear).
     water_polys: {'pool': Polygon, 'kids_pool': Polygon} in pool-local coordinates.
     north_steps: [(u0, u1, level)] of the long stair north of the court (its treads above the deck);
     the court's north wall is its 1 m guard, open over north_gap where the stair lands on the deck.
+    north_link: the stair lands on the upper walk instead (19-10): the north wall is open on the walk, a
+    guard over the north-east corner, and the court's wall is closed (north_gap empty).
     layout() must have been called. Returns (object, plant spots [(u, v, z, kind, scale)])."""
     rng = random.Random(1510)
     spots = []
@@ -280,7 +282,12 @@ def build(M, col, ground, water_polys, name="POOL_COURT", north_steps=(), north_
     cut = unary_union([up_boxes(st) for st in ups])
     swall = zone.difference(affinity.translate(zone, 0.0, WALL_T))
     inner = zone.difference(N_WALL).difference(swall)
-    wall(mb, N_WALL, top_out, -0.30)
+    if north_link:                       # open on the walk, a 1 m guard over the north-east corner (19-10)
+        wall(mb, box(N_WALL.bounds[0], 20.20, WALK[0], 20.50), RISE + 1.00, -0.30)
+        wall(mb, box(WALK[1], 20.20, ZONE_E, 20.50), top_out, -0.30)
+        solid(mb, "stone", box(WALK[0], 20.20, WALK[1], 20.30), -0.30, RISE, top_mat="planks")   # to the stair's tread
+    else:
+        wall(mb, N_WALL, top_out, -0.30)
     wall(mb, swall, top_out, -0.30)
     walk = inner.intersection(box(WALK[0], -99, WALK[1], 99))
     solid(mb, "stone", walk, -0.30, RISE, top_mat="planks")

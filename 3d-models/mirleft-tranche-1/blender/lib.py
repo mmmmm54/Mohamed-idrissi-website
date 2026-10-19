@@ -338,6 +338,13 @@ def materials():
     M["pave_side"] = img_mat("T20_Pavers_Sidewalk_Grey", "sidewalk", 0.8, 0.35)
     M["tile_ardesia"] = img_mat("T18_Tile_Ardesia_Beige", "ardesia", 0.55, 0.25)
     M["tile_jade"] = img_mat("T19_Tile_Jade_Green", "jade", 0.35, 0.2)
+    # rev 4 (19-10): the salon's sliding door as the reference photo (frames, sheer curtains, the lit salon)
+    M["frame_taupe"] = mod.simple("D20_Frame_Taupe_Bronze", "#6F6352", 0.45, 0.3)
+    M["sheer"] = mod.simple("A07_Curtain_Sheer", "#F2ECE1", 0.9, 0.0)
+    M["interior_warm"] = mod.simple("A08_Interior_Warm", "#A8754E", 0.9, 0.0)
+    M["interior_floor"] = mod.simple("A09_Interior_Floor", "#C9B394", 0.6, 0.0)
+    M["sofa"] = mod.simple("A10_Sofa_Linen", "#D8CBB4", 0.9, 0.0)
+    M["sofa_cushion"] = mod.simple("A11_Cushion_Grey", "#8E857A", 0.9, 0.0)
     M["mod"] = mod
     return M
 

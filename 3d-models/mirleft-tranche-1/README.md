@@ -61,6 +61,10 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
   - **Rear**: the paved terrace behind the salons (plan RDC, 2.05 m deep). It follows the graded ground (never above the salons' floor) and the lawn is cut round it (19-10).
 - **Client corrections (19-10)**: the 43 tree pits ('1.2m' circles) in front of the villas are removed with their trees (14 kept elsewhere); the garden walls, cut to the permit house, now run to the wider villa N°09 façades (gaps up to 1.2 m closed); the raised 'Jardin' beds take the lawn strip the plan left round them.
 - **Villa entrances (19-10)**: every gate is reachable as on the villa N°09 drawing. Where the plan puts lawn or a garden wall between the gate and the lane (D-1 to D-4 and some others, 23 places), the garden wall is opened in front of the gate and a beige-paved path runs from the lane through the gate to the door. At D-1 to D-4 the tall walls in front of the houses, which the plan does not draw, are now the low stone wall of the villa drawing.
+- **Client corrections (19-10, last round)**
+  - The salon's sliding door onto the garden follows the client's reference photo: four leaves on two tracks with slim taupe-bronze frames, set back in a taupe stone reveal with a flat taupe band round it, sheer linen curtains in folds (the third leaf left open) and the lit salon behind with a sofa and a low table.
+  - The restaurant has the same portal block (pointed horseshoe arches on three sides, frames, frieze, parapet) behind its rear entrance too, on the rear terrace between the pergolas.
+  - The long stair north of the pool court no longer goes down into the court: its north wall is closed. From the upper walk east of the gradins the stair runs west along the wall and climbs to the row C lane (0.76 m, five risers in the plan's two flights), with a 1 m parapet where the ground beside it is higher.
 - **Gardens and walls**
   - The gardens are the plan's lawn hatches. Walls run along the garden edges, except the edges that face the house.
   - The 'JARDIN' plots beside D-4 are drawn 0.6 m into that house's band. Their wall stands on the band's edge instead.
