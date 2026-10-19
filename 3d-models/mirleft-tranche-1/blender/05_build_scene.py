@@ -388,11 +388,11 @@ def build_surroundings(M, col, site, t1, Hsite):
 
 
 # ---------------------------------------------------------------------------------------------
-# ground of the tranche: one base (the roads), the plan's surfaces 2-15 cm above it. Rev 4: roads, lanes
-# and the surrounds of the commerces and the restaurant in beige herringbone pavers, the playground
-# ground in beige tiles
-OFFS = [("lane", 0.02, "pave_beige"), ("ramp", 0.03, "concrete"), ("stabilise", 0.08, "stabilise"), ("concrete", 0.12, "concrete"),
-        ("paving", 0.15, "pave_side"), ("terrace", 0.15, "pave_beige"), ("terracotta", 0.15, "pave_beige"),
+# ground of the tranche: one base (the roads), the plan's surfaces 2-15 cm above it. Roads (asphalt),
+# lanes (herringbone) and pavements as first built (client, 19-10: their paving is done by hand in D5);
+# rev 4: the surrounds of the commerces and the restaurant in beige pavers, the playground in beige tiles
+OFFS = [("lane", 0.02, "lane"), ("ramp", 0.03, "concrete"), ("stabilise", 0.08, "stabilise"), ("concrete", 0.12, "concrete"),
+        ("paving", 0.15, "kerb_paving"), ("terrace", 0.15, "pave_beige"), ("terracotta", 0.15, "pave_beige"),
         ("court_tile", 0.15, "tile_ardesia"), ("lawn", 0.12, "lawn")]
 MIN_AREA = {"paving": 0.6, "lawn": 0.5}
 
@@ -402,26 +402,16 @@ def build_ground(M, col, t1, cut):
     S = SITE["surfaces"]
     out = []
     mb = C.MeshBuilder()
-    # every road in beige pavers (remarks, slides 1, 3, 8, 10); the pavements in grey pavers (client, 19-10)
-    L.prism(mb, "pave_beige", t1.difference(cut), -0.65, 0.0, zf=zf)
-    out += mb.build("GROUND_ROADS_PAVERS", col, M)
+    # roads, lanes and pavements as first built (client, 19-10: the paving is done by hand in D5)
+    L.prism(mb, "asphalt", t1.difference(cut), -0.65, 0.0, zf=zf)
+    out += mb.build("GROUND_ASPHALT_BASE", col, M)
     for key, off, mat in OFFS:
         keep = [g for g in polys(S.get(key, [])) if g.area >= MIN_AREA.get(key, 0.05)]
         g = unary_union(keep).difference(cut) if keep else Polygon()
         if g.is_empty:
             continue
         mb = C.MeshBuilder()
-        if key == "lane":
-            # the plan's herringbone strips: lanes by the villas (beige), trottoirs of the entrance roads,
-            # the fountain ring and the parking (grey, client 19-10)
-            near = unary_union([to_world(DPX_FOOT, d["c"], d["rot_deg"]) for d in SITE["duplexes"]]).buffer(26.0)
-            entrance = unary_union([Polygon(w["poly"]["ext"]).buffer(0) for w in SITE["water"] if w["kind"] in ("fountain", "median", "resto_bassin")]
-                                   + polys(S.get("concrete", [])) + [Point(SITE["petanque"]["c"])]).buffer(30.0)
-            near = near.difference(entrance)
-            L.prism(mb, mat, g.intersection(near), -0.65, off, zf=zf)
-            L.prism(mb, "pave_side", g.difference(near), -0.65, off, zf=zf)
-        else:
-            L.prism(mb, mat, g, -0.65, off, zf=zf)
+        L.prism(mb, mat, g, -0.65, off, zf=zf)
         out += mb.build(f"GROUND_{key.upper()}", col, M)
     return out
 
