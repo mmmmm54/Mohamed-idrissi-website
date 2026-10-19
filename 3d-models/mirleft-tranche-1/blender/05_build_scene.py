@@ -433,9 +433,11 @@ def build_ground(M, col, t1, cut):
     lanes = [g for g in polys(S.get("lane", [])) if g.area >= MIN_AREA.get("lane", 0.05)]
     strip = [g for g in lanes if g.area > 200 and g.intersects(orange.buffer(3.0))]
     cm = SITE["commerces"]
-    west = to_world(box(-80.0, -80.0, -10.6, 80.0), cm["c"], cm["rot_deg"])     # the side towards D-1/D-2
+    west = to_world(box(-80.0, -80.0, -9.0, 80.0), cm["c"], cm["rot_deg"])      # the side towards D-1/D-2
     strip_grey = unary_union(strip).difference(west)                           # its north and east sides, by the road
-    g = unary_union(strip).intersection(west).difference(cut)
+    pav = [g for g in polys(S.get("paving", [])) if g.area >= MIN_AREA.get("paving", 0.05)]
+    pav_west = [q for q in pav if q.intersects(orange.buffer(4.0)) and west.contains(q.representative_point())]
+    g = unary_union([unary_union(strip).intersection(west)] + pav_west).difference(cut)
     if not g.is_empty:
         mb = C.MeshBuilder()
         L.prism(mb, "pave_beige", g, -0.65, 0.02, zf=zf)
@@ -445,7 +447,7 @@ def build_ground(M, col, t1, cut):
     zone = unary_union(polys(S.get("terracotta", [])) + polys(S.get("terrace", [])) + polys(S.get("court_tile", []))).buffer(4.0)
     villas = unary_union([to_world(DPX_FOOT, d["c"], d["rot_deg"]) for d in SITE["duplexes"]]).buffer(8.0)
     pav = [g for g in polys(S.get("paving", [])) if g.area >= MIN_AREA.get("paving", 0.05)]
-    tro = [g for g in pav if g.intersects(zone) and not g.intersects(villas)]
+    tro = [g for g in pav if g.intersects(zone) and not g.intersects(villas) and not west.contains(g.representative_point())]
     g = unary_union(tro).difference(cut)
     if not g.is_empty or not strip_grey.is_empty:
         mb = C.MeshBuilder()
@@ -453,7 +455,7 @@ def build_ground(M, col, t1, cut):
         L.prism(mb, "pave_side", strip_grey.difference(cut), -0.65, 0.02, zf=zf)
         out.extend(mb.build("GROUND_TROTTOIRS_COMMERCES_RESTAURANT", col, M))
     print(f"  trottoirs along the commerces and the restaurant: {len(tro)} pieces")
-    taken = unary_union(strip + tro)
+    taken = unary_union(strip + tro + pav_west)
     for key, off, mat in OFFS:
         keep = [g for g in polys(S.get(key, [])) if g.area >= MIN_AREA.get(key, 0.05)]
         if key in ("lane", "paving"):
