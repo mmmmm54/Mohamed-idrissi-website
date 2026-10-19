@@ -428,23 +428,17 @@ def build_ground(M, col, t1, cut):
             L.prism(mb, mat, part, z0, z1, zf=zf)
             out.extend(mb.build(name, col, M))
     split("base", t1.difference(cut), -0.65, 0.0)
-    # client 19-10: round the commerces, the terracotta and the small herringbone pieces inside it in the
-    # plaza's light grey herringbone; the herringbone strip between the commerces and D-1/D-2 in beige
+    # client 19-10: the herringbone strip between the commerces and D-1/D-2 in beige
     orange = unary_union(polys(S.get("terracotta", [])))
     lanes = [g for g in polys(S.get("lane", [])) if g.area >= MIN_AREA.get("lane", 0.05)]
-    filled = unary_union([Polygon(q.exterior) for q in L.as_polys(orange)]).buffer(1.5)     # its holes included
-    inner = [g for g in lanes if g.area < 60 and g.intersection(filled.buffer(1.5)).area > 0.5 * g.area]
     strip = [g for g in lanes if g.area > 200 and g.intersects(orange.buffer(3.0))]
-    for parts, mat, name, off in (([orange] + inner, "terrace_hb", "GROUND_COMMERCES_SURROUND", 0.15), (strip, "pave_beige", "GROUND_COMMERCE_STRIP_BEIGE", 0.02)):
-        g = unary_union(parts).difference(cut)
-        if not g.is_empty:
-            mb = C.MeshBuilder()
-            L.prism(mb, mat, g, -0.65, off, zf=zf)
-            out.extend(mb.build(name, col, M))
-    taken = unary_union(inner + strip)
+    g = unary_union(strip).difference(cut)
+    if not g.is_empty:
+        mb = C.MeshBuilder()
+        L.prism(mb, "pave_beige", g, -0.65, 0.02, zf=zf)
+        out.extend(mb.build("GROUND_COMMERCE_STRIP_BEIGE", col, M))
+    taken = unary_union(strip)
     for key, off, mat in OFFS:
-        if key == "terracotta":
-            continue                                   # built above with the commerces' surround
         keep = [g for g in polys(S.get(key, [])) if g.area >= MIN_AREA.get(key, 0.05)]
         if key == "lane":
             keep = [g for g in keep if not taken.contains(g.representative_point())]
