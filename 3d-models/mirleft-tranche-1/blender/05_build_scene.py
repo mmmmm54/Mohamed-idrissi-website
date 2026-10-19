@@ -392,23 +392,49 @@ def build_surroundings(M, col, site, t1, Hsite):
 # lanes (herringbone) and pavements as first built (client, 19-10: their paving is done by hand in D5);
 # rev 4: the surrounds of the commerces and the restaurant in beige pavers, the playground in beige tiles
 OFFS = [("lane", 0.02, "lane"), ("ramp", 0.03, "concrete"), ("stabilise", 0.08, "stabilise"), ("concrete", 0.12, "concrete"),
-        ("paving", 0.15, "kerb_paving"), ("terrace", 0.15, "pave_beige"), ("terracotta", 0.15, "pave_beige"),
+        ("paving", 0.15, "kerb_paving"), ("terrace", 0.15, "terrace_hb"), ("terracotta", 0.15, "terracotta"),
         ("court_tile", 0.15, "tile_ardesia"), ("lawn", 0.12, "lawn")]
 MIN_AREA = {"paving": 0.6, "lawn": 0.5}
+
+
+def entrance_zone():
+    """The entrance zone (round the fountain, the median, the restaurant bassins, the parking and the
+    pétanque), away from the villas: its ground is kept apart so it can be finished on its own in D5."""
+    near = unary_union([to_world(DPX_FOOT, d["c"], d["rot_deg"]) for d in SITE["duplexes"]]).buffer(26.0)
+    ent = unary_union([Polygon(w["poly"]["ext"]).buffer(0) for w in SITE["water"] if w["kind"] in ("fountain", "median", "resto_bassin")]
+                      + polys(SITE["surfaces"].get("concrete", [])) + [Point(SITE["petanque"]["c"])]).buffer(30.0)
+    return unary_union([ent, SITE_T1.difference(near)])
+
+
+# ground split in separate objects, each with its own material, so the client can finish every part by
+# hand in D5 (19-10): roads, lanes / trottoirs and pavements of the villas apart from those of the entrance
+SPLIT = {"base": ("asphalt", "asphalt_ent", "GROUND_ROADS_VILLAS", "GROUND_ROADS_ENTRANCE"),
+         "lane": ("lane", "lane_ent", "GROUND_LANES_VILLAS", "GROUND_TROTTOIRS_HERRINGBONE_ENTRANCE"),
+         "paving": ("kerb_paving", "kerb_ent", "GROUND_PAVEMENTS_VILLAS", "GROUND_TROTTOIRS_KERB_ENTRANCE")}
 
 
 def build_ground(M, col, t1, cut):
     zf = hz
     S = SITE["surfaces"]
     out = []
-    mb = C.MeshBuilder()
-    # roads, lanes and pavements as first built (client, 19-10: the paving is done by hand in D5)
-    L.prism(mb, "asphalt", t1.difference(cut), -0.65, 0.0, zf=zf)
-    out += mb.build("GROUND_ASPHALT_BASE", col, M)
+    ent = entrance_zone()
+
+    def split(key, g, z0, z1):
+        m_v, m_e, n_v, n_e = SPLIT[key]
+        for part, mat, name in ((g.difference(ent), m_v, n_v), (g.intersection(ent), m_e, n_e)):
+            if part.is_empty:
+                continue
+            mb = C.MeshBuilder()
+            L.prism(mb, mat, part, z0, z1, zf=zf)
+            out.extend(mb.build(name, col, M))
+    split("base", t1.difference(cut), -0.65, 0.0)
     for key, off, mat in OFFS:
         keep = [g for g in polys(S.get(key, [])) if g.area >= MIN_AREA.get(key, 0.05)]
         g = unary_union(keep).difference(cut) if keep else Polygon()
         if g.is_empty:
+            continue
+        if key in SPLIT:
+            split(key, g, -0.65, off)
             continue
         mb = C.MeshBuilder()
         L.prism(mb, mat, g, -0.65, off, zf=zf)
@@ -546,6 +572,7 @@ def ground_top(x, y):
 RISER = 0.15
 POOL_DROP = 1.00       # the pool court lowered 1.00 m more (15-10 request), its gradins top with it
 DPX_FOOT = None
+SITE_T1 = None
 PAV_DY = 1.30          # restaurant pavilion: its centre on the 12-10 axis, 1.30 m behind the block's centre
 
 
@@ -661,8 +688,14 @@ def main():
     M["terrain_cut"] = M["mod"].simple("T10_Terrain_Cut_Soil", "#8C6E52", 0.95, 0.0, 6.0, 0.35, 0.3)
     M["kerb_paving"] = M["kerb"]
     M["site_land"] = site_land_material()
+    # separate materials for the entrance zone's roads and trottoirs (client, 19-10: finished by hand in D5)
+    M["asphalt_ent"] = M["asphalt"].copy(); M["asphalt_ent"].name = "M11_Asphalt_Entrance"
+    M["lane_ent"] = M["lane"].copy(); M["lane_ent"].name = "T21_Trottoir_Herringbone_Entrance"
+    M["kerb_ent"] = M["kerb"].copy(); M["kerb_ent"].name = "T22_Trottoir_Kerb_Entrance"
     site = Polygon(SITE["boundary"])
     t1 = P(SITE["t1_region"])
+    global SITE_T1
+    SITE_T1 = t1
     cols = {k: C.collection(k) for k in ("00_SURROUNDINGS", "01_TERRAIN", "02_GROUND", "03_DUPLEX", "04_PUBLIC", "05_POOL", "06_LANDSCAPE", "06_TREES_PALMS", "07_CAMERAS", "SRC")}
     cols["SRC"].hide_render = True
 

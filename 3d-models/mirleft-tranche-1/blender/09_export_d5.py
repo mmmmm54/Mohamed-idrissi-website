@@ -136,8 +136,11 @@ UVs are box-projected in metres divided by each texture's tile size, so the text
 The material names are the Blender ones: `T13_Travertine_Planks` (pool deck), `M04_Stone_Rubble` (stone walls), `D05_Bejmat_Terre_De_Sienne`, and so on.
 
 ## Rev 4 finishes (remarks on the D5 model)
-- Roads `M11_Asphalt`, lanes `T01_Pavers_Herringbone_Charcoal` and pavements `Kerb_Concrete`: as first built, to pave in D5.
-- `T17_Pavers_Beige_Herringbone`: the surrounds of the commerces and the restaurant, the villa entrance paths.
+- The ground is split so each part can be finished on its own in D5 (separate objects and materials):
+  - by the villas: roads `GROUND_ROADS_VILLAS` (`M11_Asphalt`), lanes `GROUND_LANES_VILLAS` (`T01_Pavers_Herringbone_Charcoal`), pavements `GROUND_PAVEMENTS_VILLAS` (`Kerb_Concrete`);
+  - in the entrance zone: roads `GROUND_ROADS_ENTRANCE` (`M11_Asphalt_Entrance`), herringbone trottoirs `GROUND_TROTTOIRS_HERRINGBONE_ENTRANCE` (`T21_Trottoir_Herringbone_Entrance`), kerb trottoirs `GROUND_TROTTOIRS_KERB_ENTRANCE` (`T22_Trottoir_Kerb_Entrance`);
+  - commerce terrace `GROUND_TERRACOTTA` (`T03_Terracotta_Herringbone`), restaurant terrace and plaza `GROUND_TERRACE` (`T02_Pavers_Herringbone_Light`), playground `GROUND_COURT_TILE` (`T18_Tile_Ardesia_Beige`), villa entrance paths and rear terraces `DUPLEX_REAR_TERRACES_ENTRANCES`.
+- Beige paver and grey trottoir textures are in `data/textures/` of the repository if you want them (`TEX_PAVERS_BEIGE_HERRINGBONE.jpg`, `TEX_PAVERS_SIDEWALK_GREY.jpg`).
 - `T18_Tile_Ardesia_Beige`: the ground of the playground area by the pool (AZUVI Ardesia Nature type, 30 x 60).
   In D5 it can be swapped for the real product's texture if you have it.
 - `T19_Tile_Jade_Green`: the two pools (La Platera Jade type, 30 x 60).

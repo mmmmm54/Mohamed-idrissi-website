@@ -415,7 +415,7 @@ def pavilion(M, col, rear_bassin=False, name="SRC_RESTAURANT", plinth=-1.80, cou
                 L.prism(mb, "stone", L.ring_poly(h, 0.08), -0.60, 0.40)
                 L.prism(mb, "lawn", h.buffer(-0.08, join_style=2), -0.60, 0.38, sides=False)
         L.prism(mb, "stone", REAR_TERRACE, plinth, 0.19)            # rear terrace under the pergolas
-        L.prism(mb, "pave_beige", REAR_TERRACE, 0.19, 0.20)          # rev 4: the surround in beige pavers
+        L.prism(mb, "terrace", REAR_TERRACE, 0.19, 0.20)
     # cour anglaise: walls down to the sous-sol and a bronze railing
     if cour:
         L.prism(mb, "render", L.ring_poly(COUR, 0.01), -3.20, 0.20)
@@ -556,7 +556,7 @@ C_FOOT = unary_union([box(*t[:4]) for t in C_TOWERS] + [C_NORTH, C2_BODY, C1_BOD
 def commerces(M, col, name="SRC_COMMERCES"):
     mb = C.MeshBuilder()
     towers = unary_union([box(*t[:4]) for t in C_TOWERS])
-    L.prism(mb, "pave_beige", C_FOOT.buffer(0.15, join_style=2).difference(unary_union(C_WELLS)), -1.20, 0.20)
+    L.prism(mb, "terrace", C_FOOT.buffer(0.15, join_style=2).difference(unary_union(C_WELLS)), -1.20, 0.20)
 
     def rule(p, q, nx, ny, Lg):
         up = windows(Lg, 5.20, 6.95, w=0.80, gap=1.80, n_max=4) if Lg > 2.0 else []   # upper row, as the pavilion's etage
