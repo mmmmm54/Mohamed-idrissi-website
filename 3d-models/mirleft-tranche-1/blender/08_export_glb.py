@@ -120,6 +120,7 @@ TEX = {
     "D18_Stone_Cladding_Beige": (tinted(os.path.join(D5, "M04_Stone_Rubble_COL.jpg"), "cladding", "#BC9461", "#C3B39D"), 1.8),
     "D19_Coping_Beige_Stone": (gen_tiles("coping_beige", 0, 0, "#CDBBA6", None, (205, 187, 166), noise=10), 1.0),
     "T17_Pavers_Beige_Herringbone": (tinted(os.path.join(GEN, "TEX_PAVERS_BEIGE_HERRINGBONE.jpg"), "pave_beige"), 0.8),
+    "T20_Pavers_Road_Grey": (tinted(os.path.join(GEN, "TEX_PAVERS_ROAD_GREY.jpg"), "pave_road"), 0.8),
     "T18_Tile_Ardesia_Beige": (tinted(os.path.join(GEN, "TEX_TILE_ARDESIA_BEIGE.jpg"), "tile_ardesia"), 1.2),
     "T19_Tile_Jade_Green": (tinted(os.path.join(GEN, "TEX_TILE_JADE_GREEN.jpg"), "tile_jade"), 1.2),
 }

@@ -402,7 +402,7 @@ def build_ground(M, col, t1, cut):
     S = SITE["surfaces"]
     out = []
     mb = C.MeshBuilder()
-    L.prism(mb, "pave_beige", t1.difference(cut), -0.65, 0.0, zf=zf)
+    L.prism(mb, "pave_road", t1.difference(cut), -0.65, 0.0, zf=zf)   # 19-10: the roads read as roads again
     out += mb.build("GROUND_ROADS_PAVERS", col, M)
     for key, off, mat in OFFS:
         keep = [g for g in polys(S.get(key, [])) if g.area >= MIN_AREA.get(key, 0.05)]
@@ -492,6 +492,16 @@ def build_walls(M, col, DPX, openings=Polygon()):
     patches = [q for q in L.as_polys(shut) if q.area < 0.8 and q.distance(garden) < 1e-3]
     garden = unary_union([garden] + patches).difference(houses).difference(openings)   # opened at the gates
     print(f"  garden wall gaps closed: {len(patches)}")
+    # 19-10: D-1 to D-4 open onto their lane at the front (plan 12-10: no wall drawn there); the tall
+    # garden walls in front of the houses become the villa drawing's low stone wall with its coping
+    fronts = unary_union([to_world(box(-14.0, -14.0, 14.0, -7.40), d["c"], d["rot_deg"]) for d in SITE["duplexes"] if d["type"] == "B"])
+    low = garden.intersection(fronts)
+    garden = garden.difference(fronts)
+    for g in L.as_polys(low):
+        if g.area < 0.02:
+            continue
+        L.prism(mb, "cladding", g, -0.40, 0.70, zf=zf)
+        L.prism(mb, "coping_beige", g.buffer(0.04, join_style=2).intersection(low.buffer(0.04, join_style=2)), 0.70, 0.78, zf=zf)
     for g in L.as_polys(garden):
         L.prism(mb, "render", g, -0.40, 1.80, zf=zf)
         L.prism(mb, "trim", g.buffer(0.03, join_style=2).difference(houses), 1.80, 1.85, zf=zf)

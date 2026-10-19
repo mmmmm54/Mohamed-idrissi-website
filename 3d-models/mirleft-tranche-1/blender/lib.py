@@ -136,12 +136,12 @@ def tnoise(n, beta, seed, aniso=1.0):
     return s / s.max()
 
 
-def herringbone(path, n=1024, units=8, seed=3):
+def herringbone(path, n=1024, units=8, seed=3, pal=None, joint="#A39283"):
     """90-degree herringbone of 2:1 pavers, tileable; units = paver widths (0.10 m) per tile edge."""
     rng = np.random.default_rng(seed)
     px = n / units
-    pal = [hexc(c) for c in ("#D9BEA3", "#CFB295", "#DCC5AB", "#C9AA8F", "#D3B59B", "#E0CBB2")]
-    joint = hexc("#A39283")
+    pal = [hexc(c) for c in (pal or ("#D9BEA3", "#CFB295", "#DCC5AB", "#C9AA8F", "#D3B59B", "#E0CBB2"))]
+    joint = hexc(joint)
     img = np.zeros((n, n, 3), np.float32) + joint
     grain = tnoise(n, 1.1, seed + 1)[..., None]
     yy, xx = np.mgrid[0:n, 0:n]
@@ -230,6 +230,7 @@ def marble_band(path, seed=11, n=1024):
 
 TEXTURES = {
     "pavers": ("TEX_PAVERS_BEIGE_HERRINGBONE.jpg", 0.80),
+    "road": ("TEX_PAVERS_ROAD_GREY.jpg", 0.80),
     "ardesia": ("TEX_TILE_ARDESIA_BEIGE.jpg", 1.20),
     "jade": ("TEX_TILE_JADE_GREEN.jpg", 1.20),
     "band": ("TEX_STONE_BAND_OCHRE.jpg", 0.80),
@@ -243,6 +244,8 @@ def texture(key):
     if not os.path.exists(path):
         if key == "pavers":
             herringbone(path)
+        elif key == "road":                     # road pavers: grey-taupe, as the lane of the villa reference image
+            herringbone(path, seed=5, pal=("#A9A29B", "#9C958E", "#B3ACA4", "#928B84", "#A49C93", "#B8B0A6"), joint="#7C766F")
         elif key == "ardesia":                  # beige slate-look porcelain, 30 x 60 (AZUVI Ardesia Nature type)
             slate_tiles(path, "#C4B092", "#DDCFB6", "#B08A55", "#B9B0A4", 21, aniso=1.8)
         elif key == "jade":                     # green-grey stone-look pool tile, 30 x 60 (La Platera Jade type)
@@ -332,6 +335,7 @@ def materials():
                      or mod.stone_wall("D18_Stone_Cladding_Beige"))
     M["coping_beige"] = mod.simple("D19_Coping_Beige_Stone", "#CDBBA6", 0.6, 0.0, 20.0, 0.12, 0.1)
     M["pave_beige"] = img_mat("T17_Pavers_Beige_Herringbone", "pavers", 0.8, 0.35)
+    M["pave_road"] = img_mat("T20_Pavers_Road_Grey", "road", 0.8, 0.35)
     M["tile_ardesia"] = img_mat("T18_Tile_Ardesia_Beige", "ardesia", 0.55, 0.25)
     M["tile_jade"] = img_mat("T19_Tile_Jade_Green", "jade", 0.35, 0.2)
     M["mod"] = mod

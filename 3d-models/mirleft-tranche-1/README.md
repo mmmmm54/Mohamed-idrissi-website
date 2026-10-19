@@ -60,7 +60,7 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
   - **Front garden**: low stone-clad wall with a beige coping, gate pillars and a timber gate in front of the entrance path (façade principale), and a planted strip behind it.
   - **Rear**: the paved terrace behind the salons (plan RDC, 2.05 m deep). It follows the graded ground (never above the salons' floor) and the lawn is cut round it (19-10).
 - **Client corrections (19-10)**: the 43 tree pits ('1.2m' circles) in front of the villas are removed with their trees (14 kept elsewhere); the garden walls, cut to the permit house, now run to the wider villa N°09 façades (gaps up to 1.2 m closed); the raised 'Jardin' beds take the lawn strip the plan left round them.
-- **Villa entrances (19-10)**: every gate is reachable as on the villa N°09 drawing. Where the plan puts lawn or a garden wall between the gate and the lane (D-1 to D-4 and some others, 23 places), the garden wall is opened in front of the gate and a beige-paved path runs from the lane through the gate to the door.
+- **Villa entrances (19-10)**: every gate is reachable as on the villa N°09 drawing. Where the plan puts lawn or a garden wall between the gate and the lane (D-1 to D-4 and some others, 23 places), the garden wall is opened in front of the gate and a beige-paved path runs from the lane through the gate to the door. At D-1 to D-4 the tall walls in front of the houses, which the plan does not draw, are now the low stone wall of the villa drawing.
 - **Gardens and walls**
   - The gardens are the plan's lawn hatches. Walls run along the garden edges, except the edges that face the house.
   - The 'JARDIN' plots beside D-4 are drawn 0.6 m into that house's band. Their wall stands on the band's edge instead.
@@ -69,7 +69,8 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
   - The 57 circles of Ø 1.2 m ('1.2m') on the front courts are tree pits, with a kerb ring and soil.
   - There are 20 meter cabinets ('Emplacement compteur') and 7 bin enclosures, at the plan's positions.
 - **Ground surfaces** (from the hatches; rev 4 finishes from the remarks)
-  - Every road and lane of the tranche (the entrance roads, the roads between the rows, the 6 m lanes, the commerce road, the parking aisles): beige herringbone pavers, 20 × 10 cm ('pavé beige', slides 1, 3, 8 and 10).
+  - The 6 m lanes by the duplexes: beige herringbone pavers, 20 × 10 cm ('pavé beige', slides 3, 8 and 10).
+  - The roads (the entrance, the ring road round the fountain, the roads either side of the median, the parking aisles): pavers too ('traitement en pavé', slide 1), in grey-taupe herringbone so the roads still read as roads (client, 19-10).
   - The surrounds of the commerces and of the restaurant (the commerce terrace, the TERRASSE RESTAURANT and the plaza): the same beige pavers (slide 2).
   - The area the plan draws as lawn between the pool court, the restaurant and the road (the playground): beige slate-look tiles, 30 × 60 ('carrelage beige', AZUVI Ardesia Nature type, slide 5).
   - Pétanque: stabilisé.
@@ -189,7 +190,7 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 ## Rev 4: remarks on the D5 model (17-10)
 | Slide | Remark | Done |
 |---|---|---|
-| 1 | Entrance roads in pavers; commerces at the restaurant's height; towers the colour of the building | Every road in beige pavers; commerces to +7.85 / +9.20, towers to +12.20; all towers (commerces and restaurant) in the building's render |
+| 1 | Entrance roads in pavers; commerces at the restaurant's height; towers the colour of the building | Roads in grey road pavers; commerces to +7.85 / +9.20, towers to +12.20; all towers (commerces and restaurant) in the building's render |
 | 2 | Surround of the commerces and the restaurant in beige pavers | Commerce terrace, TERRASSE RESTAURANT, plaza and the pavilion's rear terrace in beige pavers |
 | 3, 8 | Lanes next to the duplexes in beige pavers | All lanes in beige pavers |
 | 4 | Restaurant rear: the same entrance door as the main façade | Pointed horseshoe arch in its frame, glazed, between the rear towers |
