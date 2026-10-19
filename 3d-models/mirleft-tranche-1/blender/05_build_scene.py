@@ -411,7 +411,17 @@ def build_ground(M, col, t1, cut):
         if g.is_empty:
             continue
         mb = C.MeshBuilder()
-        L.prism(mb, mat, g, -0.65, off, zf=zf)
+        if key == "lane":
+            # the plan's herringbone strips: lanes by the villas (beige), trottoirs of the entrance roads,
+            # the fountain ring and the parking (grey, client 19-10)
+            near = unary_union([to_world(DPX_FOOT, d["c"], d["rot_deg"]) for d in SITE["duplexes"]]).buffer(26.0)
+            entrance = unary_union([Polygon(w["poly"]["ext"]).buffer(0) for w in SITE["water"] if w["kind"] in ("fountain", "median", "resto_bassin")]
+                                   + polys(S.get("concrete", [])) + [Point(SITE["petanque"]["c"])]).buffer(30.0)
+            near = near.difference(entrance)
+            L.prism(mb, mat, g.intersection(near), -0.65, off, zf=zf)
+            L.prism(mb, "pave_side", g.difference(near), -0.65, off, zf=zf)
+        else:
+            L.prism(mb, mat, g, -0.65, off, zf=zf)
         out += mb.build(f"GROUND_{key.upper()}", col, M)
     return out
 

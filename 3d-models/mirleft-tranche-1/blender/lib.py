@@ -245,7 +245,7 @@ def texture(key):
         if key == "pavers":
             herringbone(path)
         elif key == "sidewalk":                 # pavements (trottoirs): grey pavers (client, 19-10)
-            herringbone(path, seed=5, pal=("#8E8C88", "#85837F", "#979590", "#7E7C78", "#8A8783", "#9C9994"), joint="#605E5B")
+            herringbone(path, seed=5, pal=("#83817D", "#7A7874", "#8C8A85", "#73716D", "#7F7C78", "#908D88"), joint="#57554F")
         elif key == "ardesia":                  # beige slate-look porcelain, 30 x 60 (AZUVI Ardesia Nature type)
             slate_tiles(path, "#C4B092", "#DDCFB6", "#B08A55", "#B9B0A4", 21, aniso=1.8)
         elif key == "jade":                     # green-grey stone-look pool tile, 30 x 60 (La Platera Jade type)

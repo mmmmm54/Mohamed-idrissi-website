@@ -70,7 +70,7 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
   - There are 20 meter cabinets ('Emplacement compteur') and 7 bin enclosures, at the plan's positions.
 - **Ground surfaces** (from the hatches; rev 4 finishes from the remarks)
   - Every road and lane of the tranche (the entrance, the ring road, the roads round the median, the roads between and along the rows, the 6 m lanes, the commerce road, the parking aisles): beige herringbone pavers, 20 × 10 cm ('pavé beige', slides 1, 3, 8 and 10).
-  - The pavements (trottoirs) where people walk: grey herringbone pavers (client, 19-10), so the roads and the pavements read apart.
+  - The trottoirs where people walk: grey herringbone pavers (client, 19-10), so the roads and the trottoirs read apart. That is the pavements, and the plan's herringbone strips of the entrance (round the fountain ring, along the entrance roads, round the parking); the herringbone lanes by the villas stay beige.
   - The surrounds of the commerces and of the restaurant (the commerce terrace, the TERRASSE RESTAURANT and the plaza): the same beige pavers (slide 2).
   - The area the plan draws as lawn between the pool court, the restaurant and the road (the playground): beige slate-look tiles, 30 × 60 ('carrelage beige', AZUVI Ardesia Nature type, slide 5).
   - Pétanque: stabilisé.
