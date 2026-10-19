@@ -282,6 +282,9 @@ def img_mat(name, key, rough=0.75, bump=0.2):
     return m
 
 
+SAND = "#C8AA86"            # building render (rev 4, client photos)
+
+
 def materials():
     mod = bay("07_build_materials.py")
     M = mod.build()
@@ -316,8 +319,11 @@ def materials():
     M["canvas"] = mod.simple("T15_Parasol_Canvas", "#D9C8A9", 0.85, 0.0, 30.0, 0.08, 0.05)
     M["agave"] = mod.simple("V09_Agave_Leaf", "#7E9B8A", 0.55, 0.0, 20.0, 0.12, 0.05)
     # rev 4 (remarks on the D5 model, villa N°09 drawings and reference images)
-    M["villa"] = (mod.ph_surface("D13_Render_Villa_Beige", "white_plaster_rough_01", 2.5, "#C9AE8F", 0.0, 0.45)
-                  or mod.render_plaster("D13_Render_Villa_Beige", "#D0B697", "#C0A484"))
+    # one sand render for every building of the tranche, matched to the client's photos (rev 4, 19-10):
+    # the built kasbah tower and the villa renders
+    M["villa"] = (mod.ph_surface("D13_Render_Villa_Beige", "white_plaster_rough_01", 2.5, SAND, 0.0, 0.45)
+                  or mod.render_plaster("D13_Render_Villa_Beige", "#D2B492", "#BEA07C"))
+    M["render"] = mod.ph_surface("M01_Render_Sand", "white_plaster_rough_01", 2.5, SAND, 0.0, 0.45) or M["render"]
     M["surround"] = mod.simple("D14_Stone_Surround_Taupe", "#B09A82", 0.85, 0.0, 45.0, 0.22, 0.35)
     M["ledge"] = mod.simple("D15_Stone_Ledge_Grey", "#BAB4AB", 0.7, 0.0, 25.0, 0.12, 0.1)
     M["band"] = img_mat("D16_Stone_Band_Ochre", "band", 0.55, 0.15)

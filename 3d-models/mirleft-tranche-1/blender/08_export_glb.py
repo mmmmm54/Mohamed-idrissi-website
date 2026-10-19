@@ -85,7 +85,7 @@ GEN = os.path.join(ROOT, "data", "textures")          # textures drawn by lib.py
 
 # material -> (texture path, tile size in metres)
 TEX = {
-    "M01_Render_Sand": (tinted(os.path.join(D5, "M01_Render_Sand_COL.jpg"), "render_sand"), 2.5),
+    "M01_Render_Sand": (tinted(os.path.join(D5, "M01_Render_Sand_COL.jpg"), "render_sand", "#D2B289", "#C8AA86"), 2.5),
     "M02_Render_Ochre": (tinted(os.path.join(D5, "M02_Render_Ochre_COL.jpg"), "render_ochre"), 2.5),
     "D04_Render_Trim": (tinted(os.path.join(D5, "M01_Render_Sand_COL.jpg"), "render_trim", "#D2B289", "#E6D3B2"), 2.5),
     "D10_Render_Terre_De_Sienne": (tinted(os.path.join(D5, "M01_Render_Sand_COL.jpg"), "render_sienna", "#D2B289", "#B9774C"), 2.5),
@@ -113,7 +113,7 @@ TEX = {
     "T13_Travertine_Planks": (gen_tiles("planks", 2, 8, "#E5D8C0", "#D7C7AA", (185, 169, 142)), 1.8),
     "T12_Overflow_Grille_Black": (gen_tiles("grille", 16, 16, "#2A2A2C", "#1F1F21", (6, 6, 6), stagger=False), 0.56),
     # rev 4: villa N°09 finishes, beige pavers, beige and green tiles
-    "D13_Render_Villa_Beige": (tinted(os.path.join(D5, "M01_Render_Sand_COL.jpg"), "render_villa", "#D2B289", "#C9AE8F"), 2.5),
+    "D13_Render_Villa_Beige": (tinted(os.path.join(D5, "M01_Render_Sand_COL.jpg"), "render_villa", "#D2B289", "#C8AA86"), 2.5),
     "D14_Stone_Surround_Taupe": (gen_tiles("surround", 0, 0, "#B09A82", None, (176, 154, 130), noise=16), 1.0),
     "D15_Stone_Ledge_Grey": (gen_tiles("ledge", 0, 0, "#BAB4AB", None, (186, 180, 171), noise=10), 1.0),
     "D16_Stone_Band_Ochre": (tinted(os.path.join(GEN, "TEX_STONE_BAND_OCHRE.jpg"), "band"), 0.8),

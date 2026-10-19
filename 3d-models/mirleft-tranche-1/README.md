@@ -222,7 +222,7 @@ Direction arrows and cars. The zebra crossings were put back as paint (15-10).
   - Small palms are modelled as date palms, the round symbols as olive-like trees, and the pool and pétanque trees as drawn.
   - The Ø 1.2 m circles are read as tree pits; the clipped standards against the façades are a choice.
   - The shrubs in the raised beds and all the pool court planting are added (agaves, grasses, rosemary-like and flowering shrubs).
-- **Colours**: the duplexes use a beige render matched to the villa reference images; the restaurant and commerces keep the sand render of the Mirleft Bay model, their towers too (rev 4). The bejmat stays only in the portal frames.
+- **Colours** (rev 4, 19-10): one sand render (#C8AA86) for every building, duplexes, restaurant, commerces and all towers, matched to the client's photos (the built kasbah tower and the villa renders). The bejmat stays only in the portal frames.
 - **Villa N°09, choices where the drawing's views differ** (rev 4, to confirm):
   - The side-part first floor has one window (façade principale and reference image); the plan draws two small bathroom windows.
   - The stair cage is the size of the plans and section (3.09 m per villa, 3.93 m deep); the façades draw it larger.
