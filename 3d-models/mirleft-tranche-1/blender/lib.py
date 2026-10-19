@@ -244,8 +244,8 @@ def texture(key):
     if not os.path.exists(path):
         if key == "pavers":
             herringbone(path)
-        elif key == "road":                     # road pavers: grey-taupe, as the lane of the villa reference image
-            herringbone(path, seed=5, pal=("#A9A29B", "#9C958E", "#B3ACA4", "#928B84", "#A49C93", "#B8B0A6"), joint="#7C766F")
+        elif key == "road":                     # road pavers: grey (client, 19-10: the entrance roads in grey)
+            herringbone(path, seed=5, pal=("#8E8C88", "#85837F", "#979590", "#7E7C78", "#8A8783", "#9C9994"), joint="#605E5B")
         elif key == "ardesia":                  # beige slate-look porcelain, 30 x 60 (AZUVI Ardesia Nature type)
             slate_tiles(path, "#C4B092", "#DDCFB6", "#B08A55", "#B9B0A4", 21, aniso=1.8)
         elif key == "jade":                     # green-grey stone-look pool tile, 30 x 60 (La Platera Jade type)

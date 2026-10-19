@@ -406,6 +406,9 @@ def build_ground(M, col, t1, cut):
     # circulation attenantes au duplex'); the entrance, the ring road, the median roads and the parking
     # in grey road pavers so they read as roads
     near = unary_union([to_world(DPX_FOOT, d["c"], d["rot_deg"]) for d in SITE["duplexes"]]).buffer(26.0)
+    entrance = unary_union([Polygon(w["poly"]["ext"]).buffer(0) for w in SITE["water"] if w["kind"] in ("fountain", "median", "resto_bassin")]
+                           + polys(SITE["surfaces"].get("concrete", [])) + [Point(SITE["petanque"]["c"])]).buffer(30.0)
+    near = near.difference(entrance)          # the entrance zone stays grey (client, 19-10)
     base = t1.difference(cut)
     L.prism(mb, "pave_beige", base.intersection(near), -0.65, 0.0, zf=zf)
     L.prism(mb, "pave_road", base.difference(near), -0.65, 0.0, zf=zf)
