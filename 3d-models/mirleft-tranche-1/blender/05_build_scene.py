@@ -480,19 +480,35 @@ def build_road_paint(M, col):
     return mb.build("ROAD_PAINT_CROSSINGS", col, M)
 
 
-def build_walls(M, col):
+def build_walls(M, col, DPX):
     mb = C.MeshBuilder()
     zf = hz
+    houses = unary_union([to_world(DPX.RDC, d["c"], d["rot_deg"]) for d in SITE["duplexes"]])
+    garden = unary_union([Polygon(w["poly"]["ext"], w["poly"]["holes"]).buffer(0) for w in SITE["walls"] if w["kind"] == "garden"])
+    # rev 4 (19-10): the garden walls were cut to the permit house; close the gaps the wider villa N°09
+    # leaves (up to 1.2 m) so every wall meets its façade, and fill the small steps between wall pieces
+    r = 0.60
+    shut = unary_union([garden, houses]).buffer(r, join_style=2).buffer(-r, join_style=2).difference(garden).difference(houses)
+    patches = [q for q in L.as_polys(shut) if q.area < 0.8 and q.distance(garden) < 1e-3]
+    garden = unary_union([garden] + patches).difference(houses)
+    print(f"  garden wall gaps closed: {len(patches)}")
+    for g in L.as_polys(garden):
+        L.prism(mb, "render", g, -0.40, 1.80, zf=zf)
+        L.prism(mb, "trim", g.buffer(0.03, join_style=2).difference(houses), 1.80, 1.85, zf=zf)
     for w in SITE["walls"]:
-        if w["kind"] in ("pool", "retaining"):
-            continue                                                # built with the pool court
+        if w["kind"] in ("pool", "retaining", "garden"):
+            continue                                                # pool court walls: built with the court
         g = Polygon(w["poly"]["ext"], w["poly"]["holes"]).buffer(0)
         mat, cap = ("stone", "deck_stone") if w["kind"] == "planter" else ("render", "trim")
         L.prism(mb, mat, g, -0.40, w["h"], zf=zf)
         L.prism(mb, cap, g.buffer(0.03, join_style=2), w["h"], w["h"] + 0.05, zf=zf)
+    lawn = P(SITE["surfaces"]["lawn"])
     for p in polys(SITE["planters"]):                              # 'Jardin' beds: raised planters
         if p.area < 0.6:
             continue
+        # rev 4 (19-10): the bed takes the lawn strip the plan leaves round it (no grass outside its wall)
+        p = unary_union([p, lawn.intersection(p.buffer(0.20, join_style=2))]).buffer(0.02, join_style=2).buffer(-0.02, join_style=2)
+        p = max(L.as_polys(p), key=lambda q: q.area)
         L.prism(mb, "render", L.ring_poly(p, 0.12), -0.30, 0.45, zf=zf)
         L.prism(mb, "trim", L.ring_poly(p.buffer(0.02, join_style=2), 0.16), 0.45, 0.50, zf=zf)
         L.prism(mb, "lawn", p.buffer(-0.12, join_style=2), -0.30, 0.38, zf=zf, sides=False)
@@ -752,8 +768,15 @@ def main():
     fountain = [Polygon(w["poly"]["ext"], w["poly"]["holes"]) for w in SITE["water"] if w["kind"] == "fountain"]
     if fountain:                          # its basin is cut from the ground: the blue floor shows under the water
         cut.append(unary_union([g.buffer(0.10) for g in fountain]).convex_hull.buffer(0.35))
-    pits = [Point(t["c"]).buffer(0.60, 6) for t in SITE["trees"] if t["kind"] == "pit"]
+    # rev 4 (19-10): the tree pits in front of the villas are removed, with their trees
+    dpx_zone = unary_union([to_world(DPX.FOOT, d["c"], d["rot_deg"]) for d in SITE["duplexes"]]).buffer(5.0)
+    gone = {i for i, t in enumerate(SITE["trees"]) if t["kind"] == "pit" and dpx_zone.contains(Point(t["c"]))}
+    pits = [Point(t["c"]).buffer(0.60, 6) for i, t in enumerate(SITE["trees"]) if t["kind"] == "pit" and i not in gone]
+    print(f"  tree pits removed by the villas: {len(gone)}, kept: {len(pits)}")
     cut.extend(pits)
+    # the villas' rear terraces (plan RDC): on the graded ground, the lawn cut round them
+    terraces = [(to_world(DPX.REAR_TERRACE, d["c"], d["rot_deg"]), hz(*d["c"])) for d in SITE["duplexes"]]
+    cut.extend(g for g, _ in terraces)
     # stairs: across the rows ('ESC 16-17', 'ESC V4', flights read from the plan) and the long stair
     # north of the pool court ('ESCALIERS' 1-10 and 11-21, landing between)
     stair_specs = [(s["name"], stair_plan(s["axis"][0], s["axis"][1], s["flights"]), s["width"], (), None) for s in SITE["stairs"]]
@@ -769,7 +792,11 @@ def main():
     build_ground(M, cols["02_GROUND"], t1, cutp)
     build_water(M, cols["02_GROUND"], cutp)
     build_median(M, cols["02_GROUND"])
-    build_walls(M, cols["02_GROUND"])
+    build_walls(M, cols["02_GROUND"], DPX)
+    mb = C.MeshBuilder()
+    for g, zpad in terraces:                   # follows the slope, never above the salons' floor (+0.20)
+        L.prism(mb, "terrace", g, -0.65, 0.0, zf=lambda x, y, zpad=zpad: min(hz(x, y) + 0.16, zpad + 0.17))
+    mb.build("DUPLEX_REAR_TERRACES", cols["02_GROUND"], M)
     build_road_paint(M, cols["02_GROUND"])
 
     # ---- street furniture: meter cabinets ('Emplacement compteur') and bin enclosures ------------
@@ -821,7 +848,9 @@ def main():
     court = to_world(POOL.COURT, pc["c"], pc["rot_deg"])
     bld = unary_union([to_world(DPX.FOOT, d["c"], d["rot_deg"]) for d in SITE["duplexes"]])   # villa N°09 + rear terrace
     n_skip = 0
-    for t in SITE["trees"]:
+    for i_t, t in enumerate(SITE["trees"]):
+        if i_t in gone:
+            continue
         xy = t["c"]
         q = to_local(Point(xy), pav_c, r["rot_deg"])            # trees of the 12-10 layout on the pavilion:
         if (rfoot.buffer(0.6).contains(q) or PUB.PAV_SOLIDS.distance(q) < (1.8 if t["kind"] == "palm" else 2.6)

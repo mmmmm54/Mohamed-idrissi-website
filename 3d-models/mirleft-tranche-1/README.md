@@ -58,7 +58,8 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
   - **Separation between the two villas' terraces** (remark, slide 10): a wall on the joint across the front terrace and the rear terrace, up to the pergolas, as the drawing shows it on the joint, and a lower one across the roof terraces.
   - **Finishes** (reference images): beige render, taupe stone surrounds round the windows and doors, cream frames, studded dark timber entrance door with a stone canopy, curtains behind the glass.
   - **Front garden**: low stone-clad wall with a beige coping, gate pillars and a timber gate in front of the entrance path (façade principale), and a planted strip behind it.
-  - **Rear**: the paved terrace behind the salons (plan RDC, 2.05 m deep).
+  - **Rear**: the paved terrace behind the salons (plan RDC, 2.05 m deep). It follows the graded ground (never above the salons' floor) and the lawn is cut round it (19-10).
+- **Client corrections (19-10)**: the 43 tree pits ('1.2m' circles) in front of the villas are removed with their trees (14 kept elsewhere); the garden walls, cut to the permit house, now run to the wider villa N°09 façades (gaps up to 1.2 m closed); the raised 'Jardin' beds take the lawn strip the plan left round them.
 - **Gardens and walls**
   - The gardens are the plan's lawn hatches. Walls run along the garden edges, except the edges that face the house.
   - The 'JARDIN' plots beside D-4 are drawn 0.6 m into that house's band. Their wall stands on the band's edge instead.

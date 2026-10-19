@@ -458,8 +458,7 @@ def build(M, col, variant="A"):
             mb.box("door_wood", X(3.90), X(4.95), YW + 0.14, YW + 0.18, zz, zz + 0.08)
         mb.box("coping_beige", X(WX + 0.002), X(4.95), -3.87, YF - 0.002, -0.30, 0.12)   # door step
 
-    # ---- paved terrace behind the salons (plan RDC) ------------------------------------------------
-    L.prism(mb, "terrace", REAR_TERRACE, -0.30, 0.15)
+    # the paved terrace behind the salons (REAR_TERRACE) is built by the scene on the graded ground
 
     obs = mb.build("DPX", col, M)
     ob = L.join(obs, f"SRC_DUPLEX_{variant}")
