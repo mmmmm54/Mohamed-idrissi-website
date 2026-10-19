@@ -480,7 +480,7 @@ def build_road_paint(M, col):
     return mb.build("ROAD_PAINT_CROSSINGS", col, M)
 
 
-def build_walls(M, col, DPX):
+def build_walls(M, col, DPX, openings=Polygon()):
     mb = C.MeshBuilder()
     zf = hz
     houses = unary_union([to_world(DPX.RDC, d["c"], d["rot_deg"]) for d in SITE["duplexes"]])
@@ -490,7 +490,7 @@ def build_walls(M, col, DPX):
     r = 0.60
     shut = unary_union([garden, houses]).buffer(r, join_style=2).buffer(-r, join_style=2).difference(garden).difference(houses)
     patches = [q for q in L.as_polys(shut) if q.area < 0.8 and q.distance(garden) < 1e-3]
-    garden = unary_union([garden] + patches).difference(houses)
+    garden = unary_union([garden] + patches).difference(houses).difference(openings)   # opened at the gates
     print(f"  garden wall gaps closed: {len(patches)}")
     for g in L.as_polys(garden):
         L.prism(mb, "render", g, -0.40, 1.80, zf=zf)
@@ -777,6 +777,25 @@ def main():
     # the villas' rear terraces (plan RDC): on the graded ground, the lawn cut round them
     terraces = [(to_world(DPX.REAR_TERRACE, d["c"], d["rot_deg"]), hz(*d["c"])) for d in SITE["duplexes"]]
     cut.extend(g for g, _ in terraces)
+    # entrance of each villa (villa N°09, façade principale): from the lane through the gate to the door.
+    # Where the plan puts lawn or a garden wall in the way (19-10: the gate opened onto a wall), the wall
+    # is opened in front of the gate and a paved path runs through to the lane
+    lawn_all = P(SITE["surfaces"]["lawn"])
+    walls_g = unary_union([Polygon(w["poly"]["ext"], w["poly"]["holes"]).buffer(0) for w in SITE["walls"] if w["kind"] == "garden"])
+    ENTRY_CUT, entries = [], []
+    for d in SITE["duplexes"]:
+        for sx in (1, -1):
+            a0, a1 = sorted((sx * 3.88, sx * 4.97))
+            b0, b1 = sorted((sx * 3.50, sx * 4.97))
+            out_ = to_world(box(a0, -11.0, a1, -7.32), d["c"], d["rot_deg"])
+            ins_ = to_world(box(b0, -7.07, b1, -3.47), d["c"], d["rot_deg"])
+            ENTRY_CUT.append(to_world(box(a0, -11.0, a1, -7.40), d["c"], d["rot_deg"]))
+            g = unary_union([out_.intersection(unary_union([lawn_all, walls_g])), ins_.intersection(lawn_all)])
+            g = unary_union([q for q in L.as_polys(g) if q.area > 0.05])
+            if not g.is_empty:
+                entries.append(g)
+    cut.extend(entries)
+    print(f"  villa entrance paths through lawn or walls: {len(entries)}")
     # stairs: across the rows ('ESC 16-17', 'ESC V4', flights read from the plan) and the long stair
     # north of the pool court ('ESCALIERS' 1-10 and 11-21, landing between)
     stair_specs = [(s["name"], stair_plan(s["axis"][0], s["axis"][1], s["flights"]), s["width"], (), None) for s in SITE["stairs"]]
@@ -792,11 +811,13 @@ def main():
     build_ground(M, cols["02_GROUND"], t1, cutp)
     build_water(M, cols["02_GROUND"], cutp)
     build_median(M, cols["02_GROUND"])
-    build_walls(M, cols["02_GROUND"], DPX)
+    build_walls(M, cols["02_GROUND"], DPX, unary_union(ENTRY_CUT))
     mb = C.MeshBuilder()
     for g, zpad in terraces:                   # follows the slope, never above the salons' floor (+0.20)
         L.prism(mb, "terrace", g, -0.65, 0.0, zf=lambda x, y, zpad=zpad: min(hz(x, y) + 0.16, zpad + 0.17))
-    mb.build("DUPLEX_REAR_TERRACES", cols["02_GROUND"], M)
+    for g in entries:
+        L.prism(mb, "pave_beige", g, -0.65, 0.15, zf=hz)
+    mb.build("DUPLEX_REAR_TERRACES_ENTRANCES", cols["02_GROUND"], M)
     build_road_paint(M, cols["02_GROUND"])
 
     # ---- street furniture: meter cabinets ('Emplacement compteur') and bin enclosures ------------
