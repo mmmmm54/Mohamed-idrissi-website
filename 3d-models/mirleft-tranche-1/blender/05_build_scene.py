@@ -440,8 +440,21 @@ def build_ground(M, col, t1, cut):
     g = unary_union([unary_union(strip).intersection(west)] + pav_west).difference(cut)
     if not g.is_empty:
         mb = C.MeshBuilder()
-        L.prism(mb, "pave_beige", g, -0.65, 0.02, zf=zf)
+        L.prism(mb, "strip_beige", g, -0.65, 0.02, zf=zf)
         out.extend(mb.build("GROUND_COMMERCE_STRIP_BEIGE", col, M))
+    # client 19-10: the dark squares in the commerce terrace and the two lanes between the villa rows,
+    # each an object with its own material (they shared the lanes' one), to be textured apart in D5
+    squares = [g for g in lanes if g.area < 200 and g.distance(orange) < 0.05]
+    g = unary_union(squares).difference(cut)
+    if not g.is_empty:
+        mb = C.MeshBuilder()
+        L.prism(mb, "terrace_squares", g, -0.65, 0.02, zf=zf)
+        out.extend(mb.build("GROUND_COMMERCE_TERRACE_SQUARES", col, M))
+    rows = sorted((g for g in lanes if g.area > 400 and g.distance(orange) > 5.0), key=lambda g: -g.centroid.x)
+    for k, g in enumerate(rows[:2], 1):                 # 1: by D-1 to D-4, 2: by D-13 to D-18
+        mb = C.MeshBuilder()
+        L.prism(mb, f"lane_{k}", g.difference(cut), -0.65, 0.02, zf=zf)
+        out.extend(mb.build(f"GROUND_LANE_{k}", col, M))
     # client 19-10: the trottoirs along the commerces and the restaurant plaza (to the road) in grey, an
     # object of their own so they can be changed on their own in D5
     zone = unary_union(polys(S.get("terracotta", [])) + polys(S.get("terrace", [])) + polys(S.get("court_tile", []))).buffer(4.0)
@@ -455,7 +468,7 @@ def build_ground(M, col, t1, cut):
         L.prism(mb, "pave_side", strip_grey.difference(cut), -0.65, 0.02, zf=zf)
         out.extend(mb.build("GROUND_TROTTOIRS_COMMERCES_RESTAURANT", col, M))
     print(f"  trottoirs along the commerces and the restaurant: {len(tro)} pieces")
-    taken = unary_union(strip + tro + pav_west)
+    taken = unary_union(strip + tro + pav_west + squares + rows[:2])
     for key, off, mat in OFFS:
         keep = [g for g in polys(S.get(key, [])) if g.area >= MIN_AREA.get(key, 0.05)]
         if key in ("lane", "paving"):
@@ -722,6 +735,11 @@ def main():
     M["asphalt_ent"] = M["asphalt"].copy(); M["asphalt_ent"].name = "M11_Asphalt_Entrance"
     M["lane_ent"] = M["lane"].copy(); M["lane_ent"].name = "T21_Trottoir_Herringbone_Entrance"
     M["kerb_ent"] = M["kerb"].copy(); M["kerb_ent"].name = "T22_Trottoir_Kerb_Entrance"
+    # client 19-10: one material each for the two villa lanes, the commerce terrace squares and the strip
+    for k, src, name in (("lane_1", "lane", "T23_Lane_1_Herringbone"), ("lane_2", "lane", "T24_Lane_2_Herringbone"),
+                         ("terrace_squares", "lane", "T25_Commerce_Terrace_Squares"),
+                         ("strip_beige", "pave_beige", "T26_Commerce_Strip_Beige")):
+        M[k] = M[src].copy(); M[k].name = name
     site = Polygon(SITE["boundary"])
     t1 = P(SITE["t1_region"])
     global SITE_T1
@@ -892,9 +910,11 @@ def main():
     mb = C.MeshBuilder()
     for g, zpad in terraces:                   # follows the slope, never above the salons' floor (+0.20)
         L.prism(mb, "terrace", g, -0.65, 0.0, zf=lambda x, y, zpad=zpad: min(hz(x, y) + 0.16, zpad + 0.17))
+    mb.build("DUPLEX_REAR_TERRACES", cols["02_GROUND"], M)
+    mb = C.MeshBuilder()                       # the entrance paths an object of their own (19-10)
     for g in entries:
         L.prism(mb, "pave_beige", g, -0.65, 0.15, zf=hz)
-    mb.build("DUPLEX_REAR_TERRACES_ENTRANCES", cols["02_GROUND"], M)
+    mb.build("DUPLEX_ENTRANCE_PATHS", cols["02_GROUND"], M)
     build_road_paint(M, cols["02_GROUND"])
 
     # ---- street furniture: meter cabinets ('Emplacement compteur') and bin enclosures ------------
