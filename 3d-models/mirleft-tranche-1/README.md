@@ -69,7 +69,7 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
   - The villas' rear terrace is level with the salons' floor (+0.20), flush with the sliding door's sill, and the gardens round the villas (behind the side-part fronts, 26 lawn pieces) are levelled with it: the lawn lies flat 3 cm under the terrace instead of following the slope. The garden walls keep at least 1.20 m over a raised lawn.
   - The north stair's travertine planks carry on east past its top, over the pavement and the playground tiles that were there, to the trottoir along the restaurant terrace (26.7 m²).
   - No holes in the finished ground: the small holes and slivers the plan leaves in its hatches (and pieces too small to keep), where the road base showed through, are filled with the surface that borders them most (312 pieces, each under 2.5 m², never where a tree pit is).
-  - Parking bays: the 22 separator lines the plan draws in PARKING 1 and PARKING 2 are painted as 10 cm white lines (`ROAD_PAINT_PARKING`), read from the DWG by `blender/01b_parking_lines.py`.
+  - Parking bays: the 34 separator lines the plan draws are painted as 10 cm white lines (`ROAD_PAINT_PARKING`), read from the DWG by `blender/01b_parking_lines.py`: PARKING 1 (12) and PARKING 2 (10), the angled bays by D-17/D-18 (5) and D-19/D-24 (4), and the bays along the kerb north of the commerces (3).
 - **Gardens and walls**
   - The gardens are the plan's lawn hatches. Walls run along the garden edges, except the edges that face the house.
   - The 'JARDIN' plots beside D-4 are drawn 0.6 m into that house's band. Their wall stands on the band's edge instead.
