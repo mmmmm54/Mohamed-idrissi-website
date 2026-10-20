@@ -15,8 +15,8 @@ Revision 15-10: the restaurant is the pavilion of its own plan (3-PLAN_RESTAURAN
 12-10 axis; the stairs are built (level treads, risers of about 15 cm for the height the ground
 gives, flights where the plan draws them); the entrance median is paved, not water; the pedestrian
 crossings are painted on the road; no garden wall along the paved band round D-3/D-4. The pool area
-is 1.00 m lower; the long stair north of it goes down from the row C lane to its deck (19-10: to
-the upper walk east of the gradins, not into the court).
+is 1.00 m lower; the long stair north of it goes down from the row C lane to its deck (19-10: it
+does not reach the court; it links the restaurant side to the row C lane, walled off from the pool).
 Second round of 15-10: the pool court in the style of the reference images (stone, planks, planting,
 parasols, cabanas); the restaurant portal open on its sides as its facades draw it; the D-4 rear
 garden walled, the 'JARDIN' plots beside it in 0.60 m stone planters.
@@ -649,7 +649,7 @@ def stair_level(sp, t):
 POOL_STAIR_MATS = {"tread": "planks", "nose": "coping", "cheek": "stone", "cap": "deck_stone"}
 
 
-def solid_stair(mb, sp, width, pad=0.15, cheeks=(), mats=None, guard=False):
+def solid_stair(mb, sp, width, pad=0.15, cheeks=(), mats=None, guard=False, rail=True):
     """The stair of stair_plan(), wall to wall: level treads, vertical risers, a dark stone nosing at
     each step, a slim handrail on the centre line over each flight (the plan's centre line).
     cheeks: sides (+1 left of A->B, -1 right) that get a retaining wall where the ground beside the
@@ -672,7 +672,7 @@ def solid_stair(mb, sp, width, pad=0.15, cheeks=(), mats=None, guard=False):
         t0, t1 = (t, t + 0.30) if h > 0 else (t - 0.30, t)
         L.prism(mb, mats["nose"], quad(t0, t1, -width / 2, width / 2), z - 0.02, z + 0.005, sides=False)
         L.prism(mb, mats["nose"], quad(t - 0.004, t + 0.004, -width / 2, width / 2), z - abs(h), z)
-    for (t0, t1, _), n in zip(flights, ns):              # centre handrail over the flight
+    for (t0, t1, _), n in zip(flights if rail else [], ns):   # centre handrail over the flight
         a, b = max(0.0, t0 - 0.40), min(Lt, t1 + 0.40)
         za = zA + h * sum(1 for r in risers if r < a)
         zb_ = zA + h * sum(1 for r in risers if r < b)
@@ -820,14 +820,14 @@ def main():
     foot = [to_local(g, pc["c"], pc["rot_deg"]) for g in polys(SITE["surfaces"]["paving"])]
     POOL.layout(ground, unary_union([g for g in foot if g.intersects(win)]))
     # the long stair north of the court ('ESCALIERS' 1-10 and 11-21), along the court's north wall. Client
-    # 19-10: it does not go down into the court; from the upper walk east of the gradins it runs west along
-    # the wall and climbs to the row C lane (plan 12-10, arrow on it). The court's north wall is closed, its
-    # 1 m guard; the flights stay where the plan draws them, with the risers the height gives
-    sp_n = stair_plan(fw(-12.40, 22.175), fw(POOL.WALK[1], 22.175), [(0.0, 0.30, 10), (14.30, 14.90, 11)],
-                      zB=z_deck + POOL.RISE)
+    # 19-10: it has nothing to do with the pool (the court has its own stairs); people from the restaurant
+    # side take it to the north: from the ground at its east end it goes down west to the row C lane. The
+    # court's north wall and the upper walk's north wall stand between it and the pool, unbroken; no
+    # handrails; the flights where the plan draws them, with the risers the height gives
+    sp_n = stair_plan(fw(-12.40, 22.175), fw(8.70, 22.175), [(0.0, 0.60, 10), (14.30, 15.20, 11)])
     ed = [0.0] + sp_n["risers"] + [sp_n["Lt"]]
     north_steps = [(-12.40 + ed[k], -12.40 + ed[k + 1], sp_n["zA"] + sp_n["h"] * k - z_deck) for k in range(len(ed) - 1)]
-    pool_ob, spots = POOL.build(M, cols["SRC"], ground, wp, north_steps=north_steps, north_gap=(8.70, 8.70), north_link=True)
+    pool_ob, spots = POOL.build(M, cols["SRC"], ground, wp, north_steps=north_steps, north_gap=(8.70, 8.70))
     place(pool_ob, "POOL_COURT", pc["c"], pc["rot_deg"], cols["05_POOL"], z=z_deck)
     pool_ob.users_collection[0].objects.unlink(pool_ob)
     pfoot = to_world(POOL.footprint(), pc["c"], pc["rot_deg"])
@@ -900,10 +900,10 @@ def main():
     # stairs: across the rows ('ESC 16-17', 'ESC V4', flights read from the plan) and the long stair
     # north of the pool court ('ESCALIERS' 1-10 and 11-21, landing between)
     stair_specs = [(s["name"], stair_plan(s["axis"][0], s["axis"][1], s["flights"]), s["width"], (), None, False) for s in SITE["stairs"]]
-    stair_specs.append(("ESCALIERS NORD PISCINE", sp_n, 3.45, (1,), POOL_STAIR_MATS, True))
+    stair_specs.append(("ESCALIERS NORD PISCINE", sp_n, 3.45, (1,), POOL_STAIR_MATS, True))   # guard, no rail
     mb_st = C.MeshBuilder()
     for name, sp, w_, cheeks, mats, guard in stair_specs:
-        cut.append(solid_stair(mb_st, sp, w_, cheeks=cheeks, mats=mats, guard=guard))
+        cut.append(solid_stair(mb_st, sp, w_, cheeks=cheeks, mats=mats, guard=guard, rail=not guard))
         print(f"  stair {name}: rise {sp['dz']:+.2f} m, {sp['n']} risers of {abs(sp['h']):.3f} m")
     mb_st.build("STAIRS", cols["02_GROUND"], M)
     cutp = unary_union(cut)
@@ -914,8 +914,16 @@ def main():
     build_median(M, cols["02_GROUND"])
     build_walls(M, cols["02_GROUND"], DPX, unary_union(ENTRY_CUT))
     mb = C.MeshBuilder()
-    for g, zpad in terraces:                   # follows the slope, never above the salons' floor (+0.20)
-        L.prism(mb, "terrace", g, -0.65, 0.0, zf=lambda x, y, zpad=zpad: min(hz(x, y) + 0.16, zpad + 0.17))
+    # client 19-10: the terrace level with the salons' floor (+0.20), flush with the sliding doors' sill;
+    # where the graded ground falls away its edge shows as a low stone base
+    dz_max = 0.0
+    for g, zpad in terraces:
+        top = zpad + DPX.Z_FL
+        low = min(hz(x, y) for x, y in g.exterior.coords)
+        dz_max = max(dz_max, top - (low + 0.16))
+        L.prism(mb, "stone", g, low - 0.65 - top, -0.03, zf=lambda x, y, t=top: t)
+        L.prism(mb, "terrace", g, -0.03, 0.0, zf=lambda x, y, t=top: t)
+    print(f"  rear terraces at the salons' floor: up to {dz_max:.2f} m over the graded ground")
     mb.build("DUPLEX_REAR_TERRACES", cols["02_GROUND"], M)
     mb = C.MeshBuilder()                       # the entrance paths an object of their own (19-10)
     for g in entries:
