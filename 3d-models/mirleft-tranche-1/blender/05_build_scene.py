@@ -428,7 +428,8 @@ def build_ground(M, col, t1, cut):
             mb = C.MeshBuilder()
             L.prism(mb, mat, part, z0, z1, zf=zf)
             out.extend(mb.build(name, col, M))
-    split("base", t1.difference(cut), -0.65, 0.0)
+    gardens = unary_union([gp for gp, _ in GARDENS]) if GARDENS else Polygon()
+    split("base", t1.difference(cut).difference(gardens), -0.65, 0.0)   # a lowered garden shows its lawn, not the base
     # client 19-10: the herringbone strip between the commerces and D-1/D-2 in beige
     orange = unary_union(polys(S.get("terracotta", [])))
     lanes = [g for g in polys(S.get("lane", [])) if g.area >= MIN_AREA.get("lane", 0.05)]
@@ -481,6 +482,14 @@ def build_ground(M, col, t1, cut):
             split(key, g, -0.65, off)
             continue
         mb = C.MeshBuilder()
+        if key == "lawn" and GARDENS:          # the villas' gardens: flat, level with the rear terrace (19-10)
+            for gp, z in GARDENS:
+                part = g.intersection(gp)
+                if part.is_empty:
+                    continue
+                low = min(hz(x, y) for q in L.as_polys(part) for x, y in q.exterior.coords)
+                L.prism(mb, mat, part, low - 0.65 - z, 0.0, zf=lambda x, y, z=z: z)
+            g = g.difference(unary_union([gp for gp, _ in GARDENS]))
         L.prism(mb, mat, g, -0.65, off, zf=zf)
         out += mb.build(f"GROUND_{key.upper()}", col, M)
     return out
@@ -573,9 +582,11 @@ def build_walls(M, col, DPX, openings=Polygon()):
             continue
         L.prism(mb, "cladding", g, -0.40, 0.70, zf=zf)
         L.prism(mb, "coping_beige", g.buffer(0.04, join_style=2).intersection(low.buffer(0.04, join_style=2)), 0.70, 0.78, zf=zf)
+    # 19-10: where a garden is raised to its terrace level the wall still stands 1.20 m over the lawn
+    zg = lambda x, y: max(hz(x, y), (garden_level(x, y, 0.6) or -1e9) - 0.60)
     for g in L.as_polys(garden):
-        L.prism(mb, "render", g, -0.40, 1.80, zf=zf)
-        L.prism(mb, "trim", g.buffer(0.03, join_style=2).difference(houses), 1.80, 1.85, zf=zf)
+        L.prism(mb, "render", g, -1.60, 1.80, zf=zg)
+        L.prism(mb, "trim", g.buffer(0.03, join_style=2).difference(houses), 1.80, 1.85, zf=zg)
     for w in SITE["walls"]:
         if w["kind"] in ("pool", "retaining", "garden"):
             continue                                                # pool court walls: built with the court
@@ -606,6 +617,9 @@ def ground_top(x, y):
         for key, off, _ in OFFS:
             g = P(SITE["surfaces"].get(key, []))
             _TOPS[key] = (prep(g), off)
+    z = garden_level(x, y)
+    if z is not None:
+        return z
     p = Point(x, y)
     for key, (g, off) in _TOPS.items():
         if g.contains(p):
@@ -617,6 +631,26 @@ RISER = 0.15
 POOL_DROP = 1.00       # the pool court lowered 1.00 m more (15-10 request), its gradins top with it
 DPX_FOOT = None
 SITE_T1 = None
+GARDENS = []           # (world polygon, lawn level): the villas' gardens behind the side-part fronts, level
+                       # with their rear terrace (client 19-10)
+
+
+_GBUF = {}
+
+
+def garden_level(x, y, pad=0.0):
+    p = Point(x, y)
+    for k, (g, z) in enumerate(GARDENS):
+        if pad and (k, pad) not in _GBUF:
+            _GBUF[(k, pad)] = g.buffer(pad)
+        if (_GBUF[(k, pad)] if pad else g).contains(p):
+            return z
+    return None
+
+
+def lawn_top(x, y):
+    z = garden_level(x, y)
+    return hz(x, y) + 0.12 if z is None else z
 PAV_DY = 1.30          # restaurant pavilion: its centre on the 12-10 axis, 1.30 m behind the block's centre
 
 
@@ -878,6 +912,24 @@ def main():
     # the villas' rear terraces (plan RDC): on the graded ground, the lawn cut round them
     terraces = [(to_world(DPX.REAR_TERRACE, d["c"], d["rot_deg"]), hz(*d["c"])) for d in SITE["duplexes"]]
     cut.extend(g for g, _ in terraces)
+    # the gardens behind the side-part fronts (lawn pieces round each villa), flat at the terrace level
+    # (client 19-10: the ground levelled with the terrace instead of the terrace standing on a stone base)
+    GARDENS.clear()
+    _GBUF.clear()
+    lawn_pcs = polys(SITE["surfaces"]["lawn"])
+    used = set()
+    for d in SITE["duplexes"]:
+        house = to_world(box(-DPX.HX, DPX.YF, DPX.HX, 7.60), d["c"], d["rot_deg"])
+        back = to_world(box(-40.0, DPX.YF, 40.0, 40.0), d["c"], d["rot_deg"])
+        z = hz(*d["c"]) + DPX.Z_FL - 0.03
+        for k, q in enumerate(lawn_pcs):
+            if k in used or q.distance(house) > 1.5:
+                continue
+            used.add(k)
+            g = q.intersection(back)
+            if g.area > 1.0:
+                GARDENS.append((g, z))
+    print(f"  villa gardens levelled with their terraces: {len(GARDENS)}")
     # entrance of each villa (villa N°09, façade principale): from the lane through the gate to the door.
     # Where the plan puts lawn or a garden wall in the way (19-10: the gate opened onto a wall), the wall
     # is opened in front of the gate and a paved path runs through to the lane
@@ -905,6 +957,16 @@ def main():
     for name, sp, w_, cheeks, mats, guard in stair_specs:
         cut.append(solid_stair(mb_st, sp, w_, cheeks=cheeks, mats=mats, guard=guard, rail=not guard))
         print(f"  stair {name}: rise {sp['dz']:+.2f} m, {sp['n']} risers of {abs(sp['h']):.3f} m")
+    # client 19-10: the north stair's planks carry on east, past its top, to the trottoir along the
+    # restaurant terrace (over the pavement and the playground tiles that were there)
+    band = to_world(box(8.70, 20.30, 20.0, 24.05), pc["c"], pc["rot_deg"])
+    terr = P(SITE["surfaces"].get("terrace", []))
+    edge = [g for g in polys(SITE["surfaces"]["paving"]) if g.intersects(band) and g.distance(terr) < 0.3]
+    land = band.difference(terr).difference(unary_union(edge) if edge else Polygon())
+    land = max(L.as_polys(land), key=lambda q: q.area)
+    L.prism(mb_st, "planks", land, -0.65, 0.15, zf=hz)
+    cut.append(land)
+    print(f"  north stair planks to the trottoir: {land.area:.1f} m2")
     mb_st.build("STAIRS", cols["02_GROUND"], M)
     cutp = unary_union(cut)
 
@@ -971,7 +1033,7 @@ def main():
         if key == "shrub" and RNG.random() < 0.25:
             key = "shrub_pink"                                   # a flowering one now and then
         ob = bpy.data.objects.new(f"VEG_{key.upper()}_{nveg[0]:03d}", srcv[key].data)
-        ob.location = (xy[0], xy[1], (hz(*xy) + 0.12) if z is None else z)
+        ob.location = (xy[0], xy[1], lawn_top(*xy) if z is None else z)
         ob.rotation_euler = (0, 0, RNG.uniform(0, 6.283))
         ob.scale = (s, s, s if sz is None else sz)
         (veg if key.startswith(("shrub", "agave", "grass")) else cols["06_TREES_PALMS"]).objects.link(ob)
