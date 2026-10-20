@@ -19,7 +19,7 @@ every pair; the drawing shows one villa, its neighbour is its mirror across the 
   Timber pergolas over both terraces ('Pergola en bois', plan TERRASSE 'V/Terrasse').
   Remark of slide 10: the two villas' terraces are separated by a wall on the joint (front terrace,
       rear terrace and roof terrace), as the drawing shows it on the joint.
-  Window and door surrounds in taupe stone, cream frames, studded timber entrance door: from the
+  Window and door surrounds in taupe stone, beige aluminium frames (darker than the render, 20-10), studded timber entrance door: from the
       reference images. Low stone-clad front garden wall with its coping, gate pillars and gate
       (façade principale), paved rear terrace (plan RDC).
 
@@ -262,7 +262,7 @@ def insert(mb, P3, s0, s1, z0, z1, o, wall_mat):
 
 def baie(mb, P3, s0, s1, z0, z1, n, rect):
     """Salon sliding door onto the garden (client 19-10, reference photo): set back in a taupe stone
-    reveal, a flat taupe band round it, slim taupe-bronze frames on staggered leaves, sheer linen curtains
+    reveal, a flat taupe band round it, slim beige aluminium frames on staggered leaves, sheer linen curtains
     hanging in folds (the third leaf left open) and the lit salon behind with its sofa."""
     W = s1 - s0
     fr, dg = 0.06, 0.30                               # frame width, glazing plane

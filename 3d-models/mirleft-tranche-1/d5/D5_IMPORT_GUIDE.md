@@ -43,5 +43,5 @@ The material names are the Blender ones: `T13_Travertine_Planks` (pool deck), `M
   In D5 it can be swapped for the real product's texture if you have it.
 - `T19_Tile_Jade_Green`: the two pools (La Platera Jade type, 30 x 60).
 - Duplexes (villa N°09): `D13_Render_Villa_Beige` walls, `D14_Stone_Surround_Taupe` window and door surrounds,
-  `D15_Stone_Ledge_Grey` and `D16_Stone_Band_Ochre` cornice, `D17_Frame_Cream` frames, `D18_Stone_Cladding_Beige`
+  `D15_Stone_Ledge_Grey` and `D16_Stone_Band_Ochre` cornice, `D17_Frame_Aluminium_Beige` aluminium frames (windows, balcony and garden sliding doors), `D18_Stone_Cladding_Beige`
   front garden walls with `D19_Coping_Beige_Stone`, `M03_Timber_Pergola` pergolas and railings.

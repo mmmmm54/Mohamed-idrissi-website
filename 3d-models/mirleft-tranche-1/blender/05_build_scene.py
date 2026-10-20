@@ -707,9 +707,9 @@ def stair_level(sp, t):
 POOL_STAIR_MATS = {"tread": "planks", "nose": "coping", "cheek": "stone", "cap": "deck_stone"}
 
 
-def solid_stair(mb, sp, width, pad=0.15, cheeks=(), mats=None, guard=False, rail=True):
+def solid_stair(mb, sp, width, pad=0.15, cheeks=(), mats=None, guard=False, rail=False):
     """The stair of stair_plan(), wall to wall: level treads, vertical risers, a dark stone nosing at
-    each step, a slim handrail on the centre line over each flight (the plan's centre line).
+    each step; no handrail on the centre line (client 20-10: removed, rail=True brings it back).
     cheeks: sides (+1 left of A->B, -1 right) that get a retaining wall where the ground beside the
     stair is higher than its treads; an end wall closes B the same way. mats: tread / nose / cheek / cap
     materials (default light pavers, dark stone nosings, render cheeks). guard: the cheeks and the end wall
@@ -979,7 +979,7 @@ def main():
     stair_specs.append(("ESCALIERS NORD PISCINE", sp_n, 3.45, (1,), POOL_STAIR_MATS, True))   # guard, no rail
     mb_st = C.MeshBuilder()
     for name, sp, w_, cheeks, mats, guard in stair_specs:
-        cut.append(solid_stair(mb_st, sp, w_, cheeks=cheeks, mats=mats, guard=guard, rail=not guard))
+        cut.append(solid_stair(mb_st, sp, w_, cheeks=cheeks, mats=mats, guard=guard))
         print(f"  stair {name}: rise {sp['dz']:+.2f} m, {sp['n']} risers of {abs(sp['h']):.3f} m")
     # client 19-10: the north stair's planks carry on east, past its top, to the trottoir along the
     # restaurant terrace (over the pavement and the playground tiles that were there)

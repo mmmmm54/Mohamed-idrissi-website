@@ -146,8 +146,8 @@ FLAT = {   # plain colours (hex), roughness, metallic
     "T14_Lounger_White_Resin": ("#F1EFE9", 0.35, 0.0), "T15_Parasol_Canvas": ("#D9C8A9", 0.85, 0.0),
     "V09_Agave_Leaf": ("#7E9B8A", 0.6, 0.0), "V04_Ornamental_Grass": ("#B7A56E", 0.75, 0.0),
     "H04_Ocean_Atlantic": ("#1E5A6C", 0.08, 0.0),
-    "D17_Frame_Cream": ("#DDD6CB", 0.4, 0.2), "A06_Curtain_Linen": ("#E9DFCF", 0.95, 0.0),
-    "D20_Frame_Taupe_Bronze": ("#6F6352", 0.45, 0.3), "A07_Curtain_Sheer": ("#F2ECE1", 0.9, 0.0),
+    "D17_Frame_Aluminium_Beige": ("#9A7E5E", 0.45, 0.0), "A06_Curtain_Linen": ("#E9DFCF", 0.95, 0.0),
+    "A07_Curtain_Sheer": ("#F2ECE1", 0.9, 0.0),
     "A08_Interior_Warm": ("#A8754E", 0.9, 0.0), "A09_Interior_Floor": ("#C9B394", 0.6, 0.0),
     "A10_Sofa_Linen": ("#D8CBB4", 0.9, 0.0), "A11_Cushion_Grey": ("#8E857A", 0.9, 0.0),
 }

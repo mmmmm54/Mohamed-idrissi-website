@@ -57,13 +57,13 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
   - **Rear terrace**: masonry piers with wooden geometric railings between them ('Cadre en bois').
   - **Pergolas**: timber ('Pergola en bois', 'V/Terrasse'). Over the rear terrace, 15 rafters on a beam and four posts; over the front terrace, 7 rafters.
   - **Separation between the two villas' terraces** (remark, slide 10): a wall on the joint across the front terrace and the rear terrace, up to the pergolas, as the drawing shows it on the joint, and a lower one across the roof terraces.
-  - **Finishes** (reference images): beige render, taupe stone surrounds round the windows and doors, cream frames, studded dark timber entrance door with a stone canopy, curtains behind the glass.
+  - **Finishes** (reference images): beige render, taupe stone surrounds round the windows and doors, beige aluminium frames a shade darker than the render (client 20-10; they came out black), studded dark timber entrance door with a stone canopy, curtains behind the glass.
   - **Front garden**: low stone-clad wall with a beige coping, gate pillars and a timber gate in front of the entrance path (façade principale), and a planted strip behind it.
   - **Rear**: the paved terrace behind the salons (plan RDC, 2.05 m deep). It follows the graded ground (never above the salons' floor) and the lawn is cut round it (19-10).
 - **Client corrections (19-10)**: the 43 tree pits ('1.2m' circles) in front of the villas are removed with their trees (14 kept elsewhere); the garden walls, cut to the permit house, now run to the wider villa N°09 façades (gaps up to 1.2 m closed); the raised 'Jardin' beds take the lawn strip the plan left round them.
 - **Villa entrances (19-10)**: every gate is reachable as on the villa N°09 drawing. Where the plan puts lawn or a garden wall between the gate and the lane (D-1 to D-4 and some others, 23 places), the garden wall is opened in front of the gate and a beige-paved path runs from the lane through the gate to the door. At D-1 to D-4 the tall walls in front of the houses, which the plan does not draw, are now the low stone wall of the villa drawing.
 - **Client corrections (19-10, last round)**
-  - The salon's sliding door onto the garden follows the client's reference photo: four leaves on two tracks with slim taupe-bronze frames, set back in a taupe stone reveal with a flat taupe band round it, sheer linen curtains in folds (the third leaf left open) and the lit salon behind with a sofa and a low table.
+  - The salon's sliding door onto the garden follows the client's reference photo: four leaves on two tracks with slim beige aluminium frames, set back in a taupe stone reveal with a flat taupe band round it, sheer linen curtains in folds (the third leaf left open) and the lit salon behind with a sofa and a low table.
   - The restaurant has the same portal block (pointed horseshoe arches on three sides, frames, frieze, parapet) behind its rear entrance too, on the rear terrace between the pergolas.
   - The long stair north of the pool court has nothing to do with the pool, which has its own stairs: people from the restaurant side take it to the north. From the ground at its east end it goes down west to the row C lane (1.06 m, seven risers in the plan's two flights), with no handrails. The court's north wall and the upper walk's north wall stand unbroken between it and the pool, and a 1 m parapet runs where the ground beside it is higher.
   - The villas' rear terrace is level with the salons' floor (+0.20), flush with the sliding door's sill, and the gardens round the villas (behind the side-part fronts, 26 lawn pieces) are levelled with it: the lawn lies flat 3 cm under the terrace instead of following the slope. The garden walls keep at least 1.20 m over a raised lawn.
@@ -164,7 +164,7 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
   - The other sides are retaining walls in stone, with a parapet about 0.45 m above the paving or lawn outside.
   - The ramp has a 0.90 m guard over the court.
   - The north wall is the 1 m guard of the long stair beside it. It steps down with the stair and opens where the stair lands on the deck.
-- **Stairs** (revision 15-10): built stairs, filled wall to wall. Each step has a level tread, a vertical riser and a dark stone nosing. A handrail runs on the centre line over each flight.
+- **Stairs** (revision 15-10): built stairs, filled wall to wall. Each step has a level tread, a vertical riser and a dark stone nosing. No handrail on the centre line (client 20-10: removed).
   - The flights are where the plan draws them: 'ESC 16-17' and 'ESC V4' across the rows, and the long stair north of the pool.
   - The plan gives no levels. Each stair climbs the height the ground gives between its two ends, in risers of about 15 cm:
 
