@@ -23,6 +23,7 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 | `renders/` | 13 views at 1920 × 1080 (see the list below). |
 | `Mirleft_Tranche_1_views.jpg` | The 13 views on one sheet. |
 | `blender/01_extract_site.py` | Reads the plan (DWG made into primitives by `tools/`) and writes `data/site.json`. |
+| `blender/01b_parking_lines.py` | Adds the parking bays' separator lines of the plan to `data/site.json` (run after 01). |
 | `blender/02_duplex.py` | The duplex pair: villa N°09 and its mirror (rev 4). |
 | `blender/03_public.py` | Restaurant, commerces, toilet block, technical block, pétanque. |
 | `blender/04_pool.py` | The pool court. |
@@ -67,6 +68,8 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
   - The long stair north of the pool court has nothing to do with the pool, which has its own stairs: people from the restaurant side take it to the north. From the ground at its east end it goes down west to the row C lane (1.06 m, seven risers in the plan's two flights), with no handrails. The court's north wall and the upper walk's north wall stand unbroken between it and the pool, and a 1 m parapet runs where the ground beside it is higher.
   - The villas' rear terrace is level with the salons' floor (+0.20), flush with the sliding door's sill, and the gardens round the villas (behind the side-part fronts, 26 lawn pieces) are levelled with it: the lawn lies flat 3 cm under the terrace instead of following the slope. The garden walls keep at least 1.20 m over a raised lawn.
   - The north stair's travertine planks carry on east past its top, over the pavement and the playground tiles that were there, to the trottoir along the restaurant terrace (26.7 m²).
+  - No holes in the finished ground: the small holes and slivers the plan leaves in its hatches (and pieces too small to keep), where the road base showed through, are filled with the surface that borders them most (312 pieces, each under 2.5 m², never where a tree pit is).
+  - Parking bays: the 22 separator lines the plan draws in PARKING 1 and PARKING 2 are painted as 10 cm white lines (`ROAD_PAINT_PARKING`), read from the DWG by `blender/01b_parking_lines.py`.
 - **Gardens and walls**
   - The gardens are the plan's lawn hatches. Walls run along the garden edges, except the edges that face the house.
   - The 'JARDIN' plots beside D-4 are drawn 0.6 m into that house's band. Their wall stands on the band's edge instead.

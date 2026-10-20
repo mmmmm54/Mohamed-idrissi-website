@@ -419,15 +419,16 @@ def build_ground(M, col, t1, cut):
     S = SITE["surfaces"]
     out = []
     ent = entrance_zone()
+    parts = {}                                   # object name -> [(material, area, z0, z1, zf)], built at the end
+
+    def add(name, mat, g, z0, z1, f=zf):
+        if not g.is_empty:
+            parts.setdefault(name, []).append([mat, g, z0, z1, f])
 
     def split(key, g, z0, z1):
         m_v, m_e, n_v, n_e = SPLIT[key]
         for part, mat, name in ((g.difference(ent), m_v, n_v), (g.intersection(ent), m_e, n_e)):
-            if part.is_empty:
-                continue
-            mb = C.MeshBuilder()
-            L.prism(mb, mat, part, z0, z1, zf=zf)
-            out.extend(mb.build(name, col, M))
+            add(name, mat, part, z0, z1)
     gardens = unary_union([gp for gp, _ in GARDENS]) if GARDENS else Polygon()
     split("base", t1.difference(cut).difference(gardens), -0.65, 0.0)   # a lowered garden shows its lawn, not the base
     # client 19-10: the herringbone strip between the commerces and D-1/D-2 in beige
@@ -440,23 +441,15 @@ def build_ground(M, col, t1, cut):
     pav = [g for g in polys(S.get("paving", [])) if g.area >= MIN_AREA.get("paving", 0.05)]
     pav_west = [q for q in pav if q.intersects(orange.buffer(4.0)) and west.contains(q.representative_point())]
     g = unary_union([unary_union(strip).intersection(west)] + pav_west).difference(cut)
-    if not g.is_empty:
-        mb = C.MeshBuilder()
-        L.prism(mb, "strip_beige", g, -0.65, 0.02, zf=zf)
-        out.extend(mb.build("GROUND_COMMERCE_STRIP_BEIGE", col, M))
+    add("GROUND_COMMERCE_STRIP_BEIGE", "strip_beige", g, -0.65, 0.02)
     # client 19-10: the dark squares in the commerce terrace and the two lanes between the villa rows,
     # each an object with its own material (they shared the lanes' one), to be textured apart in D5
     squares = [g for g in lanes if g.area < 200 and g.distance(orange) < 0.05]
     g = unary_union(squares).difference(cut)
-    if not g.is_empty:
-        mb = C.MeshBuilder()
-        L.prism(mb, "terrace_squares", g, -0.65, 0.02, zf=zf)
-        out.extend(mb.build("GROUND_COMMERCE_TERRACE_SQUARES", col, M))
+    add("GROUND_COMMERCE_TERRACE_SQUARES", "terrace_squares", g, -0.65, 0.02)
     rows = sorted((g for g in lanes if g.area > 400 and g.distance(orange) > 5.0), key=lambda g: -g.centroid.x)
     for k, g in enumerate(rows[:2], 1):                 # 1: by D-1 to D-4, 2: by D-13 to D-18
-        mb = C.MeshBuilder()
-        L.prism(mb, f"lane_{k}", g.difference(cut), -0.65, 0.02, zf=zf)
-        out.extend(mb.build(f"GROUND_LANE_{k}", col, M))
+        add(f"GROUND_LANE_{k}", f"lane_{k}", g.difference(cut), -0.65, 0.02)
     # client 19-10: the trottoirs along the commerces and the restaurant plaza (to the road) in grey, an
     # object of their own so they can be changed on their own in D5
     zone = unary_union(polys(S.get("terracotta", [])) + polys(S.get("terrace", [])) + polys(S.get("court_tile", []))).buffer(4.0)
@@ -464,11 +457,8 @@ def build_ground(M, col, t1, cut):
     pav = [g for g in polys(S.get("paving", [])) if g.area >= MIN_AREA.get("paving", 0.05)]
     tro = [g for g in pav if g.intersects(zone) and not g.intersects(villas) and not west.contains(g.representative_point())]
     g = unary_union(tro).difference(cut)
-    if not g.is_empty or not strip_grey.is_empty:
-        mb = C.MeshBuilder()
-        L.prism(mb, "pave_side", g, -0.65, 0.15, zf=zf)
-        L.prism(mb, "pave_side", strip_grey.difference(cut), -0.65, 0.02, zf=zf)
-        out.extend(mb.build("GROUND_TROTTOIRS_COMMERCES_RESTAURANT", col, M))
+    add("GROUND_TROTTOIRS_COMMERCES_RESTAURANT", "pave_side", g, -0.65, 0.15)
+    add("GROUND_TROTTOIRS_COMMERCES_RESTAURANT", "pave_side", strip_grey.difference(cut), -0.65, 0.02)
     print(f"  trottoirs along the commerces and the restaurant: {len(tro)} pieces")
     taken = unary_union(strip + tro + pav_west + squares + rows[:2])
     for key, off, mat in OFFS:
@@ -481,17 +471,42 @@ def build_ground(M, col, t1, cut):
         if key in SPLIT:
             split(key, g, -0.65, off)
             continue
-        mb = C.MeshBuilder()
+        name = f"GROUND_{key.upper()}"
         if key == "lawn" and GARDENS:          # the villas' gardens: flat, level with the rear terrace (19-10)
             for gp, z in GARDENS:
                 part = g.intersection(gp)
                 if part.is_empty:
                     continue
                 low = min(hz(x, y) for q in L.as_polys(part) for x, y in q.exterior.coords)
-                L.prism(mb, mat, part, low - 0.65 - z, 0.0, zf=lambda x, y, z=z: z)
+                add(name, mat, part, low - 0.65 - z, 0.0, lambda x, y, z=z: z)
             g = g.difference(unary_union([gp for gp, _ in GARDENS]))
-        L.prism(mb, mat, g, -0.65, off, zf=zf)
-        out += mb.build(f"GROUND_{key.upper()}", col, M)
+        add(name, mat, g, -0.65, off)
+    # client 19-10: no holes in the finished ground. The plan leaves small holes and slivers in its hatches
+    # (and pieces too small to keep) where only the road base showed; each one under 2.5 m2, away from the
+    # trees' pits, takes the surface that borders it most
+    base = {SPLIT["base"][2], SPLIT["base"][3]}
+    tops = [(n, e) for n, es in parts.items() if n not in base for e in es]
+    other = [Polygon(w["poly"]["ext"], w["poly"]["holes"]).buffer(0) for w in SITE["water"]]
+    other += [Polygon(w["poly"]["ext"], w["poly"]["holes"]).buffer(0) for w in SITE["walls"]] + polys(SITE["planters"])
+    covered = unary_union([e[1] for _, e in tops] + [cut] + other)
+    trees = [Point(t["c"]) for t in SITE["trees"]]
+    n_fill = 0
+    for gap in L.as_polys(t1.difference(covered)):
+        if gap.area > 2.5 or gap.area < 1e-3 or any(gap.contains(t) for t in trees):
+            continue
+        ring = gap.buffer(0.10, join_style=2)
+        best = max(tops, key=lambda ne: ring.intersection(ne[1][1]).area)
+        if ring.intersection(best[1][1]).area < 1e-4:
+            continue
+        mat, _, z0, z1, f = best[1]
+        add(best[0], mat, gap, z0, z1, f)
+        n_fill += 1
+    print(f"  holes and slivers in the ground filled: {n_fill}")
+    for name, es in parts.items():
+        mb = C.MeshBuilder()
+        for mat, g, z0, z1, f in es:
+            L.prism(mb, mat, g, z0, z1, zf=f)
+        out.extend(mb.build(name, col, M))
     return out
 
 
@@ -557,7 +572,16 @@ def build_road_paint(M, col):
         cx, cy = g.centroid.coords[0]
         off = ground_top(cx, cy) - hz(cx, cy) + 0.006
         L.prism(mb, "paint", g, off - 0.002, off, zf=hz, sides=False)
-    return mb.build("ROAD_PAINT_CROSSINGS", col, M)
+    out = mb.build("ROAD_PAINT_CROSSINGS", col, M)
+    # the parking bays' separator lines (01b_parking_lines, client 19-10): 10 cm white lines as drawn
+    mb = C.MeshBuilder()
+    for a, b in SITE.get("parking_lines", []):
+        g = LineString([a, b]).buffer(0.05, cap_style=2)
+        cx, cy = g.centroid.coords[0]
+        off = ground_top(cx, cy) - hz(cx, cy) + 0.006
+        L.prism(mb, "paint", g, off - 0.002, off, zf=hz, sides=False)
+    print(f"  parking bay lines painted: {len(SITE.get('parking_lines', []))}")
+    return out + mb.build("ROAD_PAINT_PARKING", col, M)
 
 
 def build_walls(M, col, DPX, openings=Polygon()):
