@@ -67,7 +67,8 @@ def blocks():
 def mats(M):
     """Tranche 2's ground materials: copies of Tranche 1's under their own names, to be finished apart in D5."""
     for k, src, suffix in (("t2_road", "asphalt", ""), ("t2_parking", "asphalt", "_Parking"), ("t2_pave", "pave_beige", "_Pavements"),
-                           ("t2_path", "pave_beige", "_Paths"), ("t2_kerb", "kerb", ""), ("t2_lawn", "lawn", "_Gardens")):
+                           ("t2_path", "pave_beige", "_Paths"), ("t2_kerb", "kerb", ""), ("t2_lawn", "lawn", "_Gardens"),
+                           ("t2_verge", "lawn", "_Verges")):
         name = f"T2_{M[src].name}{suffix}"                    # T2_<Tranche 1's material>: 08 exports it with that one's texture
         M[k] = M[src].copy()
         M[k].name = name
@@ -83,7 +84,7 @@ class Villa:
         self.gate = v["gate"]
         xs = [self.local(q) for q in self.garden.exterior.coords]
         self.gx0, self.gx1 = min(x for x, _ in xs), max(x for x, _ in xs)
-        self.gy1 = max(y for _, y in xs)
+        self.gy0, self.gy1 = min(y for _, y in xs), max(y for _, y in xs)
 
     def mx(self, x):
         return 12.20 - x if self.m else x
@@ -110,10 +111,6 @@ class Villa:
         d = np.array(p) - self.o
         return float(np.dot(d, self.ex)), float(np.dot(d, self.ey))
 
-    def side_kind(self):
-        """for a side gate: is it on the side of the front terrace (drawing +x) or of the kitchen wing?"""
-        right = self.gate == "right"
-        return "terrace" if right != self.m else "kitchen"
 
 
 def build(M, B, srcv, H):
@@ -135,6 +132,7 @@ def build(M, B, srcv, H):
     vs = [Villa(v) for v in T2["villas"]]
     gardens = unary_union([v.garden for v in vs])
     roads, pave, parking = PL(T2["roads"]), PL(T2["pavements"]), PL(T2["parking"])
+    greens = PL(T2.get("greens", []))
     bays = [P(b) for b in T2["bays"]]
     buildings = [(b["name"], P(b["poly"])) for b in T2["buildings"]]
     public = unary_union([roads, pave, parking])
@@ -156,15 +154,43 @@ def build(M, B, srcv, H):
         zs = [v.zl for v in vs if v.garden.distance(p) <= pad]
         return max(zs) if zs else None
 
-    # ---- the gates: (villa, axis, c, a, b) in frame coordinates: a wall along x at y = c, or along y at x = c
+    # ---- the gates: (villa, axis, c, a, b, kind) in frame coordinates: a wall along x at y = c, or along y
+    # at x = c. The side the extraction chose first; where the street is not right outside it (a building,
+    # a neighbour's garden), the next of: the front (beside the front terrace too), the terrace side, the
+    # kitchen side, and last the rear, by the pool (the villas the plan draws back to front with no street
+    # in front, whose rear is on the street)
+    blocked = unary_union([g for _, g in buildings] + [v.garden for v in vs])
+    outside_ok = lambda p: public.contains(Point(p)) and not blocked.contains(Point(p))
+
+    def gate_options(v):
+        terr = "right" if not v.m else "left"
+        kit = "left" if terr == "right" else "right"
+        order = [v.gate] + [g for g in ("front", terr, kit, "rear") if g != v.gate]
+        for side in order:
+            if side == "front":
+                for ga, gb in (GATE, (8.60, 10.60)):
+                    a, b = sorted((v.mx(ga), v.mx(gb)))
+                    yield (v, "y", v.gy1, a, b, "front" if ga == GATE[0] else "front_terrace"), v.fw((a + b) / 2, v.gy1 + 1.2)
+            elif side == "rear":
+                a, b = sorted((v.mx(9.30), v.mx(11.30)))
+                yield (v, "y", v.gy0, a, b, "rear"), v.fw((a + b) / 2, v.gy0 - 1.2)
+            else:
+                kind = "terrace" if side == terr else "kitchen"
+                y0, y1 = (17.30, 19.30) if kind == "terrace" else (16.20, 17.80)
+                c = v.gx1 if side == "right" else v.gx0
+                yield (v, "x", c, y0, y1, kind), v.fw(c + (1.2 if side == "right" else -1.2), (y0 + y1) / 2)
+
     gates = []
     for v in vs:
-        if v.gate == "front":
-            a, b = sorted((v.mx(GATE[0]), v.mx(GATE[1])))
-            gates.append((v, "y", v.gy1, a, b))
-        else:
-            y0, y1 = (17.30, 19.30) if v.side_kind() == "terrace" else (16.20, 17.80)
-            gates.append((v, "x", v.gx1 if v.gate == "right" else v.gx0, y0, y1))
+        opts = list(gate_options(v))
+        ok = [g for g, p in opts if outside_ok(p)]
+        if not ok:
+            print("  T2: WARNING no street outside any gate of", v.id)
+        gates.append(ok[0] if ok else opts[0][0])
+        if gates[-1][5] == "rear":
+            print("  T2: rear gate (no street in front or beside):", v.id)
+    kinds = [g[5] for g in gates]
+    print("  T2: gates:", {k: kinds.count(k) for k in sorted(set(kinds))})
 
     def gate_box(axis, c, a, b, d=0.6):
         return box(a, c - d, b, c + d) if axis == "y" else box(c - d, a, c + d, b)
@@ -173,8 +199,10 @@ def build(M, B, srcv, H):
     ring = unary_union([v.garden.boundary.buffer(0.10, cap_style=2, join_style=2) for v in vs])
     houses = unary_union([v.g(VB.RDC.union(box(1.03, 18.11, 5.47, 20.11))) for v in vs])
     low_zone, openings = [], []
-    for v, axis, c, a, b in gates:
-        if axis == "y":
+    for v, axis, c, a, b, kind in gates:
+        if kind == "rear":                                    # the rear stays a high wall round the pool
+            pass
+        elif axis == "y":
             low_zone.append(v.f(box(v.gx0 - 1.0, c - 0.60, v.gx1 + 1.0, c + 0.60)))
         else:
             low_zone.append(v.f(box(c - 0.60, 10.0, c + 0.60, v.gy1 + 1.0)))
@@ -198,19 +226,20 @@ def build(M, B, srcv, H):
         L.prism(mb, "cladding", g, -1.20, W_FRONT, zf=zf_low)
         L.prism(mb, "coping_beige", g.buffer(0.04, join_style=2).intersection(low.buffer(0.04, join_style=2)), W_FRONT, W_FRONT + 0.08, zf=zf_low)
     # gate pillars and gates (as Tranche 1's villas): stone-clad pillars with their coping, timber slats
-    for v, axis, c, a, b in gates:
+    for v, axis, c, a, b, kind in gates:
         mid = v.fw(*(((a + b) / 2, c) if axis == "y" else (c, (a + b) / 2)))
         z = max(hz(*mid) + PAVE_DZ, v.zl)
         flat = lambda x, y, z=z: z
+        ph, gh = (1.38, 1.30) if kind != "rear" else (W_GARDEN + 0.15, W_GARDEN - 0.10)   # in a high wall: full height
         for p0, p1 in ((a - 0.40, a), (b, b + 0.40)):
             g = v.f(gate_box(axis, c, p0, p1, 0.20))
-            L.prism(mb, "cladding", g, -1.20, 1.38, zf=flat)
-            L.prism(mb, "coping_beige", g.buffer(0.03, join_style=2), 1.38, 1.46, zf=flat)
+            L.prism(mb, "cladding", g, -1.20, ph, zf=flat)
+            L.prism(mb, "coping_beige", g.buffer(0.03, join_style=2), ph, ph + 0.08, zf=flat)
         n = max(6, int((b - a) / 0.11))
         for k in range(n):
             t = a + 0.03 + (b - a - 0.13) * k / (n - 1)
-            L.prism(mb, "door_wood", v.f(gate_box(axis, c, t, t + 0.07, 0.02)), 0.12, 1.30, zf=flat)
-        for zz in (0.30, 1.10):
+            L.prism(mb, "door_wood", v.f(gate_box(axis, c, t, t + 0.07, 0.02)), 0.12, gh, zf=flat)
+        for zz in (0.30, gh - 0.20):
             L.prism(mb, "door_wood", v.f(gate_box(axis, c, a + 0.02, b - 0.02, 0.02)), zz, zz + 0.08, zf=flat)
     mb.build("T2_WALLS_FRONT_GATES", cols["T2_01_GROUND"], M)
     print(f"  T2: garden walls {high.area:.0f} m2 of plan, low street walls {low.area:.0f} m2, {len(gates)} gates")
@@ -219,16 +248,22 @@ def build(M, B, srcv, H):
     walls = unary_union([high, low])
     mb_l, mb_p, mb_s = C.MeshBuilder(), C.MeshBuilder(), C.MeshBuilder()
     paths = []
-    for (v, axis, c, a, b) in gates:
+    for (v, axis, c, a, b, kind) in gates:
         hd = v.g(hard[v.c])
-        if axis == "y":
+        if kind == "front":
             path = v.f(box(a, 18.05, b, c + 1.0))
-        elif v.side_kind() == "terrace":                      # along the front to the front terrace
+        elif kind == "front_terrace":                         # onto the front terrace
+            path = v.f(box(a, 19.20, b, c + 1.0))
+        elif kind == "rear":                                  # past the pool to the rear terrace
+            path = v.f(box(a, c - 1.0, b, 6.00))
+        elif kind == "terrace":                               # along the front to the front terrace
             x_h = 12.22 if not v.m else -0.02
             path = v.f(box(min(c, x_h) - 0.6, a, max(c, x_h) + 0.6, b))
-        else:                                                 # to the kitchen's side door
+        else:                                                 # to the kitchen's side door, and on along the house to the garden
             x_h = 1.03 if not v.m else 11.17
             path = v.f(box(min(c, x_h) - 0.6, a, max(c, x_h) + 0.6, b))
+            xw0, xw1 = (x_h - 1.10, x_h) if not v.m else (x_h, x_h + 1.10)
+            path = path.union(v.f(box(xw0, 7.40, xw1, b)))
         path = path.intersection(v.garden).difference(hd)
         paths.append(path)
         low_z = min(hz(x, y) for x, y in v.garden.exterior.coords) - 0.65
@@ -254,6 +289,9 @@ def build(M, B, srcv, H):
     mb = C.MeshBuilder()
     L.prism(mb, "t2_kerb", kerb, -0.65, PAVE_DZ + 0.005, zf=hz)
     mb.build("T2_GROUND_KERBS", cols["T2_01_GROUND"], M)
+    mb = C.MeshBuilder()
+    L.prism(mb, "t2_verge", greens, -0.65, 0.12, zf=hz)
+    mb.build("T2_GROUND_LAWN_BY_TRANCHE_1", cols["T2_01_GROUND"], M)
     mb = C.MeshBuilder()
     L.prism(mb, "t2_parking", parking, -0.65, 0.0, zf=hz)
     mb.build("T2_GROUND_PARKING", cols["T2_01_GROUND"], M)
@@ -357,7 +395,7 @@ def build(M, B, srcv, H):
             p = q.exterior.interpolate(q.exterior.project(p)) if not q.contains(p) else p
             put("shrub", (p.x, p.y), (level(p.x, p.y, 0.1) or hz(p.x, p.y)), RNG.uniform(0.70, 0.90))
     # street palms in pits along the kerb, every 11 m, clear of the gates
-    gate_pts = [Point(v.fw(*(((a + b) / 2, c) if axis == "y" else (c, (a + b) / 2)))) for v, axis, c, a, b in gates]
+    gate_pts = [Point(v.fw(*(((a + b) / 2, c) if axis == "y" else (c, (a + b) / 2)))) for v, axis, c, a, b, _ in gates]
     line = roads.boundary.intersection(pave.buffer(0.02))
     pits = []
     for seg in getattr(line, "geoms", [line]):

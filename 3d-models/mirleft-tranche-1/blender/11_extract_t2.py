@@ -21,8 +21,8 @@ Villa placement: the plan's own type B drawing in each lot gives the side of the
 model (pool 1.50 m nearer the house, as the plan draws it). Each villa's garden is its plot.
 
 The rest of the works (the blocks, and the streets round them the client marked in yellow, 21-10) is read
-from the same lines: the plan's lanes are carriageway, its narrower strips pavements (and 1.50 m along every
-garden wall), the bays along the south road parking, and the three squares with hipped roofs on the
+from the same lines: the plan's lanes are carriageway, a 1.50 m pavement runs along every garden wall and
+the plan's other strips (verges) are pavements, the bays along the south road parking, and the three squares with hipped roofs on the
 parking strip the 'Centre d'entretien' (twice) and the 'Office' of the plan's labels. The pieces lying on
 the type C villas' lots are left out. T2_DEBUG=<png> writes the class map, to check it against the plan.
 """
@@ -204,10 +204,14 @@ ncomp, lab, stc, _ = cv2.connectedComponentsWithStats(((lines == 0) & (mW > 0)).
 csize = stc[:, 4] / RG / RG
 
 
+cwide = 2.0 * ndimage.maximum(cv2.distanceTransform((lab > 0).astype(np.uint8), cv2.DIST_L2, 5), lab, index=np.arange(ncomp)) / RG
+
+
 def comps_in(g, frac):
+    """the plan's regions inside g, but not its pavement strips (under 2.3 m across), which it cuts at the lots"""
     m = gfill(g)
     inside = np.bincount(lab.ravel(), weights=m.ravel().astype(float), minlength=ncomp)
-    return [i for i in range(1, ncomp) if inside[i] >= frac * stc[i, 4] and csize[i] >= 1.0]
+    return [i for i in range(1, ncomp) if inside[i] >= frac * stc[i, 4] and csize[i] >= 1.0 and cwide[i] >= 2.3]
 
 
 # ---- villas: the plot of each lot is the region (or regions) of the plan's lines inside it -----------
@@ -304,6 +308,23 @@ for i, o in enumerate(out):
     g = g.buffer(-0.2, join_style=2).buffer(0.2, join_style=2)
     o["garden"] = Polygon(max(as_polys(g), key=lambda q: q.area).exterior)
     taken = taken.union(o["garden"])
+# neighbouring gardens meet on one line: the plan's double fence line between them (with the drawing's
+# tolerance up to 1.5 m between the regions read) goes to the gardens, no strip of ground left between walls
+orig = [o["garden"] for o in out]
+taken = Polygon()
+for i, o in enumerate(out):
+    gap = []
+    for j, other in enumerate(orig):
+        if j != i and o["garden"].distance(other) < 1.5:            # the gap between the two only (a closing)
+            pair = unary_union([o["garden"], other])
+            gap.append(pair.buffer(1.1, join_style=2).buffer(-1.1, join_style=2).difference(pair))
+    others = unary_union(orig[:i] + orig[i + 1:])
+    closed = o["garden"].buffer(0.9, join_style=2).buffer(-0.9, join_style=2)      # notches of the drawing filled
+    g = unary_union([o["garden"], closed] + gap).difference(others).difference(taken).intersection(works)
+    g = g.buffer(0.05, join_style=2).buffer(-0.05, join_style=2)
+    g = Polygon(max(as_polys(g.buffer(0)), key=lambda q: q.area).exterior).simplify(0.03).buffer(0)
+    o["garden"] = max(as_polys(g), key=lambda q: q.area)
+    taken = taken.union(o["garden"])
 gardens = unary_union([o["garden"] for o in out])
 
 # ---- the rest of the works: buildings, parking bays, streets and pavements, read from the plan's pieces
@@ -357,9 +378,15 @@ lane[0] = False
 CL[pub & lane[lpub]] = 2
 CL[pub & ~lane[lpub]] = 3
 # where the plan's pavement runs into the street at the kerb returns, the pieces join: every garden wall
-# on a street keeps its 1.50 m pavement
-along = cv2.dilate(gfill(gardens), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))) > 0
-CL[pub & along & (CL == 2)] = 3
+# on a street keeps a pavement (1.30 m at least), where that leaves the street 2.40 m or more
+along = cv2.dilate(gfill(gardens), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (27, 27))) > 0
+R0 = pub & (CL == 2)
+F = R0 & along
+R1 = cv2.morphologyEx((R0 & ~F).astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8)) > 0   # over the lane lines
+k24 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (25, 25))
+thin = R1 & ~(cv2.morphologyEx(R1.astype(np.uint8), cv2.MORPH_OPEN, k24) > 0)   # less than 2.4 m of street left:
+F &= ~(cv2.dilate(thin.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (33, 33))) > 0)   # the lane kept whole
+CL[F] = 3
 open_ = pub
 # the lines themselves and the scraps: the class of the nearest piece
 todo = (mW > 0) & (CL == 0)
@@ -391,13 +418,40 @@ if os.environ.get("T2_DEBUG"):                               # class map, for ch
 # drawing's tolerance), the streets everything else between them, the gardens and the buildings
 parking = gvec(CL == 4)
 foreign = gvec(CL == 9)
+# what is left of Tranche 1's lots west of its limit line, between it and the street: lawn, level with
+# Tranche 1's own (no strip of bare land between the two tranches)
+greens = unary_union([q for q in as_polys(foreign) if q.distance(t1) < 0.6])
+foreign = foreign.difference(greens.buffer(0.01))
 env = works.difference(foreign.buffer(0.05)).buffer(0.0)
 env = Polygon(max(as_polys(env), key=lambda q: q.area).exterior)
-solid = unary_union([gardens] + [k["poly"] for k in kiosks])
-pave = gvec(CL == 3).buffer(0.12, join_style=2).intersection(env).difference(solid).difference(parking)
+greens = greens.intersection(env)
+solid = unary_union([gardens, greens] + [k["poly"] for k in kiosks])
+# pavements: a continuous 1.50 m along every garden wall on the street (the plan cuts its own at every lot
+# and merges them into the street at the kerb returns), and the plan's own away from the gardens (the verges
+# along the boundary, round the parking); a strip of street left narrower than 2.40 m between two pavements
+# is paved too (the 4 m mews between the plots drawn back to front), the rest is carriageway
+ground = env.difference(solid).difference(parking)
+band = ground.intersection(gardens.buffer(1.50, join_style=2))
+verge = gvec(CL == 3).buffer(0.12, join_style=2).difference(gardens.buffer(1.50, join_style=2))
+pave = unary_union([band, verge]).intersection(ground)
+rest = ground.difference(pave)
+thin = rest.difference(rest.buffer(-1.2, join_style=2).buffer(1.2, join_style=2))
+pave = unary_union([pave, thin]).intersection(ground)
 pave = unary_union([q for q in as_polys(pave) if q.area > 0.5])
-roads = env.difference(solid).difference(parking).difference(pave)
+roads = ground.difference(pave)
 roads = unary_union([q for q in as_polys(roads) if q.area > 0.5])
+# scraps of street shut in between gardens (the drawing's double fences, notches of its outlines): to the
+# garden that borders them most
+near = gardens.buffer(0.3, join_style=2)
+n_abs = 0
+for q in as_polys(roads) + as_polys(pave):
+    if q.area < 150.0 and q.exterior.intersection(near).length > 0.8 * q.exterior.length:
+        o = max(out, key=lambda o: q.exterior.intersection(o["garden"].buffer(0.3, join_style=2)).length)
+        o["garden"] = max(as_polys(unary_union([o["garden"], q.buffer(0.02)]).buffer(0)), key=lambda g: g.area)
+        roads, pave = roads.difference(q.buffer(0.02)), pave.difference(q.buffer(0.02))
+        n_abs += 1
+gardens = unary_union([o["garden"] for o in out])
+print("street scraps between gardens given to them:", n_abs)
 
 
 # gates: on the front if the street is in front of the villa, else on the side the street runs along
@@ -405,19 +459,29 @@ def edge_open(o, side):
     from shapely import affinity
     loc = affinity.rotate(affinity.translate(o["garden"], -o["origin"][0], -o["origin"][1]), -o["rot"], origin=(0, 0))
     x0_, y0_, x1_, y1_ = loc.bounds
-    strip = {"front": box(x0_ + 1.0, y1_, x1_ - 1.0, y1_ + 2.0), "right": box(x1_, 8.0, x1_ + 2.0, 19.0),
-             "left": box(x0_ - 2.0, 8.0, x0_, 19.0)}[side]
+    strip = {"front": box(x0_ + 1.0, y1_ + 0.4, x1_ - 1.0, y1_ + 1.4), "right": box(x1_ + 0.4, 9.0, x1_ + 1.4, 19.0),
+             "left": box(x0_ - 1.4, 9.0, x0_ - 0.4, 19.0)}[side]
     w = world_box(o, strip)
     return w.intersection(unary_union([roads, pave, parking])).area / w.area
 
 
 for o in out:
     sc = {s: edge_open(o, s) for s in ("front", "right", "left")}
-    o["gate"] = "front" if sc["front"] >= 0.5 or sc["front"] >= max(sc["right"], sc["left"]) else max(("right", "left"), key=lambda s: sc[s])
+    if os.environ.get("T2_DEBUG"):
+        print("  DBG gate", [round(float(x)) for x in o["c"]], "m" if o["mirror"] else " ", {k: round(v_, 2) for k, v_ in sc.items()})
+    terrace = "left" if o["mirror"] else "right"               # the side of the front terrace and the door
+    if sc["front"] >= 0.6 or sc["front"] >= max(sc["right"], sc["left"]):
+        o["gate"] = "front"
+    elif sc[terrace] >= 0.6:
+        o["gate"] = terrace
+    else:
+        o["gate"] = max(("right", "left"), key=lambda s: sc[s])
 
 # numbering: the northern block then the southern one, rows from the north
 out.sort(key=lambda o: (o["block"] != "north", -round(o["c"][1] / 12.0), o["c"][0]))
 villas_js = []
+for o in out:                                                 # valid outlines once rounded to the millimetre
+    o["garden"] = max(as_polys(Polygon([(round(x, 3), round(y, 3)) for x, y in o["garden"].exterior.coords]).buffer(0)), key=lambda q: q.area)
 for i, o in enumerate(out, 1):
     villas_js.append({"id": f"B-{i:02d}", "block": o["block"], "origin": [round(float(x), 3) for x in o["origin"]],
                       "rot_deg": round(o["rot"], 3), "mirror": bool(o["mirror"]), "compact": o["compact"], "gate": o["gate"],
@@ -426,8 +490,8 @@ for i, o in enumerate(out, 1):
 print("villas", len(villas_js), "mirrored", sum(v["mirror"] for v in villas_js), "gates", Counter(v["gate"] for v in villas_js))
 js = {"source": "plan de masse 31-05-13 (villas type B west of Tranche 1), model frame of site.json",
       "env": poly_out(env)[0], "blocks": poly_out(blocks)[0], "villas": villas_js,
-      "roads": poly_out(roads), "pavements": poly_out(pave), "parking": poly_out(parking),
+      "roads": poly_out(roads), "pavements": poly_out(pave), "parking": poly_out(parking), "greens": poly_out(greens),
       "bays": [poly_out(b)[0] for b in bays], "buildings": [{"name": k["name"], "poly": poly_out(k["poly"])[0]} for k in kiosks]}
 json.dump(js, open(os.path.join(ROOT, "data", "t2_site.json"), "w"))
-print(f"  roads {roads.area:.0f} m2, pavements {pave.area:.0f} m2, parking bays {len(bays)} ({parking.area:.0f} m2), "
+print(f"  roads {roads.area:.0f} m2, pavements {pave.area:.0f} m2, lawn by Tranche 1 {greens.area:.0f} m2, parking bays {len(bays)} ({parking.area:.0f} m2), "
       f"buildings {len(kiosks)}, type C lots left out {foreign.area:.0f} m2, works {env.area:.0f} m2")

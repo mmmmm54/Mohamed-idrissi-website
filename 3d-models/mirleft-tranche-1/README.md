@@ -235,7 +235,10 @@ four façades, coupes A-A and B-B).
 - **Gardens and walls**: each garden flat at its villa's pad (lawn 3 cm under the terraces), held by its walls where
   the ground falls away; garden walls 1.80 m in the render with its trim (at least 1.20 m over the lawn); on the
   villa's street side (the front, or the side for the southern block) a low stone-clad wall with its beige
-  coping, the gate pillars and timber gate of the duplexes, and a paved path to the door.
+  coping, the gate pillars and timber gate of the duplexes, and a paved path to the door (or, from the
+  kitchen side, to the kitchen door and on along the house to the garden). Neighbouring gardens share one
+  wall. The plan draws two villas of the northern block (B-02, B-08) back to front with no street in front
+  or beside them: their gate is in the rear wall, on the street, beside the pool (to confirm).
 - **Streets (rev 21-10, the yellow on the client's plan)**: read from the plan's own lines: the Voie Publique along the
   north boundary, the street between Tranche 2 and Tranche 1, the south road along the boundary from the west
   end of the type C villas, and the streets inside the blocks. The plan's lanes (2.50 to 3.35 m between its lines)
@@ -245,10 +248,11 @@ four façades, coupes A-A and B-B).
   'Centre d'entretien' twice and 'Office', the squares with hipped roofs of the plan, in the villas' render
   with their cornice, a terracotta pyramid roof, a timber door to the parking and windows in taupe surrounds
   (heights 3.40 m + 1.90 m roof, to confirm).
+- **By Tranche 1**: what is left of Tranche 1's lots west of its limit line, between it and the street, is lawn.
 - **Levels**: the blocks graded on the plane of Tranche 1 (the 2013 contours fit it within 1.5 m there), each
   villa at the height of its centre; the streets follow the site's ground beyond them (blended over 25 m), so
   the south road goes down along the type C villas as the contours do; the empty land stops at the streets.
-- **To confirm**: the compact pool of the southern block; the buildings' heights; the planting.
+- **To confirm**: the compact pool of the southern block; the rear gates of B-02 and B-08; the buildings' heights; the planting.
 
 ## Removed (client, 13-10)
 Direction arrows and cars. The zebra crossings were put back as paint (15-10).

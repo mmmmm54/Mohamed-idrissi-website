@@ -162,7 +162,8 @@ its own materials, so it can be finished apart from Tranche 1:
   `T2_GROUND_ENTRANCE_PATHS` (`T2_T17_Pavers_Beige_Herringbone_Paths`),
   the parking bays `T2_GROUND_PARKING` (`T2_M11_Asphalt_Parking`) with their lines, the Centre d'entretien and the
   Office `T2_BUILDINGS_CENTRE_ENTRETIEN_OFFICE`;
-- garden walls `T2_WALLS_GARDENS`, street front walls with gate pillars and gates `T2_WALLS_FRONT_GATES`, palm pits `T2_TREE_PITS`.
+- garden walls `T2_WALLS_GARDENS`, street front walls with gate pillars and gates `T2_WALLS_FRONT_GATES`, palm pits `T2_TREE_PITS`,
+  the lawn left by Tranche 1's limit `T2_GROUND_LAWN_BY_TRANCHE_1` (`T2_T03_Lawn_Verges`).
 Cameras `T2_CAM_01` to `T2_CAM_07`.
 """
 
