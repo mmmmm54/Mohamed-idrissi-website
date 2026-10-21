@@ -14,12 +14,12 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 
 | File | Contents |
 |---|---|
-| `Mirleft_Tranche_1_PACKED_2K.blend` | The scene with every texture packed inside at 2K (22 MB): the light copy to send or open anywhere. |
-| `Mirleft_Tranche_1_PACKED.blend` | The same scene with full-size textures packed inside (66 MB). |
-| `Mirleft_Tranche_1.blend` | The scene with textures linked from `../mirleft-bay/assets/textures` and `data/textures` (9 MB): keep the folders side by side. |
-| `Mirleft_Tranche_1.glb` | GLB with JPEG textures and colours (36 MB with the surroundings; shared meshes; no cameras or lights). Metres, Y up. `blender/08_export_glb.py` |
-| `Mirleft_Tranche_1_AE_SAFE.glb` | The most compatible version for After Effects (20 MB): the tranche only, one mesh, centred with its ground at 0, JPEG only, no alpha, no trees. `08_export_glb.py --ae-safe` |
-| `Mirleft_Tranche_1_OBJ.zip` | The same single mesh as OBJ + MTL + JPEG textures (7 MB), written by the same command. |
+| `Mirleft_Tranche_1_PACKED_2K.blend` | The scene with every texture packed inside at 2K (23 MB): the light copy to send or open anywhere. |
+| `Mirleft_Tranche_1_PACKED.blend` | The same scene with full-size textures packed inside (65 MB). |
+| `Mirleft_Tranche_1.blend` | The scene with textures linked from `../mirleft-bay/assets/textures` and `data/textures` (10 MB): keep the folders side by side. |
+| `Mirleft_Tranche_1.glb` | GLB with JPEG textures and colours (40 MB with the surroundings; shared meshes; no cameras or lights). Metres, Y up. `blender/08_export_glb.py` |
+| `Mirleft_Tranche_1_AE_SAFE.glb` | The most compatible version for After Effects (77 MB, with Tranche 2): the two tranches only, one mesh, centred with its ground at 0, JPEG only, no alpha, no trees. `08_export_glb.py --ae-safe` |
+| `Mirleft_Tranche_1_OBJ.zip` | The same single mesh as OBJ + MTL + JPEG textures (24 MB), written by the same command. |
 | `d5/` | D5 Render package: `Mirleft_Tranche_1_D5_FULL.fbx` (everything, the 19 cameras, textures embedded), `Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx` (without the palms and trees, the agaves, grasses and shrubs kept, to place D5's own), `textures/` and `D5_IMPORT_GUIDE.md`. `blender/09_export_d5.py` |
 | `renders/` | 19 views at 1920 × 1080 (see the list below). |
 | `Mirleft_Tranche_1_views.jpg` | The 13 views of Tranche 1 on one sheet. |

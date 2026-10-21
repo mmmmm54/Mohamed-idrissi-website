@@ -2,7 +2,7 @@
 
 | File | Contents | Use it when |
 |---|---|---|
-| `Mirleft_Tranche_1_D5_FULL.fbx` | Everything: duplexes, restaurant, commerces, pool court, ground, walls, stairs, furniture, trees, palms and plants, and the 13 cameras | You want everything placed already |
+| `Mirleft_Tranche_1_D5_FULL.fbx` | Everything: duplexes, restaurant, commerces, pool court, ground, walls, stairs, furniture, trees, palms and plants, Tranche 2 (33 villas type B), and the 19 cameras | You want everything placed already |
 | `Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx` | The same without the palms and trees; the shrubs, agaves and grasses stay | You place D5 library palms and trees yourself |
 
 Both FBX files carry their textures inside. The same images are in `textures/`: keep that folder next to the FBX.
@@ -45,3 +45,17 @@ The material names are the Blender ones: `T13_Travertine_Planks` (pool deck), `M
 - Duplexes (villa N°09): `D13_Render_Villa_Beige` walls, `D14_Stone_Surround_Taupe` window and door surrounds,
   `D15_Stone_Ledge_Grey` and `D16_Stone_Band_Ochre` cornice, `D17_Frame_Aluminium_Beige` aluminium frames (windows, balcony and garden sliding doors), `D18_Stone_Cladding_Beige`
   front garden walls with `D19_Coping_Beige_Stone`, `M03_Timber_Pergola` pergolas and railings.
+
+## Tranche 2: villas type B (21-10)
+The type B blocks of the plan de masse 31-05-13 west of the tranche: 33 villas (the northern block 21, the southern
+block 12), villa type B of `5-VILLA_TYPE_B.DWG` with its own pool, in the finishes of the duplexes above
+(same render, surrounds, cornice, beige aluminium, pergolas, jade pool tiles). Everything of Tranche 2 is in its own
+collections (`T2_01_GROUND`, `T2_02_VILLAS`, `T2_03_LANDSCAPE`, `T2_04_TREES_PALMS`) and objects, and its ground in
+its own materials, so it can be finished apart from Tranche 1:
+- villas `T2_VILLA_B01` to `T2_VILLA_B33` (one mesh shared, the mirrored ones another);
+- streets `T2_GROUND_ROADS` (`T2_M11_Asphalt`), pavements `T2_GROUND_PAVEMENTS` (`T2_T17_Pavers_Beige_Herringbone_Pavements`),
+  kerbs `T2_GROUND_KERBS` (`T2_Kerb_Concrete`), gardens `T2_GROUND_GARDENS_LAWN` (`T2_T03_Lawn_Gardens`), paths to the doors
+  and drives `T2_GROUND_ENTRANCE_PATHS` (`T2_T17_Pavers_Beige_Herringbone_Paths`), the square `T2_GROUND_SQUARE_LAWN`
+  (`T2_T03_Lawn_Square`), the parking `T2_GROUND_PARKING` (`T2_M11_Asphalt_Parking`) with its bay lines;
+- garden walls `T2_WALLS_GARDENS`, street front walls with gate pillars and gates `T2_WALLS_FRONT_GATES`, palm pits `T2_TREE_PITS`.
+Cameras `T2_CAM_01` to `T2_CAM_06`.
