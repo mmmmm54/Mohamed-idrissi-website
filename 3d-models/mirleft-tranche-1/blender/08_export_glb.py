@@ -163,6 +163,10 @@ def new_mat(old):
     b = nt.nodes["Principled BSDF"]
     b.inputs["Roughness"].default_value = 0.85
     tile = None
+    if name.startswith("T2_") and name not in TEX and name not in FLAT:   # Tranche 2's copies of Tranche 1's materials
+        base = max((k for k in list(TEX) + list(FLAT) if name[3:].startswith(k)), key=len, default=None)
+        if base:
+            name = base
     if name in TEX:
         path, tile = TEX[name]
         t = nt.nodes.new("ShaderNodeTexImage")

@@ -6,6 +6,7 @@ This is a Blender model of the 1er TRANCHE of the Mirleft project, built from th
 - the sunken pool court (pool and children's pool, planted gradins, stairs, ramp, upper walk and planted stone terraces, technical block)
 - the pétanque courts and their pergola
 - the lanes, the roads and parking in beige herringbone pavers (rev 4), the pedestrian crossings, the entrance with its paved median and the fountain
+- **Tranche 2 (21-10)**: the 33 villas type B of the plan de masse 31-05-13 west of the tranche, with their pools, gardens, walls and gates, streets, the square and the parking (see **Tranche 2** below)
 
 The rest of the site is empty land: the exact site boundary and the natural slope from the contours. Everything is exterior only (no interiors).
 
@@ -19,9 +20,9 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 | `Mirleft_Tranche_1.glb` | GLB with JPEG textures and colours (36 MB with the surroundings; shared meshes; no cameras or lights). Metres, Y up. `blender/08_export_glb.py` |
 | `Mirleft_Tranche_1_AE_SAFE.glb` | The most compatible version for After Effects (20 MB): the tranche only, one mesh, centred with its ground at 0, JPEG only, no alpha, no trees. `08_export_glb.py --ae-safe` |
 | `Mirleft_Tranche_1_OBJ.zip` | The same single mesh as OBJ + MTL + JPEG textures (7 MB), written by the same command. |
-| `d5/` | D5 Render package: `Mirleft_Tranche_1_D5_FULL.fbx` (everything, the 13 cameras, textures embedded), `Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx` (without the palms and trees, the agaves, grasses and shrubs kept, to place D5's own), `textures/` and `D5_IMPORT_GUIDE.md`. `blender/09_export_d5.py` |
-| `renders/` | 13 views at 1920 × 1080 (see the list below). |
-| `Mirleft_Tranche_1_views.jpg` | The 13 views on one sheet. |
+| `d5/` | D5 Render package: `Mirleft_Tranche_1_D5_FULL.fbx` (everything, the 19 cameras, textures embedded), `Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx` (without the palms and trees, the agaves, grasses and shrubs kept, to place D5's own), `textures/` and `D5_IMPORT_GUIDE.md`. `blender/09_export_d5.py` |
+| `renders/` | 19 views at 1920 × 1080 (see the list below). |
+| `Mirleft_Tranche_1_views.jpg` | The 13 views of Tranche 1 on one sheet. |
 | `blender/01_extract_site.py` | Reads the plan (DWG made into primitives by `tools/`) and writes `data/site.json`. |
 | `blender/01b_parking_lines.py` | Adds the parking bays' separator lines of the plan to `data/site.json` (run after 01). |
 | `blender/02_duplex.py` | The duplex pair: villa N°09 and its mirror (rev 4). |
@@ -29,6 +30,9 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 | `blender/04_pool.py` | The pool court. |
 | `blender/05_build_scene.py` | Builds, saves and renders the scene: `python 05_build_scene.py --render all`. |
 | `blender/lib.py` | Shared helpers; reuses the Mirleft Bay materials, plants and sun; draws the rev 4 textures into `data/textures/` (pavers, tiles, stone band). |
+| `blender/11_extract_t2.py` | Tranche 2: reads the plan de masse 31-05-13 and writes `data/t2_site.json` (lots, villa placements, gardens, streets). |
+| `blender/12_villa_b.py` | The villa type B of `5-VILLA_TYPE_B.DWG`, in the finishes of the duplexes, with its pool. |
+| `blender/13_tranche2.py` | Builds Tranche 2 into the scene (called by `05_build_scene.py`), in its own collections, objects and materials. |
 | `blender/10_fetch_geo.py` | Downloads the heights and the satellite image round the site into `data/geo/` (run once, outside Blender; needs pyproj and rasterio). |
 | `tools/` | `dwg2json.mjs` (DWG reader), `flatten.py` (primitives with their block path), `inserts.py` (block placements). |
 
@@ -43,7 +47,8 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 - **3-PLAN_RESTAURANT_PAVILLON.DWG**: the restaurant, built from this plan (revision 15-10).
   - The 12-10 plan draws a more compact version of the pavilion. Only its position and axis are taken from 12-10.
 - **Reference images (15-10)**: two renders of a pool court, used only for the look of the pool court (finishes, planting, furniture). Nothing is taken from them for the layout, which stays the plan's.
-- **Plan de masse 2013**: used only for the ground levels.
+- **Plan de masse 2013**: the ground levels, and the layout of Tranche 2 (its type B blocks, 21-10).
+- **5-VILLA_TYPE_B.DWG** (21-10): the villa type B of Tranche 2.
   - The 12-10 plan is the 2013 plan turned by -33.002°. The two site boundaries match to 0.4 mm on 16 vertices.
   - With that transform, the 2013 contours (55 / 60 m) are brought over.
 
@@ -206,6 +211,40 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 | 7, 9 | Duplex front and rear exactly as the reference images and the drawing | Duplexes rebuilt to villa N°09 (see **Duplexes**) |
 | 10 | Roads between the rows in beige pavers; separation between the two terraces of each villa | Roads left for D5; walls on the joint across the front, rear and roof terraces |
 
+## Tranche 2: villas type B (21-10)
+Client 21-10: "zid ghir tranche 2", then "block by block, by villa type": every villa type B of the plan de masse
+31-05-13 (`plan_masse_terrasse_31-05-13.dwg`, the plan the client circled), in the same file as Tranche 1, which is
+left as it was. Sources: the plan de masse for the lots, plots, streets and the plan's own type B drawings (pool,
+skylight and stair give each villa's orientation); `5-VILLA_TYPE_B.DWG` for the villa (RDC, étage, terrasse, the
+four façades, coupes A-A and B-B).
+- **Blocks**: the northern block along the Voie Publique, 21 villas (B-01 to B-21, three rows of seven); the southern
+  block, 12 villas (B-22 to B-33). One southern lot is drawn empty on the 2013 plan; it gets a villa like its neighbours.
+- **Villa type B** (`12_villa_b.py`): the drawing's plans and levels (RDC +0.20, étage +3.90, roof +7.10, acrotère
+  +8.20, stair cage +9.90 / +10.10, pool 6.40 × 4.25 m, N = -1.60), dressed like the duplexes: the sand render,
+  taupe surrounds, beige aluminium, sheer curtains and the lit salon behind the recessed glazing, the rows of square
+  niches, the grey / ochre / grey cornice and rounded acrotère, the horned crown of the stair cage, mashrabiya panels
+  in the acrotère and parapets, timber pergolas over the étage terrace and the front terrace (the drawing's voile),
+  the 'Manzah' balcony with its planter, a skylight lantern over the entrance void, jade pool tiles, a white coping
+  and Roman steps.
+- **Placement**: in the northern block and on the southern block's deep plots, as the plan draws them: pool at the
+  rear, street front on the plot's front edge, centred across. The plan puts the southern block's two southern rows
+  back to front and draws two small lots in its northern row; those plots are too short for the villa and its pool
+  (13.9 to 19.5 m for 19.75 m), so those 9 villas are **turned a quarter** onto the street along their long side,
+  the middle and southern rows' pools back to back, the house against one side of the plot, the side garden on the
+  salon marocain's side with a car gate and a paved drive where it is on the street (to confirm).
+- **Gardens and walls**: each garden flat at its villa's pad (lawn 3 cm under the terraces), held by its walls where
+  the ground falls away; garden walls 1.80 m in the render with its trim (at least 1.20 m over the lawn); on the
+  street a low stone-clad wall with its beige coping, the gate pillars and timber gate of the duplexes, and a paved
+  path to the door.
+- **Streets**: asphalt between concrete kerbs, 1.50 m pavements in beige pavers along the garden walls, a 2 m walk
+  along the square; Washingtonia palms in pits every 11 m. The square is lawn with olive trees; the parking has
+  its bays painted every 2.50 m.
+- **Levels**: graded on the plane of Tranche 1 (the 2013 contours fit it within 1.5 m there); each villa at the
+  plane height of its centre; the site's empty land is cut round Tranche 2 and blended into it over 25 m.
+- **To confirm**: the turned villas of the southern block; the plan's lot lines are road centres, so the
+  streets' widths and the 1.50 m pavements are read, not dimensioned; the planting and the square are a proposal;
+  the angled parking bays are painted at right angles.
+
 ## Removed (client, 13-10)
 Direction arrows and cars. The zebra crossings were put back as paint (15-10).
 
@@ -243,7 +282,7 @@ Direction arrows and cars. The zebra crossings were put back as paint (15-10).
   - The terrace separation walls go up to the pergolas as the drawing draws the joint; their height is to confirm.
   - The front garden wall runs from the gate to 0.60 m past the house and turns back 1.5 m; the lot widths are not on the drawing.
 - **Tile and paver textures** (rev 4): drawn to look like the references (`data/textures/`), not the manufacturers' own images. In D5 the real product textures can replace them (`T18_Tile_Ardesia_Beige`, `T19_Tile_Jade_Green`, `T17_Pavers_Beige_Herringbone`).
-- **Not modelled**: interiors, the sous-sols, the other tranches, and the RN road outside the boundary.
+- **Not modelled**: interiors, the sous-sols, the other tranches (beyond Tranche 2), and the RN road outside the boundary.
 
 ## Renders
 | Camera | View |
@@ -261,5 +300,11 @@ Direction arrows and cars. The zebra crossings were put back as paint (15-10).
 | CAM_11_GARDENS_BIRDSEYE | Bird's-eye view of the gardens and roofs |
 | CAM_12_TOP_PLAN | Orthographic top view, to compare with the plan de masse |
 | CAM_13_STAIR_ESC_V4 | The stair 'ESC V4' across row C, looking down it from the upper lane |
+| T2_CAM_01_AERIAL | Tranche 2: aerial view of its two blocks of villas type B |
+| T2_CAM_02_VILLA_B_FRONT | A villa type B from its street (B-14) |
+| T2_CAM_03_VILLA_B_GARDEN_POOL | Its garden and pool |
+| T2_CAM_04_NORTH_STREET | A street of the northern block |
+| T2_CAM_05_SOUTH_BLOCK | The southern block from above |
+| T2_CAM_06_GATE | The front wall, gate and path of a villa |
 
 **Lighting**: the sun at 10:15 on 15 October, at the site's latitude and longitude, through a Nishita sky. The view transform is AgX Punchy.

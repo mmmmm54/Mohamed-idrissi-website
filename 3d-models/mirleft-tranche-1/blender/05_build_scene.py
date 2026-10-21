@@ -814,7 +814,11 @@ def main():
     fw = frame(pc["c"], pc["rot_deg"])
     z_deck = hg(*fw(POOL.GRAD_F[3], 0.0)) - POOL.RISE - POOL_DROP
     geo = os.path.exists(os.path.join(GEO, "geo.json"))
-    Hsite = build_terrain(M, cols["01_TERRAIN"], site, t1, geo=geo)
+    # Tranche 2 (client 21-10, 13_tranche2): its ground is graded like the tranche, so the site's empty
+    # land is cut round both and blended into them
+    T2M = load("13_tranche2.py")
+    graded = unary_union([t1, T2M.envelope()])
+    Hsite = build_terrain(M, cols["01_TERRAIN"], site, graded, geo=geo)
     if geo:                                   # the real terrain and the ocean round the site (10_fetch_geo)
         build_surroundings(M, cols["00_SURROUNDINGS"], site, t1, Hsite)
 
@@ -1136,6 +1140,9 @@ def main():
                 plant("shrub", (q.x, q.y), RNG.uniform(0.8, 1.2), hz(q.x, q.y) + 0.38)
                 n -= 1
 
+    # ---- Tranche 2: the villas type B west of the tranche (13_tranche2), in collections of their own --
+    cams_t2 = T2M.build(M, sys.modules[__name__], srcv)
+
     # ---- light, cameras, render settings --------------------------------------------------------
     lt_ = L.bay("14_build_lighting.py")
     lt_.PRESETS["T1_MORNING"] = ((2026, 10, 15), (10, 15), 3.6, 0.95, (1.1, 0.6), 0.0)
@@ -1153,6 +1160,7 @@ def main():
     sc.view_settings.look = "AgX - Punchy"
     sc.view_settings.exposure = -0.7
     cams = make_cameras(cols["07_CAMERAS"], z_deck)
+    cams.update(cams_t2)
     bpy.context.view_layer.layer_collection.children["SRC"].exclude = True
     sc.camera = cams["CAM_01_AERIAL_T1"]
     if "--no-save" not in args:
