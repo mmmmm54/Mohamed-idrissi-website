@@ -26,6 +26,7 @@ import importlib.util
 import math
 import os
 
+from shapely.affinity import translate
 from shapely.geometry import Polygon, box
 from shapely.ops import unary_union
 
@@ -54,9 +55,19 @@ POOL = box(1.50, 0.95, 7.90, 5.20)
 POOL_DEPTH = 1.60
 FOOT = unary_union([RDC, FRONT_T, MANZAH])    # kept clear of trees
 REAR = box(1.03, 5.90, 12.22, 7.68).union(box(8.54, 7.68, 12.22, 8.38))   # terrace behind the séjour
-DECK = unary_union([REAR, POOL.buffer(0.80, join_style=2).intersection(PLOT)])
 FRONT_PAVE = unary_union([box(1.28, 18.11, 5.22, 19.86), box(5.47, 16.09, 7.60, 18.11), box(7.38, 16.09, 12.22, 19.40)])
-HARD = unary_union([RDC, DECK, FRONT_PAVE, box(1.03, 18.11, 5.47, 20.11)])   # what the model builds on the ground
+COMPACT_DY = 1.50        # the compact model: the pool 1.50 m nearer the house (1 m from it, as the plan de masse draws it)
+
+
+def ground(compact=False):
+    """The pool, the deck round it and the rear terrace, and all the model builds on the ground."""
+    dy = COMPACT_DY if compact else 0.0
+    pool = translate(POOL, 0.0, dy)
+    deck = unary_union([REAR, pool.buffer(0.80, join_style=2).intersection(box(0.0, PLOT.bounds[1] + dy, 12.20, 20.10))])
+    return pool, deck, unary_union([RDC, deck, FRONT_PAVE, box(1.03, 18.11, 5.47, 20.11)])
+
+
+_, DECK, HARD = ground()
 op, niche = D.op, D.niche
 
 
@@ -132,7 +143,7 @@ def _out_normal(poly, axis, c, u):
     return -1.0 if poly.buffer(0.001).contains(p) else 1.0
 
 
-def build(M, col, name="SRC_VILLA_B"):
+def build(M, col, name="SRC_VILLA_B", compact=False):
     mb = C.MeshBuilder()
     D.OPENINGS, D.BREAK_X, D.BREAK_Y, D.RDC = OPENINGS, BREAK_X, BREAK_Y, RDC
     for p, q in D.edges(RDC):
@@ -230,6 +241,7 @@ def build(M, col, name="SRC_VILLA_B"):
             mb.box(T, x - 0.03, x + 0.03, py0, py1 + 0.15, 3.15, 3.30)
 
     # ---- terraces, porch, pool -------------------------------------------------------------------
+    POOL, DECK, _ = ground(compact)
     deck = DECK.difference(POOL.buffer(0.30, join_style=2))
     L.prism(mb, "terrace", deck, -0.40, Z_FL - 0.005)
     L.prism(mb, "coping", POOL.buffer(0.30, join_style=2).difference(POOL), -0.30, Z_FL)

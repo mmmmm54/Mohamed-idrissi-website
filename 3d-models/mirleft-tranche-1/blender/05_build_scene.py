@@ -150,14 +150,16 @@ def natural_terrain(bounds):
     return RegularGridInterpolator((xs, ys), Z, bounds_error=False, fill_value=None)
 
 
-def build_terrain(M, col, site, t1, geo=False):
+def build_terrain(M, col, site, t1, geo=False, cut=None):
     """The site's empty land (natural terrain of the contours, blended into the graded tranche over 25 m),
     the cut faces at its edge and the boundary posts; returns H. With geo the real terrain round the site
     (build_surroundings) meets it EDGE lower at the boundary, so the land of the project stands out on
-    it with its own soil and a short cut face along its limits."""
+    it with its own soil and a short cut face along its limits. cut (default t1): the built ground the land
+    stops at, when it reaches past the graded areas (Tranche 2's streets, which follow H)."""
     import shapely
     Hn = natural_terrain(site.bounds)
-    land = site.difference(t1)
+    cut = t1 if cut is None else cut
+    land = site.difference(cut)
     mb = C.MeshBuilder()
     step = 3.0
     x0, y0, x1, y1 = land.bounds
@@ -195,12 +197,12 @@ def build_terrain(M, col, site, t1, geo=False):
             p = np.array(a) + (np.array(b) - np.array(a)) * k / n
             q = np.array(a) + (np.array(b) - np.array(a)) * (k + 1) / n
             zp, zq = H(np.array([p, q]))
-            if t1.buffer(0.5).contains(Point(*((p + q) / 2))):
-                zp, zq = hz(*p) - 0.65, hz(*q) - 0.65
+            if cut.buffer(0.5).contains(Point(*((p + q) / 2))):
+                zp, zq = zp - 0.65, zq - 0.65
             dz = 1.5 if geo else 3.0
             mb.poly("terrain_cut", [(p[0], p[1], zp - dz), (q[0], q[1], zq - dz), (q[0], q[1], zq), (p[0], p[1], zp)])
     for (x, y) in ring[:-1]:
-        z = float(H(np.array([[x, y]]))[0]) if not t1.buffer(0.5).contains(Point(x, y)) else hz(x, y)
+        z = float(H(np.array([[x, y]]))[0])
         mb.box("kerb", x - 0.15, x + 0.15, y - 0.15, y + 0.15, z - 0.3, z + 0.45)
     obs = mb.build("TERRAIN", col, M)
     L.join(obs, "TERRAIN_SITE_EMPTY_LAND")
@@ -814,11 +816,11 @@ def main():
     fw = frame(pc["c"], pc["rot_deg"])
     z_deck = hg(*fw(POOL.GRAD_F[3], 0.0)) - POOL.RISE - POOL_DROP
     geo = os.path.exists(os.path.join(GEO, "geo.json"))
-    # Tranche 2 (client 21-10, 13_tranche2): its ground is graded like the tranche, so the site's empty
-    # land is cut round both and blended into them
+    # Tranche 2 (client 21-10, 13_tranche2): its blocks are graded like the tranche, the site's empty land
+    # blends into them; its streets follow that ground, the land stops at them
     T2M = load("13_tranche2.py")
-    graded = unary_union([t1, T2M.envelope()])
-    Hsite = build_terrain(M, cols["01_TERRAIN"], site, graded, geo=geo)
+    graded = unary_union([t1, T2M.blocks()])
+    Hsite = build_terrain(M, cols["01_TERRAIN"], site, graded, geo=geo, cut=unary_union([t1, T2M.envelope()]))
     if geo:                                   # the real terrain and the ocean round the site (10_fetch_geo)
         build_surroundings(M, cols["00_SURROUNDINGS"], site, t1, Hsite)
 
@@ -1141,7 +1143,7 @@ def main():
                 n -= 1
 
     # ---- Tranche 2: the villas type B west of the tranche (13_tranche2), in collections of their own --
-    cams_t2 = T2M.build(M, sys.modules[__name__], srcv)
+    cams_t2 = T2M.build(M, sys.modules[__name__], srcv, Hsite)
 
     # ---- light, cameras, render settings --------------------------------------------------------
     lt_ = L.bay("14_build_lighting.py")

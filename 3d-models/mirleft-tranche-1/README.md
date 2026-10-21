@@ -6,7 +6,7 @@ This is a Blender model of the 1er TRANCHE of the Mirleft project, built from th
 - the sunken pool court (pool and children's pool, planted gradins, stairs, ramp, upper walk and planted stone terraces, technical block)
 - the pétanque courts and their pergola
 - the lanes, the roads and parking in beige herringbone pavers (rev 4), the pedestrian crossings, the entrance with its paved median and the fountain
-- **Tranche 2 (21-10)**: the 33 villas type B of the plan de masse 31-05-13 west of the tranche, with their pools, gardens, walls and gates, streets, the square and the parking (see **Tranche 2** below)
+- **Tranche 2 (21-10)**: the 33 villas type B of the plan de masse 31-05-13 west of the tranche, with their pools, gardens, walls and gates, the streets round them, the parking and the Centre d'entretien (see **Tranche 2** below)
 
 The rest of the site is empty land: the exact site boundary and the natural slope from the contours. Everything is exterior only (no interiors).
 
@@ -20,8 +20,8 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 | `Mirleft_Tranche_1.glb` | GLB with JPEG textures and colours (40 MB with the surroundings; shared meshes; no cameras or lights). Metres, Y up. `blender/08_export_glb.py` |
 | `Mirleft_Tranche_1_AE_SAFE.glb` | The most compatible version for After Effects (77 MB, with Tranche 2): the two tranches only, one mesh, centred with its ground at 0, JPEG only, no alpha, no trees. `08_export_glb.py --ae-safe` |
 | `Mirleft_Tranche_1_OBJ.zip` | The same single mesh as OBJ + MTL + JPEG textures (24 MB), written by the same command. |
-| `d5/` | D5 Render package: `Mirleft_Tranche_1_D5_FULL.fbx` (everything, the 19 cameras, textures embedded), `Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx` (without the palms and trees, the agaves, grasses and shrubs kept, to place D5's own), `textures/` and `D5_IMPORT_GUIDE.md`. `blender/09_export_d5.py` |
-| `renders/` | 19 views at 1920 × 1080 (see the list below). |
+| `d5/` | D5 Render package: `Mirleft_Tranche_1_D5_FULL.fbx` (everything, the 20 cameras, textures embedded), `Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx` (without the palms and trees, the agaves, grasses and shrubs kept, to place D5's own), `textures/` and `D5_IMPORT_GUIDE.md`. `blender/09_export_d5.py` |
+| `renders/` | 20 views at 1920 × 1080 (see the list below). |
 | `Mirleft_Tranche_1_views.jpg` | The 13 views of Tranche 1 on one sheet. |
 | `blender/01_extract_site.py` | Reads the plan (DWG made into primitives by `tools/`) and writes `data/site.json`. |
 | `blender/01b_parking_lines.py` | Adds the parking bays' separator lines of the plan to `data/site.json` (run after 01). |
@@ -226,24 +226,29 @@ four façades, coupes A-A and B-B).
   in the acrotère and parapets, timber pergolas over the étage terrace and the front terrace (the drawing's voile),
   the 'Manzah' balcony with its planter, a skylight lantern over the entrance void, jade pool tiles, a white coping
   and Roman steps.
-- **Placement**: in the northern block and on the southern block's deep plots, as the plan draws them: pool at the
-  rear, street front on the plot's front edge, centred across. The plan puts the southern block's two southern rows
-  back to front and draws two small lots in its northern row; those plots are too short for the villa and its pool
-  (13.9 to 19.5 m for 19.75 m), so those 9 villas are **turned a quarter** onto the street along their long side,
-  the middle and southern rows' pools back to back, the house against one side of the plot, the side garden on the
-  salon marocain's side with a car gate and a paved drive where it is on the street (to confirm).
+- **Placement (rev 21-10, "look at the architect plan")**: every villa as the plan de masse draws it, pool at the
+  rear and house where the plan's house is, on the plot the plan's fences enclose. The southern block is the plan's
+  grid of 3 rows of 4 plots, the villas back to front along each row as drawn, entered from the street along the
+  side of their plot. Its plots are 18 to 19 m long, shorter than the villa drawing with its pool (19.45 m), so
+  those 9 villas use the **compact** model: the pool 1.50 m nearer the house (1 m from it), as the plan de masse
+  itself draws it (to confirm).
 - **Gardens and walls**: each garden flat at its villa's pad (lawn 3 cm under the terraces), held by its walls where
   the ground falls away; garden walls 1.80 m in the render with its trim (at least 1.20 m over the lawn); on the
-  street a low stone-clad wall with its beige coping, the gate pillars and timber gate of the duplexes, and a paved
-  path to the door.
-- **Streets**: asphalt between concrete kerbs, 1.50 m pavements in beige pavers along the garden walls, a 2 m walk
-  along the square; Washingtonia palms in pits every 11 m. The square is lawn with olive trees; the parking has
-  its bays painted every 2.50 m.
-- **Levels**: graded on the plane of Tranche 1 (the 2013 contours fit it within 1.5 m there); each villa at the
-  plane height of its centre; the site's empty land is cut round Tranche 2 and blended into it over 25 m.
-- **To confirm**: the turned villas of the southern block; the plan's lot lines are road centres, so the
-  streets' widths and the 1.50 m pavements are read, not dimensioned; the planting and the square are a proposal;
-  the angled parking bays are painted at right angles.
+  villa's street side (the front, or the side for the southern block) a low stone-clad wall with its beige
+  coping, the gate pillars and timber gate of the duplexes, and a paved path to the door.
+- **Streets (rev 21-10, the yellow on the client's plan)**: read from the plan's own lines: the Voie Publique along the
+  north boundary, the street between Tranche 2 and Tranche 1, the south road along the boundary from the west
+  end of the type C villas, and the streets inside the blocks. The plan's lanes (2.50 to 3.35 m between its lines)
+  are carriageway in asphalt, its narrower strips pavements in beige pavers with a concrete kerb, and every
+  garden wall on a street keeps a 1.50 m pavement. Washingtonia palms in pits every 11 m.
+- **Parking strip (rev 21-10)**: the 26 bays the plan draws along the south road, painted, and its three buildings:
+  'Centre d'entretien' twice and 'Office', the squares with hipped roofs of the plan, in the villas' render
+  with their cornice, a terracotta pyramid roof, a timber door to the parking and windows in taupe surrounds
+  (heights 3.40 m + 1.90 m roof, to confirm).
+- **Levels**: the blocks graded on the plane of Tranche 1 (the 2013 contours fit it within 1.5 m there), each
+  villa at the height of its centre; the streets follow the site's ground beyond them (blended over 25 m), so
+  the south road goes down along the type C villas as the contours do; the empty land stops at the streets.
+- **To confirm**: the compact pool of the southern block; the buildings' heights; the planting.
 
 ## Removed (client, 13-10)
 Direction arrows and cars. The zebra crossings were put back as paint (15-10).
@@ -306,5 +311,6 @@ Direction arrows and cars. The zebra crossings were put back as paint (15-10).
 | T2_CAM_04_NORTH_STREET | A street of the northern block |
 | T2_CAM_05_SOUTH_BLOCK | The southern block from above |
 | T2_CAM_06_GATE | The front wall, gate and path of a villa |
+| T2_CAM_07_PARKING_CENTRE_ENTRETIEN | The parking strip, its bays and the Centre d'entretien |
 
 **Lighting**: the sun at 10:15 on 15 October, at the site's latitude and longitude, through a Nishita sky. The view transform is AgX Punchy.
