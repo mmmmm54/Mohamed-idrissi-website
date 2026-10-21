@@ -2,7 +2,7 @@
 
 | File | Contents | Use it when |
 |---|---|---|
-| `Mirleft_Tranche_1_D5_FULL.fbx` | Everything: duplexes, restaurant, commerces, pool court, ground, walls, stairs, furniture, trees, palms and plants, Tranche 2 (33 villas type B), and the 19 cameras | You want everything placed already |
+| `Mirleft_Tranche_1_D5_FULL.fbx` | Everything: duplexes, restaurant, commerces, pool court, ground, walls, stairs, furniture, trees, palms and plants, Tranche 2 (33 villas type B), and the 20 cameras | You want everything placed already |
 | `Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx` | The same without the palms and trees; the shrubs, agaves and grasses stay | You place D5 library palms and trees yourself |
 
 Both FBX files carry their textures inside. The same images are in `textures/`: keep that folder next to the FBX.
@@ -55,7 +55,9 @@ its own materials, so it can be finished apart from Tranche 1:
 - villas `T2_VILLA_B01` to `T2_VILLA_B33` (one mesh shared, the mirrored ones another);
 - streets `T2_GROUND_ROADS` (`T2_M11_Asphalt`), pavements `T2_GROUND_PAVEMENTS` (`T2_T17_Pavers_Beige_Herringbone_Pavements`),
   kerbs `T2_GROUND_KERBS` (`T2_Kerb_Concrete`), gardens `T2_GROUND_GARDENS_LAWN` (`T2_T03_Lawn_Gardens`), paths to the doors
-  and drives `T2_GROUND_ENTRANCE_PATHS` (`T2_T17_Pavers_Beige_Herringbone_Paths`), the square `T2_GROUND_SQUARE_LAWN`
-  (`T2_T03_Lawn_Square`), the parking `T2_GROUND_PARKING` (`T2_M11_Asphalt_Parking`) with its bay lines;
-- garden walls `T2_WALLS_GARDENS`, street front walls with gate pillars and gates `T2_WALLS_FRONT_GATES`, palm pits `T2_TREE_PITS`.
-Cameras `T2_CAM_01` to `T2_CAM_06`.
+  `T2_GROUND_ENTRANCE_PATHS` (`T2_T17_Pavers_Beige_Herringbone_Paths`),
+  the parking bays `T2_GROUND_PARKING` (`T2_M11_Asphalt_Parking`) with their lines, the Centre d'entretien and the
+  Office `T2_BUILDINGS_CENTRE_ENTRETIEN_OFFICE`;
+- garden walls `T2_WALLS_GARDENS`, street front walls with gate pillars and gates `T2_WALLS_FRONT_GATES`, palm pits `T2_TREE_PITS`,
+  the lawn left by Tranche 1's limit `T2_GROUND_LAWN_BY_TRANCHE_1` (`T2_T03_Lawn_Verges`).
+Cameras `T2_CAM_01` to `T2_CAM_07`.
