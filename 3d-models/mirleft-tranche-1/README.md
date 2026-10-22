@@ -263,6 +263,9 @@ four façades, coupes A-A and B-B).
   along the whole askew front (a high wall stood behind the gate); the lanes run into the streets their full
   width, without the pavement returns into their mouths; the first row of bays backs onto its planted strip
   as the second does, with one line between two bays in the staggered row too.
+- **All beige (22-10)**: the two herringbone lanes between the villa rows (`GROUND_LANE_1`, `GROUND_LANE_2`) and the
+  entrance's herringbone trottoirs are in the same beige pavers as the pavements (they were charcoal, the same
+  pattern darker); the commerce terrace keeps its dark squares.
 - **D5 (22-10)**: Tranche 2's ground takes Tranche 1's own materials in the D5 package (streets and bays
   `M11_Asphalt`, pavements and paths `T17_Pavers_Beige_Herringbone`, kerbs `Kerb_Concrete`, lawns `T03_Lawn`), so a
   texture changed in D5 changes both tranches together. The entrance zone keeps its own (`M11_Asphalt_Entrance`).

@@ -804,6 +804,15 @@ def main():
                          ("terrace_squares", "lane", "T25_Commerce_Terrace_Squares"),
                          ("strip_beige", "pave_beige", "T26_Commerce_Strip_Beige")):
         M[k] = M[src].copy(); M[k].name = name
+    # client 22-10 ("kolchi beige"): the herringbone lanes and the entrance's herringbone trottoirs in the beige
+    # pavers of the pavements (they were charcoal); the commerce terrace keeps its dark squares
+    M["lane"] = L.img_mat("T01_Pavers_Herringbone_Beige", "pavers", 0.8, 0.35)
+    for k, name in (("lane_ent", "T21_Trottoir_Herringbone_Entrance"), ("lane_1", "T23_Lane_1_Herringbone"),
+                    ("lane_2", "T24_Lane_2_Herringbone")):
+        old_m = M[k]
+        M[k] = M["lane"].copy()
+        old_m.name = name + "_charcoal"
+        M[k].name = name
     site = Polygon(SITE["boundary"])
     t1 = P(SITE["t1_region"])
     global SITE_T1
