@@ -239,11 +239,21 @@ four façades, coupes A-A and B-B).
   kitchen side, to the kitchen door and on along the house to the garden). Neighbouring gardens share one
   wall. The plan draws two villas of the northern block (B-02, B-08) back to front with no street in front
   or beside them: their gate is in the rear wall, on the street, beside the pool (to confirm).
-- **Streets (rev 21-10, the yellow on the client's plan)**: read from the plan's own lines: the Voie Publique along the
-  north boundary, the street between Tranche 2 and Tranche 1, the south road along the boundary from the west
-  end of the type C villas, and the streets inside the blocks. The plan's lanes (2.50 to 3.35 m between its lines)
-  are carriageway in asphalt, its narrower strips pavements in beige pavers with a concrete kerb, and every
-  garden wall on a street keeps a 1.50 m pavement. Washingtonia palms in pits every 11 m.
+- **Streets (rev 22-10, "kima kayn f planning", with the plan's widths)**: the plan's zoning lines are the kerbs
+  of its main streets, so the carriageway is everything between them: the Voie Publique and the south road
+  8 m inside a 1.6 to 2.9 m planted verge along the boundary, then a 2 m pavement; the street between Tranche 2
+  and Tranche 1 6.06 m between its two zoning lines, with its pavement on both sides (2.1 and 2.3 m), the
+  plan's 3.2 to 5.1 m planted strip between the pavement and the fences on the Tranche 2 side and a planted
+  strip up to Tranche 1's limit on the other; the streets between the blocks and down the west side of the
+  southern block 5.1 to 6 m. The lanes inside the blocks are 5 m between kerbs drawn 0.40 m off the fences
+  (no pavement, as the plan). Paved crossings over the planted strips at the gates; date palms, agaves and
+  grasses on the wide strips, Washingtonia palms in pits every 11 m on the pavements.
+- **Tranche 1's west pavement (22-10)**: south of where the street's east kerb leaves Tranche 1's limit (55 m up
+  from the south road) the street runs over Tranche 1's west pavement, as the plan draws it: that pavement is
+  cut away under it (and where less than 1.5 m of it would be left), the street is built there by Tranche 2
+  (`t1_trim` in `data/t2_site.json`). The rest of Tranche 1 is untouched.
+- **Exports (22-10)**: only the scene and `Mirleft_Tranche_1_PACKED_2K.blend` were rebuilt for this revision
+  (client: the blender file only); the GLB, OBJ, D5 package and renders are from 21-10.
 - **Parking strip (rev 21-10)**: the 26 bays the plan draws along the south road, painted, and its three buildings:
   'Centre d'entretien' twice and 'Office', the squares with hipped roofs of the plan, in the villas' render
   with their cornice, a terracotta pyramid roof, a timber door to the parking and windows in taupe surrounds

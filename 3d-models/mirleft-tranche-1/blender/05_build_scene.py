@@ -998,6 +998,7 @@ def main():
     cut.append(land)
     print(f"  north stair planks to the trottoir: {land.area:.1f} m2")
     mb_st.build("STAIRS", cols["02_GROUND"], M)
+    cut.append(T2M.t1_trim())         # client 22-10: Tranche 1's west pavement under the street along it
     cutp = unary_union(cut)
 
     # ---- ground, water, walls, road paint ---------------------------------------------------------

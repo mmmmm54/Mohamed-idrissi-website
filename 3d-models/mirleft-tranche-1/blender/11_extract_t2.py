@@ -21,10 +21,15 @@ Villa placement: the plan's own type B drawing in each lot gives the side of the
 model (pool 1.50 m nearer the house, as the plan draws it). Each villa's garden is its plot.
 
 The rest of the works (the blocks, and the streets round them the client marked in yellow, 21-10) is read
-from the same lines: the plan's lanes are carriageway, a 1.50 m pavement runs along every garden wall and
-the plan's other strips (verges) are pavements, the bays along the south road parking, and the three squares with hipped roofs on the
-parking strip the 'Centre d'entretien' (twice) and the 'Office' of the plan's labels. The pieces lying on
-the type C villas' lots are left out. T2_DEBUG=<png> writes the class map, to check it against the plan.
+from the same lines, with the plan's widths (client 22-10): the zoning lines are the kerbs of the main
+streets, so everything between them is carriageway (Voie Publique and south road 8 m inside a 1.6-2.9 m
+verge, the street along Tranche 1 6.06 m, the streets between the blocks 5.1-6 m); the lanes inside the
+blocks are the ground between facing gardens (5 m between kerbs 0.40 m off the fences); the plan's narrow
+strips are pavements and its wide ones off the street planted strips. The street along Tranche 1 runs over
+Tranche 1's west pavement south of where its east kerb leaves Tranche 1's limit: that pavement is cut away
+under it (t1_trim, not built by 05). The bays along the south road are parking, and the three squares with
+hipped roofs on the parking strip the 'Centre d'entretien' (twice) and the 'Office' of the plan's labels.
+The pieces lying on the type C villas' lots are left out. T2_DEBUG=<png> writes the class map.
 """
 import json
 import math
@@ -74,15 +79,21 @@ def raster(test):
     return cv2.connectedComponentsWithStats((img == 0).astype(np.uint8), connectivity=4)
 
 
-def vec(mask):
+def vec(mask, holes=False):
     cs, hier = cv2.findContours(mask.astype(np.uint8), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
     out = []
     if hier is None:
         return Polygon()
+    xy = lambda c: [(X0 + (x + 0.5) / RES, Y1 - (y + 0.5) / RES) for x, y in c[:, 0, :]]
     for k, c in enumerate(cs):
         if hier[0][k][3] != -1 or len(c) < 3:
             continue
-        out.append(Polygon([(X0 + (x + 0.5) / RES, Y1 - (y + 0.5) / RES) for x, y in c[:, 0, :]]).buffer(0))
+        hs, ch = [], hier[0][k][2]
+        while holes and ch != -1:
+            if len(cs[ch]) >= 3:
+                hs.append(xy(cs[ch]))
+            ch = hier[0][ch][0]
+        out.append(Polygon(xy(c), hs).buffer(0))
     return unary_union(out)
 
 
@@ -151,6 +162,28 @@ corridors = unary_union([LineString(B_NORTH).buffer(22.0).intersection(box(-252.
                          LineString([(-205.0, 12.0)] + B_SOUTH[3:]).buffer(26.0)])
 works = unary_union([blocks, corridors]).intersection(boundary).difference(t1)
 works = max(as_polys(works), key=lambda q: q.area)
+# client 22-10: the street along Tranche 1 as the plan draws it, 6.06 m between its two zoning lines down to
+# the south road. Its east kerb meets Tranche 1's limit 55 m up it; south of there it runs over Tranche 1's
+# west pavement, which is cut away under it ("ida bghit dmsa7 trotoire dyal tranche 1 chi chwiya")
+zstreet = unary_union([vec(labz == i, holes=True) for i in range(1, nz) if stz[i, 4] / RES / RES > 1500.0])
+dT, oT = np.array([0.544, 0.839]), np.array(T1_WEST[0])     # along Tranche 1's limit, and across it into Tranche 1
+nT = np.array([dT[1], -dT[0]])
+band = Polygon([tuple(oT + dT * t + nT * s) for t, s in ((-15.0, -3.0), (60.0, -3.0), (60.0, 7.0), (16.0, 7.0), (16.0, 16.0), (-15.0, 16.0))])
+t1_trim = zstreet.intersection(t1).intersection(band).buffer(-0.05, join_style=2).buffer(0.05, join_style=2)
+t1_trim = unary_union([q for q in as_polys(t1_trim) if q.area > 2.0])
+# what that leaves of the pavement between the street and Tranche 1's own road where it is under 1.5 m
+# wide (and its tail at the south road) goes too: the two carriageways meet there, no sliver of kerb
+t1pav = unary_union([Polygon(p["ext"], p.get("holes", [])).buffer(0) for p in site["surfaces"].get("paving", [])])
+rem = t1pav.intersection(t1).intersection(band).difference(t1_trim)
+thin = rem.difference(rem.buffer(-0.75, join_style=2).buffer(0.75, join_style=2))
+thin = unary_union([q for q in as_polys(thin) if q.distance(t1_trim) < 0.05])
+t1_trim = unary_union([t1_trim, thin]).buffer(0.10, join_style=2).buffer(-0.10, join_style=2).intersection(t1)
+t1_trim = unary_union([q for q in as_polys(t1_trim.simplify(0.05)) if q.area > 2.0])
+print(f"Tranche 1 ground under the street along it: {t1_trim.area:.0f} m2")
+# the main streets round the blocks in full, to their far kerb and 1 m past it (client 22-10: the street "6"
+# down the west side of the southern block, between it and the type C villas, is 6 m between its kerbs)
+side = zstreet.intersection(blocks.buffer(9.0, join_style=2)).buffer(1.0, join_style=2).intersection(boundary).difference(t1)
+works = max(as_polys(unary_union([works, side, t1_trim]).buffer(0.01, join_style=2).buffer(-0.01, join_style=2)), key=lambda q: q.area)
 
 # ---- the plan's ground pieces: its top-level lines (fences, kerbs, buildings: '012', 'cadastre', the
 # '041' chemin) and the site boundary drawn at 10 px/m; every region they enclose in the works is one piece
@@ -295,8 +328,21 @@ def world_box(o, g):
 
 
 # gardens: the plot, and the model's own plot box where it reaches past it (the box wins over neighbours)
+kerbs = zstreet.buffer(0.40, join_style=2)          # the main streets with the 0.40 m to the fences
 for o in out:
     o["box"] = world_box(o, box(0.0, 1.90 if o["compact"] else 0.40, 12.20, 20.10))
+for o in out:
+    others = unary_union([q["box"] for q in out if q is not o])
+    if o["box"].intersection(zstreet).area > 0.02:   # a villa over a street's kerb line: moved off it
+        for d in np.arange(0.05, 1.55, 0.05):
+            mv = [k for k in (o["u"], -o["u"], o["v"], -o["v"])
+                  if affinity.translate(o["box"], *(k * d)).intersection(zstreet).area < 0.02
+                  and affinity.translate(o["box"], *(k * d)).intersection(others).area < 0.05]
+            if mv:
+                o["origin"] = o["origin"] + mv[0] * d
+                o["box"] = affinity.translate(o["box"], *(mv[0] * d))
+                print(f"  villa at {[round(float(x), 1) for x in o['c']]} moved {d:.2f} m off the street's kerb line")
+                break
 boxes = [o["box"] for o in out]
 for i, a in enumerate(boxes):
     for b in boxes[i + 1:]:
@@ -308,6 +354,15 @@ for i, o in enumerate(out):
     g = g.buffer(-0.2, join_style=2).buffer(0.2, join_style=2)
     o["garden"] = Polygon(max(as_polys(g), key=lambda q: q.area).exterior)
     taken = taken.union(o["garden"])
+# no garden over a street: the zoning lines are the kerbs of the main streets, the fences 0.40 m inside them
+# (client 22-10, "7tarem distance dyal tri9"; the plots read at the west end of the southern block took in
+# 2.2 m of its street, between the lane line and the kerb)
+for o in out:
+    over = o["garden"].intersection(kerbs).area
+    if over > 0.5:
+        print(f"  garden at {[round(float(x), 1) for x in o['c']]} cut back off the street: {over:.1f} m2"
+              + (f" (its villa keeps {o['box'].intersection(kerbs).area:.1f} m2 of the 0.40 m)" if o["box"].intersection(kerbs).area > 0.2 else ""))
+        o["garden"] = max(as_polys(o["garden"].difference(kerbs.difference(o["box"]))), key=lambda q: q.area)
 # neighbouring gardens meet on one line: the plan's double fence line between them (with the drawing's
 # tolerance up to 1.5 m between the regions read) goes to the gardens, no strip of ground left between walls
 orig = [o["garden"] for o in out]
@@ -320,7 +375,7 @@ for i, o in enumerate(out):
             gap.append(pair.buffer(1.1, join_style=2).buffer(-1.1, join_style=2).difference(pair))
     others = unary_union(orig[:i] + orig[i + 1:])
     closed = o["garden"].buffer(0.9, join_style=2).buffer(-0.9, join_style=2)      # notches of the drawing filled
-    g = unary_union([o["garden"], closed] + gap).difference(others).difference(taken).intersection(works)
+    g = unary_union([o["garden"], closed] + gap).difference(others).difference(taken).intersection(works).difference(kerbs.difference(o["box"]))
     g = g.buffer(0.05, join_style=2).buffer(-0.05, join_style=2)
     g = Polygon(max(as_polys(g.buffer(0)), key=lambda q: q.area).exterior).simplify(0.03).buffer(0)
     o["garden"] = max(as_polys(g), key=lambda q: q.area)
@@ -367,26 +422,77 @@ for i in range(1, ncomp):
             CL[m] = 9                                          # a lot of the type C villas: not ours
             continue
     pub |= m
-# the carriageways: the plan draws them in lanes of 2.50 to 3.35 m between single or double lines, the
-# pavements 1.30 to 1.90 m wide: a piece of open ground as wide as a lane (its inscribed circle 2.1 m or
-# more across) is carriageway, a narrower one pavement
+# the streets as the plan draws them (client 22-10: "kima kayn f planning", "7tarem distance dyal tri9"). Its
+# zoning lines run on the kerbs of the main streets: the Voie Publique and the south road, 8 m from the outer
+# kerb (a 1.6 to 2.9 m verge inside the boundary) to the zoning line, the street along Tranche 1 6.06 m and
+# the streets between the blocks 5.1 to 6 m between their two zoning lines. Inside the blocks the lanes are
+# 5 m between kerbs drawn 0.40 m off the fences. Every piece of open ground in a zoning street cell is
+# carriageway (its lanes, the gaps of the zebra crossings), but the verge along the boundary and the round
+# islands; the lane-wide pieces joined to them outside the cells are the lanes and the parking aisles; the
+# narrow ones (under 2.1 m across) the pavements, the wider ones off the street the planted strips (the 3.2
+# to 5.1 m strip between the pavement and the fences along Tranche 1's street)
 D = cv2.distanceTransform(pub.astype(np.uint8), cv2.DIST_L2, 5) / RG
 npub, lpub = cv2.connectedComponents(pub.astype(np.uint8), connectivity=4)
-dmax = ndimage.maximum(D, lpub, index=np.arange(npub))
+pidx = np.arange(npub)
+dmax = ndimage.maximum(D, lpub, index=pidx)
 lane = dmax * 2.0 >= 2.1
 lane[0] = False
-CL[pub & lane[lpub]] = 2
-CL[pub & ~lane[lpub]] = 3
-# where the plan's pavement runs into the street at the kerb returns, the pieces join: every garden wall
-# on a street keeps a pavement (1.30 m at least), where that leaves the street 2.40 m or more
-along = cv2.dilate(gfill(gardens), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (27, 27))) > 0
-R0 = pub & (CL == 2)
-F = R0 & along
-R1 = cv2.morphologyEx((R0 & ~F).astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8)) > 0   # over the lane lines
-k24 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (25, 25))
-thin = R1 & ~(cv2.morphologyEx(R1.astype(np.uint8), cv2.MORPH_OPEN, k24) > 0)   # less than 2.4 m of street left:
-F &= ~(cv2.dilate(thin.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (33, 33))) > 0)   # the lane kept whole
-CL[F] = 3
+zimg = np.zeros((GH, GW), np.uint8)
+for it in P:
+    if it["k"] == "line" and it["layer"] == "zoning" and len(it["pts"]) > 1:
+        q = [gpx(f13(v)) for v in it["pts"]] + ([gpx(f13(it["pts"][0]))] if it["closed"] else [])
+        cv2.polylines(zimg, [np.array(q, np.int32)], False, 255, 1)
+zimg = cv2.dilate(zimg, np.ones((3, 3), np.uint8))
+nzc, labzc = cv2.connectedComponents((zimg == 0).astype(np.uint8), connectivity=4)
+zin = np.bincount(labzc[mW > 0], minlength=nzc) / RG / RG
+main_ids = [i for i in range(1, nzc) if zin[i] > 1500.0]
+print("zoning street cells in the works (m2):", [round(zin[i]) for i in main_ids])
+MAIN = np.isin(labzc, main_ids)
+inmain = ndimage.mean(MAIN, lpub, index=pidx)
+bimg = np.zeros((GH, GW), np.uint8)
+cv2.polylines(bimg, [np.array(bq + [bq[0]], np.int32)], False, 1, 1)
+nearB = ndimage.mean(cv2.distanceTransform((bimg == 0).astype(np.uint8), cv2.DIST_L2, 5) / RG < 3.2, lpub, index=pidx)
+psize = np.bincount(lpub.ravel(), minlength=npub) / RG / RG
+verge_p = (inmain > 0.5) & (nearB > 0.8)
+island = np.zeros(npub, bool)
+for i in np.nonzero((psize < 60.0) & (inmain > 0.5) & lane)[0]:
+    g = gvec(lpub == i, tol=0.02)
+    island[i] = not g.is_empty and 4.0 * math.pi * g.area / g.length ** 2 > 0.75
+carr = (inmain > 0.5) & ~verge_p & ~island
+carr[0] = False
+# the lanes inside the blocks: the ground between two gardens less than 7 m apart (whatever lines the plan
+# draws in them, 5 m between the kerbs); then the lane-shaped pieces (2.1 to 7 m across) joined to the
+# streets: the lane between the two parking squares. The squares round the kiosks stay paved
+G = gfill(gardens)
+corr = (cv2.morphologyEx(G, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (71, 71))) > 0) & (G == 0)
+cm = corr & pub & ~MAIN                                          # joined over the lane lines drawn in them
+cm = (cv2.morphologyEx(cm.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8)) > 0) & corr & ~MAIN
+nl, lbl, stl, _ = cv2.connectedComponentsWithStats(cm.astype(np.uint8), connectivity=8)
+LANE = np.isin(lbl, [j for j in range(1, nl) if stl[j, 4] >= 40.0 * RG * RG]) & pub
+k9 = np.ones((9, 9), np.uint8)
+cand = lane & (dmax * 2.0 <= 7.0) & (psize >= 30.0) & (inmain <= 0.5) & ~island
+behind = ndimage.sum(cv2.dilate((CL == 4).astype(np.uint8), k9) > 0, lpub, index=pidx) / RG / RG / 0.4 > 6.0
+by_kiosk = ndimage.maximum(cv2.dilate((CL == 5).astype(np.uint8), k9) > 0, lpub, index=pidx) > 0
+cand &= ~behind & ~by_kiosk                                    # the squares behind the bays, round the kiosks
+for i in np.nonzero(by_kiosk & lane)[0]:                       # paved, but the long strips that end at one
+    r = gvec(lpub == i).minimum_rotated_rectangle
+    e = sorted(math.dist(*pp) for pp in zip(list(r.exterior.coords)[:2], list(r.exterior.coords)[1:3]))
+    behind[i] |= e[1] < 4.0 * e[0]
+while True:
+    hit = ndimage.maximum(cv2.dilate((pub & (carr[lpub] | LANE)).astype(np.uint8), k9) > 0, lpub, index=pidx) > 0
+    new = hit & cand & ~carr
+    new[0] = False
+    if not new.any():
+        break
+    carr |= new
+strip = lane & ~carr & ~island & ~behind & (psize >= 40.0)
+CL[pub & carr[lpub]] = 2
+CL[pub & ~carr[lpub]] = 3
+CL[pub & (verge_p | strip)[lpub]] = 6
+CL[LANE] = 2
+CL[pub & MAIN & ~(verge_p | island)[lpub]] = 2                # the zoning lines are the kerbs: what is between them
+print(f"street pieces: {int(carr.sum())} carriageway, {int(verge_p.sum())} verge, {int(strip.sum())} planted strips, {int(island.sum())} islands; "
+      f"lanes between the gardens {LANE.sum() / RG / RG:.0f} m2")
 open_ = pub
 # the lines themselves and the scraps: the class of the nearest piece
 todo = (mW > 0) & (CL == 0)
@@ -397,8 +503,10 @@ todo = (CL == 1) & (gfill(gardens) == 0)                     # the fence lines o
 CL[todo] = 0
 _, ind = ndimage.distance_transform_edt((CL == 0) | (CL == 1), return_indices=True)
 CL = np.where(todo, CL[ind[0], ind[1]], CL)
+vi = cv2.dilate((pub & (verge_p | island)[lpub]).astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+CL[(mW > 0) & MAIN & np.isin(CL, (0, 3, 6)) & ~vi & (gfill(gardens) == 0)] = 2   # and the lines and scraps between them
 small = np.zeros_like(CL)
-for k in (2, 3):                                               # scraps under 3 m2 of one class inside another: absorbed
+for k in (2, 3, 6):                                            # scraps under 3 m2 of one class inside another: absorbed
     n_, lb, st_, _ = cv2.connectedComponentsWithStats((CL == k).astype(np.uint8), connectivity=4)
     for j in range(1, n_):
         if st_[j, 4] < 3.0 * RG * RG:
@@ -409,11 +517,11 @@ _, ind = ndimage.distance_transform_edt(CL == 0, return_indices=True)
 CL = np.where(todo, CL[ind[0], ind[1]], CL)
 CL[mW == 0] = 0
 if os.environ.get("T2_DEBUG"):                               # class map, for checking against the plan
-    pal = np.array([[0, 0, 0], [120, 200, 120], [80, 80, 80], [210, 195, 165], [200, 110, 90], [40, 120, 230]] + [[0, 0, 0]] * 3 + [[160, 40, 160]], np.uint8)
+    pal = np.array([[0, 0, 0], [120, 200, 120], [80, 80, 80], [210, 195, 165], [200, 110, 90], [40, 120, 230], [60, 150, 60]] + [[0, 0, 0]] * 2 + [[160, 40, 160]], np.uint8)
     dbg = pal[CL]
     dbg[lines > 0] = (255, 255, 255)
     cv2.imwrite(os.environ["T2_DEBUG"], cv2.resize(dbg[:, :, ::-1], (GW // 3, GH // 3), interpolation=cv2.INTER_AREA))
-    np.savez_compressed(os.environ["T2_DEBUG"] + ".npz", CL=CL, lines=lines, open_=open_, bounds=np.array([gx0, gy0, gx1, gy1]))
+    np.savez_compressed(os.environ["T2_DEBUG"] + ".npz", CL=CL, lines=lines, open_=open_, MAIN=MAIN, zimg=zimg, bounds=np.array([gx0, gy0, gx1, gy1]))
 # vector pieces that tile the works exactly: pavements and parking from the class map (grown 0.12 m over the
 # drawing's tolerance), the streets everything else between them, the gardens and the buildings
 parking = gvec(CL == 4)
@@ -426,31 +534,73 @@ env = works.difference(foreign.buffer(0.05)).buffer(0.0)
 env = Polygon(max(as_polys(env), key=lambda q: q.area).exterior)
 greens = greens.intersection(env)
 solid = unary_union([gardens, greens] + [k["poly"] for k in kiosks])
-# pavements: a continuous 1.50 m along every garden wall on the street (the plan cuts its own at every lot
-# and merges them into the street at the kerb returns), and the plan's own away from the gardens (the verges
-# along the boundary, round the parking); a strip of street left narrower than 2.40 m between two pavements
-# is paved too (the 4 m mews between the plots drawn back to front), the rest is carriageway
+# streets, verges and planted strips from the class map; pavements the rest of the ground. Scraps of street
+# shut in between gardens (the drawing's double fences, notches of its outlines) go to the garden that
+# borders them most; then along every fence on a street the plan's kerb 0.40 m off it
 ground = env.difference(solid).difference(parking)
-band = ground.intersection(gardens.buffer(1.50, join_style=2))
-verge = gvec(CL == 3).buffer(0.12, join_style=2).difference(gardens.buffer(1.50, join_style=2))
-pave = unary_union([band, verge]).intersection(ground)
-rest = ground.difference(pave)
-thin = rest.difference(rest.buffer(-1.2, join_style=2).buffer(1.2, join_style=2))
-pave = unary_union([pave, thin]).intersection(ground)
-pave = unary_union([q for q in as_polys(pave) if q.area > 0.5])
-roads = ground.difference(pave)
-roads = unary_union([q for q in as_polys(roads) if q.area > 0.5])
-# scraps of street shut in between gardens (the drawing's double fences, notches of its outlines): to the
-# garden that borders them most
+roads = gvec(CL == 2).intersection(ground)
+verges = gvec(CL == 6).intersection(ground).difference(roads)
 near = gardens.buffer(0.3, join_style=2)
 n_abs = 0
-for q in as_polys(roads) + as_polys(pave):
-    if q.area < 150.0 and q.exterior.intersection(near).length > 0.8 * q.exterior.length:
+for q in as_polys(roads):
+    if q.area < 150.0 and q.exterior.intersection(near).length > 0.8 * q.exterior.length and q.intersection(kerbs).area < 0.5:
         o = max(out, key=lambda o: q.exterior.intersection(o["garden"].buffer(0.3, join_style=2)).length)
         o["garden"] = max(as_polys(unary_union([o["garden"], q.buffer(0.02)]).buffer(0)), key=lambda g: g.area)
-        roads, pave = roads.difference(q.buffer(0.02)), pave.difference(q.buffer(0.02))
+        roads = roads.difference(q.buffer(0.02))
         n_abs += 1
+        print("  street scrap", [round(c, 1) for c in q.centroid.coords[0]], f"{q.area:.0f} m2 to a garden")
+# the lot the 2013 plan draws with another building (its villa from the client's plan): the dead-end lane off
+# the street between its fences and the next lot's goes to the gardens, each up to its lot line (a paved
+# forecourt is left at the street)
+undrawn = unary_union([o["lot"] for o in out if not o["drawn"]])
+for q in as_polys(roads.difference(kerbs)):
+    mouths = q.boundary.intersection(kerbs.buffer(0.05)).buffer(0.2)
+    if q.area > 2.0 and len(as_polys(mouths)) == 1 and q.intersection(undrawn).area > 0.4 * q.area:
+        for o in out:
+            part = q.intersection(o["lot"].buffer(0.05))
+            if part.area > 1.0:
+                o["garden"] = max(as_polys(unary_union([o["garden"], part.buffer(0.02)]).buffer(0)), key=lambda g: g.area)
+        roads = roads.difference(q.buffer(0.02))
+        print(f"  dead end by the lot drawn with another building: {q.area:.0f} m2 to the gardens")
 gardens = unary_union([o["garden"] for o in out])
+ground = ground.difference(gardens)
+roads = roads.intersection(ground).difference(gardens.buffer(0.40, join_style=2))
+roads = unary_union([q for q in as_polys(roads) if q.area > 0.5])
+verges = verges.intersection(ground).difference(roads)
+verges = unary_union([q for q in as_polys(verges) if q.area > 1.0])
+# the street along Tranche 1, on Tranche 1's side north of where its east kerb leaves Tranche 1's limit:
+# the plan's pavement (2.30 m from the zoning line to the back of its outer kerb), then a planted strip up
+# to the limit, along the whole street (the stubs of the 2013 streets into the old lots, which Tranche 1's
+# plan replaced, are not built)
+seg = []
+dR = (dT - 0.1393 * nT) / np.linalg.norm(dT - 0.1393 * nT)      # the street runs 8 degrees off Tranche 1's limit
+for _, ln in ZL:
+    c = np.array(ln.coords)
+    for p0, p1 in zip(c[:-1], c[1:]):
+        e = p1 - p0
+        if np.linalg.norm(e) < 2.0 or abs(np.dot(e / np.linalg.norm(e), dR)) < 0.998:
+            continue
+        for p in (p0, p1):
+            t_, s_ = float(np.dot(p - oT, dT)), float(np.dot(p - oT, nT))
+            if 20.0 <= t_ <= 145.0 and abs(s_ - (4.18 - 0.1393 * (t_ - 25.0))) < 1.0:
+                seg.append((t_, s_))
+seg = np.array(seg)
+kb, ka = np.polyfit(seg[:, 0], seg[:, 1], 1)
+print(f"street along Tranche 1: east zoning line s = {ka:.2f} {kb:+.4f} t ({len(seg)} points, residual "
+      f"{np.abs(seg[:, 1] - (ka + kb * seg[:, 0])).max():.2f} m)")
+ts = np.arange(45.0, 151.0, 5.0)
+xy = lambda t, s_: tuple(oT + dT * t + nT * s_)
+zone = Polygon([xy(t, ka + kb * t) for t in ts] + [xy(t, 1.0) for t in ts[::-1]]).buffer(0)
+zone = zone.difference(LineString(B_NORTH).buffer(12.4)).intersection(ground)
+walk = Polygon([xy(t, ka + kb * t) for t in ts] + [xy(t, ka + kb * t + 2.30) for t in ts[::-1]]).buffer(0)
+roads = roads.difference(zone)
+verges = unary_union([verges.difference(zone), zone.difference(walk)])
+verges = verges.difference(unary_union([k["poly"] for k in kiosks]).buffer(1.5, join_style=2))   # paved round the kiosks
+verges = unary_union([q for q in as_polys(verges) if q.area > 1.0])
+roads = unary_union([roads, t1_trim.intersection(ground)])        # Tranche 1's ground under the street: all carriageway
+verges = verges.difference(t1_trim)
+pave = ground.difference(roads).difference(verges)
+pave = unary_union([q for q in as_polys(pave) if q.area > 0.3])
 print("street scraps between gardens given to them:", n_abs)
 
 
@@ -462,7 +612,7 @@ def edge_open(o, side):
     strip = {"front": box(x0_ + 1.0, y1_ + 0.4, x1_ - 1.0, y1_ + 1.4), "right": box(x1_ + 0.4, 9.0, x1_ + 1.4, 19.0),
              "left": box(x0_ - 1.4, 9.0, x0_ - 0.4, 19.0)}[side]
     w = world_box(o, strip)
-    return w.intersection(unary_union([roads, pave, parking])).area / w.area
+    return w.intersection(unary_union([roads, pave, parking, verges])).area / w.area
 
 
 for o in out:
@@ -490,8 +640,9 @@ for i, o in enumerate(out, 1):
 print("villas", len(villas_js), "mirrored", sum(v["mirror"] for v in villas_js), "gates", Counter(v["gate"] for v in villas_js))
 js = {"source": "plan de masse 31-05-13 (villas type B west of Tranche 1), model frame of site.json",
       "env": poly_out(env)[0], "blocks": poly_out(blocks)[0], "villas": villas_js,
-      "roads": poly_out(roads), "pavements": poly_out(pave), "parking": poly_out(parking), "greens": poly_out(greens),
+      "roads": poly_out(roads), "pavements": poly_out(pave), "verges": poly_out(verges), "parking": poly_out(parking), "greens": poly_out(greens),
+      "t1_trim": poly_out(t1_trim),
       "bays": [poly_out(b)[0] for b in bays], "buildings": [{"name": k["name"], "poly": poly_out(k["poly"])[0]} for k in kiosks]}
 json.dump(js, open(os.path.join(ROOT, "data", "t2_site.json"), "w"))
-print(f"  roads {roads.area:.0f} m2, pavements {pave.area:.0f} m2, lawn by Tranche 1 {greens.area:.0f} m2, parking bays {len(bays)} ({parking.area:.0f} m2), "
+print(f"  roads {roads.area:.0f} m2, pavements {pave.area:.0f} m2, verges and strips {verges.area:.0f} m2, lawn by Tranche 1 {greens.area:.0f} m2, parking bays {len(bays)} ({parking.area:.0f} m2), "
       f"buildings {len(kiosks)}, type C lots left out {foreign.area:.0f} m2, works {env.area:.0f} m2")

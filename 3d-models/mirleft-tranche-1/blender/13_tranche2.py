@@ -64,6 +64,12 @@ def blocks():
     return P(T2["blocks"])
 
 
+def t1_trim():
+    """Tranche 1's ground under the street along it, south of where the street's east kerb leaves Tranche 1's
+    limit (client 22-10): not built by 05, the street is built there by Tranche 2."""
+    return PL(T2.get("t1_trim", []))
+
+
 def mats(M):
     """Tranche 2's ground materials: copies of Tranche 1's under their own names, to be finished apart in D5."""
     for k, src, suffix in (("t2_road", "asphalt", ""), ("t2_parking", "asphalt", "_Parking"), ("t2_pave", "pave_beige", "_Pavements"),
@@ -133,9 +139,10 @@ def build(M, B, srcv, H):
     gardens = unary_union([v.garden for v in vs])
     roads, pave, parking = PL(T2["roads"]), PL(T2["pavements"]), PL(T2["parking"])
     greens = PL(T2.get("greens", []))
+    verges = PL(T2.get("verges", []))
     bays = [P(b) for b in T2["bays"]]
     buildings = [(b["name"], P(b["poly"])) for b in T2["buildings"]]
-    public = unary_union([roads, pave, parking])
+    public = unary_union([roads, pave, parking, verges])
 
     # ---- villas --------------------------------------------------------------------------------
     for v in vs:
@@ -278,8 +285,21 @@ def build(M, B, srcv, H):
 
     # ---- streets, pavements, kerbs, parking --------------------------------------------------------
     roads = roads.difference(gardens)
+    # a paved crossing over the planted strip in front of each gate, as wide as the gate and its pillars
+    n_cross = 0
+    for v, axis, c, a, b, kind in gates:
+        sgn = 1.0 if c == (v.gy1 if axis == "y" else v.gx1) else -1.0
+        d0, d1 = sorted((c, c + sgn * 8.0))
+        g = v.f(box(a - 0.40, d0, b + 0.40, d1) if axis == "y" else box(d0, a - 0.40, d1, b + 0.40))
+        g = g.intersection(verges)
+        if g.area > 0.2:
+            pave, verges = pave.union(g), verges.difference(g)
+            n_cross += 1
     pave = pave.difference(gardens)
+    verges = verges.difference(gardens)
     kerb = pave.intersection(roads.union(parking).buffer(0.16, join_style=2))
+    kerb = kerb.union(verges.intersection(roads.union(parking).buffer(0.16, join_style=2)))
+    verges = verges.difference(kerb)
     mb = C.MeshBuilder()
     L.prism(mb, "t2_road", roads, -0.65, 0.0, zf=hz)
     mb.build("T2_GROUND_ROADS", cols["T2_01_GROUND"], M)
@@ -293,6 +313,9 @@ def build(M, B, srcv, H):
     L.prism(mb, "t2_verge", greens, -0.65, 0.12, zf=hz)
     mb.build("T2_GROUND_LAWN_BY_TRANCHE_1", cols["T2_01_GROUND"], M)
     mb = C.MeshBuilder()
+    L.prism(mb, "t2_verge", verges, -0.65, 0.12, zf=hz)
+    mb.build("T2_GROUND_VERGES", cols["T2_01_GROUND"], M)
+    mb = C.MeshBuilder()
     L.prism(mb, "t2_parking", parking, -0.65, 0.0, zf=hz)
     mb.build("T2_GROUND_PARKING", cols["T2_01_GROUND"], M)
     # the bays as the plan draws them: 10 cm white lines on their two long sides
@@ -304,7 +327,8 @@ def build(M, B, srcv, H):
             g = LineString([p0, p1]).buffer(0.05, cap_style=2)
             L.prism(mb, "paint", g, 0.004, 0.006, zf=hz, sides=False)
     mb.build("T2_ROAD_PAINT_PARKING", cols["T2_01_GROUND"], M)
-    print(f"  T2: streets {roads.area:.0f} m2, pavements {pave.area:.0f} m2, parking {parking.area:.0f} m2 ({len(bays)} bays)")
+    print(f"  T2: streets {roads.area:.0f} m2, pavements {pave.area:.0f} m2, verges and planted strips {verges.area:.0f} m2 "
+          f"({n_cross} crossings at the gates), parking {parking.area:.0f} m2 ({len(bays)} bays)")
 
     # ---- the parking strip's buildings: 'Centre d'entretien' (two) and 'Office', the squares with hipped
     # roofs of the plan: walls in the villas' render on a stone base, the cornice of the villas, a pyramid
@@ -427,6 +451,33 @@ def build(M, B, srcv, H):
         L.prism(mb, "soil", g.buffer(-0.08, 6), -0.20, PAVE_DZ - 0.04, zf=hz, sides=False)
         put("wash", (c.x, c.y), hz(c.x, c.y) + PAVE_DZ - 0.04, RNG.uniform(0.85, 1.0))
     mb.build("T2_TREE_PITS", cols["T2_01_GROUND"], M)
+    # the planted strips (along Tranche 1's street, behind the bays): date palms down the wide ones every
+    # 10 m, agaves, grasses and shrubs between them
+    n0 = nveg[0]
+    for q in L.as_polys(verges):
+        if q.area < 25.0:
+            continue
+        for cq in L.as_polys(q.buffer(-1.1)):
+            if cq.area < 2.0:
+                continue
+            r = list(cq.minimum_rotated_rectangle.exterior.coords)
+            e0, e1 = max(zip(r[:2], r[1:3]), key=lambda ab: math.dist(*ab))
+            t = (np.array(e1) - np.array(e0)) / math.dist(e0, e1)
+            c0 = np.array(cq.minimum_rotated_rectangle.centroid.coords[0])
+            half = math.dist(e0, e1) / 2.0
+            for k in range(int(half * 2.0 / 2.5) + 1):
+                d = -half + 1.25 + 2.5 * k
+                if d > half - 0.5:
+                    break
+                p = Point(*(c0 + t * d))
+                if not cq.contains(p):
+                    p = cq.exterior.interpolate(cq.exterior.project(p))
+                z = hz(p.x, p.y) + 0.12
+                if k % 4 == 1:
+                    put("date", (p.x, p.y), z, RNG.uniform(0.55, 0.70))
+                else:
+                    put(RNG.choice(("agave", "grass", "shrub")), (p.x, p.y), z, RNG.uniform(0.7, 0.95))
+    print(f"  T2: planted strips: {nveg[0] - n0} plants")
     # two date palms at each building's door
     for name, g in buildings:
         e = g.buffer(1.6, join_style=2).exterior
