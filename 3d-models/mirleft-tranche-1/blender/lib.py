@@ -332,7 +332,8 @@ def materials():
     M["band"] = img_mat("D16_Stone_Band_Ochre", "band", 0.55, 0.15)
     # client 20-10: the villas' aluminium (windows, balcony and garden sliding doors) in a beige darker
     # than the render, so it reads against the wall (it came out black)
-    M["frame"] = mod.simple("D17_Frame_Aluminium_Beige", "#9A7E5E", 0.45, 0.0)
+    # client 22-10: the aluminium in the 'quartz' colour (S90R/S46 Quartz, a light sand grey), not brown
+    M["frame"] = mod.simple("D17_Frame_Aluminium_Quartz", "#A99F8F", 0.45, 0.0)
     M["cladding"] = (mod.ph_surface("D18_Stone_Cladding_Beige", "stacked_stone_wall", 1.8, "#C3B39D", 0.35, 1.0)
                      or mod.stone_wall("D18_Stone_Cladding_Beige"))
     M["coping_beige"] = mod.simple("D19_Coping_Beige_Stone", "#CDBBA6", 0.6, 0.0, 20.0, 0.12, 0.1)

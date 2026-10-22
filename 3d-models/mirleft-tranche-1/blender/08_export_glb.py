@@ -133,10 +133,10 @@ TEX = {
     "T19_Tile_Jade_Green": (tinted(os.path.join(GEN, "TEX_TILE_JADE_GREEN.jpg"), "tile_jade"), 1.2),
 }
 FLAT = {   # plain colours (hex), roughness, metallic
-    "A06_Interior_Proxy": ("#4A3A2E", 0.9, 0.0), "D02_Door_Wood_Dark": ("#5C3A22", 0.6, 0.0),
+    "A06_Interior_Proxy": ("#D2C2AA", 0.9, 0.0), "D02_Door_Wood_Dark": ("#5C3A22", 0.6, 0.0),
     "D03_Slate_Access": ("#4F5257", 0.7, 0.0), "D06_Synthetic_Turf": ("#3F7F3A", 0.9, 0.0),
     "D07_Tennis_Acrylic": ("#2F6E8F", 0.6, 0.0), "D08_Play_Rubber": ("#C9734A", 0.9, 0.0),
-    "M05_Aluminium_Bronze": ("#433C37", 0.38, 0.8), "M06_Glass": ("#2B3438", 0.05, 0.0),
+    "M05_Aluminium_Bronze": ("#433C37", 0.38, 0.8), "M06_Glass": ("#8FA2A8", 0.05, 0.0),
     "M10_Pool_Water": ("#4FA9CC", 0.05, 0.0), "Road_Paint_White": ("#EDEBE6", 0.6, 0.0),
     "T02_Terrain_Cut_Soil": ("#8C6E52", 0.95, 0.0), "V01_Palm_Leaf": ("#5E7536", 0.6, 0.0),
     "V01_Palm_Skirt": ("#9E8462", 0.9, 0.0), "V01_Palm_Trunk": ("#7D6650", 0.9, 0.0),
@@ -147,9 +147,9 @@ FLAT = {   # plain colours (hex), roughness, metallic
     "T14_Lounger_White_Resin": ("#F1EFE9", 0.35, 0.0), "T15_Parasol_Canvas": ("#D9C8A9", 0.85, 0.0),
     "V09_Agave_Leaf": ("#7E9B8A", 0.6, 0.0), "V04_Ornamental_Grass": ("#B7A56E", 0.75, 0.0),
     "H04_Ocean_Atlantic": ("#1E5A6C", 0.08, 0.0),
-    "D17_Frame_Aluminium_Beige": ("#9A7E5E", 0.45, 0.0), "A06_Curtain_Linen": ("#E9DFCF", 0.95, 0.0),
+    "D17_Frame_Aluminium_Quartz": ("#A99F8F", 0.45, 0.0), "A06_Curtain_Linen": ("#E9DFCF", 0.95, 0.0),
     "A07_Curtain_Sheer": ("#F2ECE1", 0.9, 0.0),
-    "A08_Interior_Warm": ("#A8754E", 0.9, 0.0), "A09_Interior_Floor": ("#C9B394", 0.6, 0.0),
+    "A08_Interior_Warm": ("#C9A47E", 0.9, 0.0), "A09_Interior_Floor": ("#C9B394", 0.6, 0.0),
     "A10_Sofa_Linen": ("#D8CBB4", 0.9, 0.0), "A11_Cushion_Grey": ("#8E857A", 0.9, 0.0),
 }
 ALPHA = {"D01_Mashrabiya_Wood": "#3B2414", "V01_Palm_Fan": None, "V03_Olive_Foliage": None,
@@ -198,8 +198,8 @@ def new_mat(old):
         b.inputs["Base Color"].default_value = (*lin(hexcol), 1.0)
         b.inputs["Roughness"].default_value = rough
         b.inputs["Metallic"].default_value = metal
-        if name == "M06_Glass":                   # see-through, so the curtains and the salon show (19-10)
-            b.inputs["Alpha"].default_value = 0.22
+        if name == "M06_Glass":                   # see-through, so the curtains and the salon show (19-10); a
+            b.inputs["Alpha"].default_value = 0.35   # lighter glass on a lit room behind, never black (22-10)
             m.blend_method = "BLEND"
     return m, tile
 

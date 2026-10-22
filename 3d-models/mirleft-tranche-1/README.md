@@ -263,6 +263,16 @@ four façades, coupes A-A and B-B).
   along the whole askew front (a high wall stood behind the gate); the lanes run into the streets their full
   width, without the pavement returns into their mouths; the first row of bays backs onto its planted strip
   as the second does, with one line between two bays in the staggered row too.
+- **Client remarks (22-10, fourth round)**:
+  - the street between the northern block and the southern one (178 m, from the street along Tranche 1
+    down to the west end of the block) is a stair, fence to fence (6.80 m): level treads of 3.87 m in the
+    beige pavers, 45 risers of 15 cm with a stone nosing, two square fountains (2.40 m basin, stone rim,
+    bronze spout on a stone pedestal) at a third and two thirds of it. The streets that came into it end at it;
+  - villa type B: no pergola over the ground-floor front terrace; the pergola is over the étage's front
+    balcony (the bedroom's sliding door opens onto it);
+  - the aluminium of the frames in the 'quartz' colour (light sand grey, `D17_Frame_Aluminium_Quartz`), not
+    brown; in the D5 package the glass is lighter and the rooms behind it a lit warm plaster, so the
+    windows never read black.
 - **All beige (22-10)**: the two herringbone lanes between the villa rows (`GROUND_LANE_1`, `GROUND_LANE_2`) and the
   entrance's herringbone trottoirs are in the same beige pavers as the pavements (they were charcoal, the same
   pattern darker); the commerce terrace keeps its dark squares.

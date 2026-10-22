@@ -154,9 +154,11 @@ def build(M, B, srcv, H):
     roads, pave, parking = PL(T2["roads"]), PL(T2["pavements"]), PL(T2["parking"])
     greens = PL(T2.get("greens", []))
     verges = PL(T2.get("verges", []))
+    st = T2.get("stair")
+    stair = PL(st["poly"]) if st else Polygon()
     bays = [P(b) for b in T2["bays"]]
     buildings = [(b["name"], P(b["poly"])) for b in T2["buildings"]]
-    public = unary_union([roads, pave, parking, verges])
+    public = unary_union([roads, pave, parking, verges, stair])
 
     # ---- villas --------------------------------------------------------------------------------
     for v in vs:
@@ -357,6 +359,49 @@ def build(M, B, srcv, H):
     mb.build("T2_ROAD_PAINT_PARKING", cols["T2_01_GROUND"], M)
     print(f"  T2: streets {roads.area:.0f} m2, pavements {pave.area:.0f} m2, verges and planted strips {verges.area:.0f} m2 "
           f"({n_cross} crossings at the gates), parking {parking.area:.0f} m2 ({len(bays)} bays)")
+
+    # ---- the stair between the two blocks (client 22-10): level treads in the beige pavers, fence to fence,
+    # each riser (about 15 cm) with a stone nosing; two square fountains on treads of their own, a raised
+    # stone rim, tiled basin and a bronze spout on a stone pedestal ----------------------------------------
+    if st:
+        A, Bv = np.array(st["axis"][0]), np.array(st["axis"][-1])
+        Lst = float(np.linalg.norm(Bv - A))
+        dv = (Bv - A) / Lst
+        nv = np.array([-dv[1], dv[0]])
+        zA, zB = hz(*A), hz(*Bv)
+        n_r = max(1, int(round(abs(zA - zB) / 0.15)))
+        rise = (zA - zB) / n_r
+        Lt = Lst / (n_r + 1)
+        slab = lambda t0, t1: Polygon([tuple(A + dv * t0 + nv * 30), tuple(A + dv * t1 + nv * 30),
+                                       tuple(A + dv * t1 - nv * 30), tuple(A + dv * t0 - nv * 30)])
+        mb = C.MeshBuilder()
+        for k in range(n_r + 1):
+            t0, t1 = (k * Lt if k else -10.0), ((k + 1) * Lt if k < n_r else Lst + 10.0)
+            z = zA - k * rise
+            g = stair.intersection(slab(t0, t1))
+            if g.is_empty:
+                continue
+            L.prism(mb, "t2_pave", g, -0.90, 0.0, zf=lambda x, y, z=z: z)
+            if k < n_r:
+                L.prism(mb, "coping_beige", stair.intersection(slab(t1 - 0.30, t1)), -0.05, 0.006, zf=lambda x, y, z=z: z, sides=False)
+        for fx, fy in st["fountains"]:
+            t = float(np.dot(np.array([fx, fy]) - A, dv))
+            k = min(n_r, max(0, int(t // Lt)))
+            c = A + dv * (k + 0.5) * Lt + nv * float(np.dot(np.array([fx, fy]) - A, nv))
+            z = zA - k * rise
+            flat = lambda x, y, z=z: z
+            sq = affinity.translate(affinity.rotate(box(-1.2, -1.2, 1.2, 1.2), math.degrees(math.atan2(dv[1], dv[0])), origin=(0, 0)), *c)
+            L.prism(mb, "coping", sq.buffer(0.30, join_style=2).difference(sq), -0.05, 0.45, zf=flat)
+            L.prism(mb, "pool_tile", sq, 0.0, 0.03, zf=flat, sides=False)
+            L.prism(mb, "pool_tile", sq.difference(sq.buffer(-0.02, join_style=2)), 0.0, 0.40, zf=flat)
+            L.prism(mb, "pool_water", sq.buffer(-0.02, join_style=2), 0.30, 0.32, zf=flat, sides=False)
+            ped = Point(*c).buffer(0.22, 4).envelope
+            L.prism(mb, "coping", ped, 0.0, 0.70, zf=flat)
+            L.prism(mb, "coping", ped.buffer(0.08, join_style=2), 0.70, 0.78, zf=flat)
+            L.prism(mb, "bronze", Point(*c).buffer(0.05, 8), 0.78, 1.05, zf=flat)
+        mb.build("T2_STAIR_BETWEEN_BLOCKS", cols["T2_01_GROUND"], M)
+        print(f"  T2: stair between the blocks: {Lst:.0f} m, {n_r} risers of {rise:.3f} m on treads of {Lt:.2f} m, "
+              f"{len(st['fountains'])} fountains")
 
     # ---- the parking strip's buildings: 'Centre d'entretien' (two) and 'Office', the squares with hipped
     # roofs of the plan: walls in the villas' render on a stone base, the cornice of the villas, a pyramid

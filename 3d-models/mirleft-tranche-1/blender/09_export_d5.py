@@ -157,7 +157,7 @@ The material names are the Blender ones: `T13_Travertine_Planks` (pool deck), `M
   In D5 it can be swapped for the real product's texture if you have it.
 - `T19_Tile_Jade_Green`: the two pools (La Platera Jade type, 30 x 60).
 - Duplexes (villa N°09): `D13_Render_Villa_Beige` walls, `D14_Stone_Surround_Taupe` window and door surrounds,
-  `D15_Stone_Ledge_Grey` and `D16_Stone_Band_Ochre` cornice, `D17_Frame_Aluminium_Beige` aluminium frames (windows, balcony and garden sliding doors), `D18_Stone_Cladding_Beige`
+  `D15_Stone_Ledge_Grey` and `D16_Stone_Band_Ochre` cornice, `D17_Frame_Aluminium_Quartz` aluminium frames (quartz, a light sand grey, since 22-10) (windows, balcony and garden sliding doors), `D18_Stone_Cladding_Beige`
   front garden walls with `D19_Coping_Beige_Stone`, `M03_Timber_Pergola` pergolas and railings.
 
 ## Tranche 2: villas type B (21-10)
@@ -167,7 +167,8 @@ block 12), villa type B of `5-VILLA_TYPE_B.DWG` with its own pool, in the finish
 collections (`T2_01_GROUND`, `T2_02_VILLAS`, `T2_03_LANDSCAPE`, `T2_04_TREES_PALMS`) and objects, and its ground in
 its own materials, so it can be finished apart from Tranche 1:
 - villas `T2_VILLA_B01` to `T2_VILLA_B33` (one mesh shared, the mirrored ones another);
-- the Centre d'entretien and the Office `T2_BUILDINGS_CENTRE_ENTRETIEN_OFFICE`, the bay lines `T2_ROAD_PAINT_PARKING`.
+- the Centre d'entretien and the Office `T2_BUILDINGS_CENTRE_ENTRETIEN_OFFICE`, the bay lines `T2_ROAD_PAINT_PARKING`,
+  the stair between the two blocks with its two square fountains `T2_STAIR_BETWEEN_BLOCKS` (22-10).
   Since 22-10 the two tranches' ground is one object per surface, with one material each, in this package:
   streets and bays `GROUND_ROADS_T1_T2` (`M11_Asphalt`; the entrance zone keeps `GROUND_ROADS_ENTRANCE`),
   beige pavements and paths `GROUND_PAVERS_BEIGE_T1_T2` (`T17_Pavers_Beige_Herringbone`), kerbs and the villas'

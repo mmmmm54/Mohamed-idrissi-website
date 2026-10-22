@@ -19,8 +19,9 @@ Openings: positions from the RDC / ETAGE plans (gaps in the wall lines), heights
 Tranche 1 style: the villas' sand render, taupe stone surrounds, beige aluminium frames, sheer curtains,
 the salon glazing set back in a stone reveal with the lit salon behind, rows of square niches, the
 cornice of the villas (grey ledge / ochre band / grey ledge) and the rounded acrotère coping, the horned
-crown of the stair cage, timber pergolas over the terraces, jade-green pool tiles with a white coping.
-The voile (shade sail) the drawing puts over the front terrace is a timber pergola here, like Tranche 1.
+crown of the stair cage, timber pergolas over the étage terraces, jade-green pool tiles with a white coping.
+The voile (shade sail) the drawing puts over the front terrace is a timber pergola over the étage's front
+balcony here (client 22-10: none over the ground-floor terrace).
 """
 import importlib.util
 import math
@@ -220,7 +221,7 @@ def build(M, col, name="SRC_VILLA_B", compact=False):
             D.horn(mb, prof, lambda a, b, w, xc=xc, sx=sx, yc=yc, sy=sy: (xc + sx * a, yc + sy * w, b))
             D.horn(mb, prof_b, lambda a, b, w, xc=xc, sx=sx, yc=yc, sy=sy: (xc + sx * w, yc + sy * a, b))
 
-    # ---- pergolas (timber): over the étage terrace and over the front terrace (the drawing's voile) -
+    # ---- pergolas (timber): over the étage terrace and over the étage's front balcony ---------------
     T = "timber"
     x0, y0, x1, y1 = TER_R.bounds
     for x, y in ((x1 - 0.20, y0 + 0.25), (x1 - 0.20, y1 - 0.20)):
@@ -230,15 +231,17 @@ def build(M, col, name="SRC_VILLA_B", compact=False):
     for k in range(int((y1 - y0 - 0.3) / 0.50) + 1):
         y = y0 + 0.35 + 0.50 * k
         mb.box(T, x0 + 0.02, x1 - 0.05, y - 0.03, y + 0.03, Z1 + 2.75, Z1 + 2.90)
-    px0, py0, px1, py1 = 7.60, 16.12, 12.10, 19.40                 # front terrace (RDC)
-    for x, y in ((px0 + 0.10, py1 - 0.10), (px1 - 0.10, py1 - 0.10)):
-        mb.box(T, x - 0.07, x + 0.07, y - 0.07, y + 0.07, Z_FL, 2.95)
-    mb.box(T, px0, px1, py1 - 0.20, py1, 2.95, 3.15)
-    mb.box(T, px0, px1, py0, py0 + 0.08, 3.00, 3.15)
+    # client 22-10: no pergola over the front terrace on the ground; it goes over the étage's front balcony
+    # (the terrace over the kitchen's, the bedroom's sliding door onto it), from the façade to its parapet
+    px0, py0, px1, py1 = 1.28, 18.11, 5.22, 19.86
+    for x in (px0 + 0.10, px1 - 0.10):
+        mb.box(T, x - 0.07, x + 0.07, py1 - 0.17, py1 - 0.03, Z1 + 1.00, Z1 + 2.55)
+    mb.box(T, px0, px1, py1 - 0.20, py1, Z1 + 2.55, Z1 + 2.75)
+    mb.box(T, px0, px1, py0, py0 + 0.08, Z1 + 2.60, Z1 + 2.75)
     for k in range(int((px1 - px0) / 0.48) + 1):
-        x = px0 + 0.10 + 0.48 * k
+        x = px0 + 0.14 + 0.48 * k
         if x < px1 - 0.05:
-            mb.box(T, x - 0.03, x + 0.03, py0, py1 + 0.15, 3.15, 3.30)
+            mb.box(T, x - 0.03, x + 0.03, py0, py1 + 0.15, Z1 + 2.75, Z1 + 2.90)
 
     # ---- terraces, porch, pool -------------------------------------------------------------------
     POOL, DECK, _ = ground(compact)

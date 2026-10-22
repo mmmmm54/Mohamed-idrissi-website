@@ -658,6 +658,57 @@ gardens = unary_union([o["garden"] for o in out])
 print("street scraps between gardens given to them:", n_abs)
 
 
+# client 22-10: the street between the northern block and the southern one (and on along the type C villas)
+# is a stair, from the street along Tranche 1 down to the west end of the block: level treads with risers of
+# about 15 cm, fence to fence, broken by two square fountains. Its axis: the middle of the street seen from
+# the northern block's last row
+sv = np.array([-0.510, -0.860])                               # across the rows, away from the Voie Publique
+last = sorted([o for o in out if o["block"] == "north"], key=lambda o: -float(np.dot(np.array(o["garden"].centroid.coords[0]), sv)))[:7]
+mids, wids = [], []
+for o in last:
+    c = np.array(o["garden"].centroid.coords[0])
+    ln = LineString([tuple(c), tuple(c + sv * 30.0)])
+    x = ln.intersection(roads)
+    segs = sorted((g for g in getattr(x, "geoms", [x]) if g.geom_type == "LineString" and g.length > 2.0),
+                  key=lambda g: ln.project(Point(g.coords[0])))
+    if segs:
+        mids.append(np.array(segs[0].interpolate(0.5, normalized=True).coords[0]))
+        wids.append(segs[0].length)
+mids = np.array(mids)
+cm_ = mids.mean(0)
+dv = np.linalg.svd(mids - cm_)[2][0]
+dv = dv if dv[0] > 0 else -dv                                   # towards the east
+half = float(np.mean(wids)) / 2.0 + 0.40
+side_g = [o["garden"] for o in out if o["garden"].distance(LineString([tuple(cm_ - dv * 200), tuple(cm_ + dv * 200)])) < half + 1.0]
+proj = [float(np.dot(np.array(q) - cm_, dv)) for g in side_g for q in g.exterior.coords]
+tW = min(float(np.dot(np.array(q) - cm_, dv)) for o in last for q in o["garden"].exterior.coords)
+tE = max(proj)
+axis = LineString([tuple(cm_ + dv * tE), tuple(cm_ + dv * tW)])        # from the top (east) down
+stair = axis.buffer(half, cap_style=2, join_style=2).intersection(unary_union([roads, pave, verges])).difference(gardens.buffer(0.01))
+stair = unary_union([q for q in as_polys(stair) if q.area > 5.0])
+nv = np.array([-dv[1], dv[0]])
+
+
+def fenced(t):
+    """both sides of the stair fenced by gardens at t (no street coming into it there)"""
+    for dt in (-1.6, 0.0, 1.6):
+        p = cm_ + dv * t
+        for sg in (1, -1):
+            if gardens.distance(Point(*(p + dv * dt + nv * sg * (half + 0.2)))) > 0.8:
+                return False
+    return True
+
+
+fountains = []
+for frac in (1 / 3, 2 / 3):
+    t0 = tE + (tW - tE) * frac
+    t = next((t0 + sgn * k for k in np.arange(0.0, 12.0, 0.5) for sgn in (1, -1) if fenced(t0 + sgn * k)), t0)
+    fountains.append([round(float(v), 3) for v in cm_ + dv * t])
+roads, pave, verges = roads.difference(stair), pave.difference(stair), verges.difference(stair)
+print(f"stair between the blocks: {axis.length:.0f} m long, {2 * half:.2f} m between the fences, {stair.area:.0f} m2, "
+      f"fountains at {fountains}")
+
+
 # gates: on the front if the street is in front of the villa, else on the side the street runs along
 def edge_open(o, side):
     from shapely import affinity
@@ -666,7 +717,7 @@ def edge_open(o, side):
     strip = {"front": box(x0_ + 1.0, y1_ + 0.4, x1_ - 1.0, y1_ + 1.4), "right": box(x1_ + 0.4, 9.0, x1_ + 1.4, 19.0),
              "left": box(x0_ - 1.4, 9.0, x0_ - 0.4, 19.0)}[side]
     w = world_box(o, strip)
-    return w.intersection(unary_union([roads, pave, parking, verges])).area / w.area
+    return w.intersection(unary_union([roads, pave, parking, verges, stair])).area / w.area
 
 
 for o in out:
@@ -696,6 +747,7 @@ js = {"source": "plan de masse 31-05-13 (villas type B west of Tranche 1), model
       "env": poly_out(env)[0], "blocks": poly_out(blocks)[0], "villas": villas_js,
       "roads": poly_out(roads), "pavements": poly_out(pave), "verges": poly_out(verges), "parking": poly_out(parking), "greens": poly_out(greens),
       "t1_trim": poly_out(t1_trim),
+      "stair": {"axis": [[round(x, 3), round(y, 3)] for x, y in axis.coords], "poly": poly_out(stair), "fountains": fountains},
       "bays": [poly_out(b)[0] for b in bays], "buildings": [{"name": k["name"], "poly": poly_out(k["poly"])[0]} for k in kiosks]}
 json.dump(js, open(os.path.join(ROOT, "data", "t2_site.json"), "w"))
 print(f"  roads {roads.area:.0f} m2, pavements {pave.area:.0f} m2, verges and strips {verges.area:.0f} m2, lawn by Tranche 1 {greens.area:.0f} m2, parking bays {len(bays)} ({parking.area:.0f} m2), "
