@@ -57,7 +57,7 @@ def f13(p):
     return (T13[0] + x * math.cos(th) - y * math.sin(th) - O[0], T13[1] + x * math.sin(th) + y * math.cos(th) - O[1])
 
 
-X0, Y0, X1, Y1, RES = -270.0, -60.0, -5.0, 200.0, 10.0
+X0, Y0, X1, Y1, RES = -300.0, -60.0, -5.0, 215.0, 10.0
 W, H = int((X1 - X0) * RES), int((Y1 - Y0) * RES)
 
 
@@ -139,6 +139,34 @@ for i in range(1, nz):
         lots.append({"block": "south" if col == CYAN else "north", "lot": g})
 print("lots", Counter(l["block"] for l in lots))
 
+# ---- type C (client 22-10, PLAN_VILLA_TYPE_C.dwg): the plan's type C drawings ('RTYREZY', 13 of them in the
+# block south-west of the southern one: two rows of six and one turned in the corner on the south road). Each
+# gives the house's outline (its outer line is the drawing's house, 15.38 x 12.15 m), its two front terraces
+# (the front) and the mark of the outside stair (its side). Their lots: the zoning cells they lie in
+TC = {}
+for it in P:
+    if not it["path"] or it["path"][0] != "RTYREZY" or len(it["path"]) != 1 or not it.get("iids"):
+        continue
+    a = [f13(p) for p in it["pts"]]
+    d = TC.setdefault(it["iids"][0], {"ter": []})
+    if it["k"] == "line" and len(a) == 25:
+        d["foot"] = Polygon(a).buffer(0)
+    elif it["k"] == "hatch" and len(a) == 4:
+        d["ter"].append(np.mean(np.array(a), 0))
+    elif it["k"] == "line" and len(a) == 4 and not it["closed"] and max(np.ptp(np.array(a), 0)) < 1.3:
+        d["mark"] = np.mean(np.array(a), 0)
+lots_c = []
+for d in TC.values():
+    c = np.array(d["foot"].minimum_rotated_rectangle.centroid.coords[0])
+    col_, row_ = px(c)
+    g = vec(labz == labz[row_, col_]).buffer(0.15, join_style=2).simplify(0.1)
+    lots_c.append({"block": "C", "lot": g, "foot": d["foot"], "c": c, "ter": np.mean(d["ter"], 0), "mark": d["mark"]})
+# the SPA (client 22-10: "add spa ... same size as on the plan"): the cell the plan's label "SPA" points into,
+# west of the northern block's first column. Its own design (15_spa.py) fills it
+col_, row_ = px((-240.6, 179.6))
+spa_cell = vec(labz == labz[row_, col_]).buffer(0.15, join_style=2).simplify(0.1)
+print(f"type C lots {len(lots_c)} ({sum(l['lot'].area for l in lots_c):.0f} m2), SPA cell {spa_cell.area:.0f} m2")
+
 
 # ---- the works of Tranche 2: its two blocks, and the streets round them the client marked in yellow on the
 # plan (21-10): the Voie Publique along the north boundary, the street between Tranche 2 and Tranche 1, the
@@ -160,12 +188,16 @@ B_SOUTH = [(-309.2, 110.8), (-249.7, 73.1), (-232.6, 46.9), (-185.0, -12.0), (-1
 corridors = unary_union([LineString(B_NORTH).buffer(22.0).intersection(box(-252.0, -100.0, 0.0, 300.0)),
                          LineString(T1_WEST).buffer(24.0), LineString(B_SOUTH[:4]).buffer(15.0, cap_style=2),
                          LineString([(-205.0, 12.0)] + B_SOUTH[3:]).buffer(26.0)])
-works = unary_union([blocks, corridors]).intersection(boundary).difference(t1)
+# the type C villas' block (its lots, out to the lines of the streets round it) and the SPA's cell: in the
+# works, not graded on Tranche 1's plane (the villas follow the ground, the south road going down along them)
+blocks_c = unary_union([l["lot"] for l in lots_c]).buffer(3.5, join_style=2).intersection(boundary).difference(t1).difference(blocks)
+blocks_c = blocks_c.buffer(2.0, join_style=2).buffer(-2.0, join_style=2).intersection(boundary).difference(t1).difference(blocks)
+works = unary_union([blocks, blocks_c, spa_cell, corridors]).intersection(boundary).difference(t1)
 works = max(as_polys(works), key=lambda q: q.area)
 # client 22-10: the street along Tranche 1 as the plan draws it, 6.06 m between its two zoning lines down to
 # the south road. Its east kerb meets Tranche 1's limit 55 m up it; south of there it runs over Tranche 1's
 # west pavement, which is cut away under it ("ida bghit dmsa7 trotoire dyal tranche 1 chi chwiya")
-zstreet = unary_union([vec(labz == i, holes=True) for i in range(1, nz) if stz[i, 4] / RES / RES > 1500.0])
+zstreet = vec(labz == max(range(1, nz), key=lambda i: stz[i, 4]), holes=True)      # the street network: the big cell
 dT, oT = np.array([0.544, 0.839]), np.array(T1_WEST[0])     # along Tranche 1's limit, and across it into Tranche 1
 nT = np.array([dT[1], -dT[0]])
 band = Polygon([tuple(oT + dT * t + nT * s) for t, s in ((-15.0, -3.0), (60.0, -3.0), (60.0, 7.0), (16.0, 7.0), (16.0, 16.0), (-15.0, 16.0))])
@@ -181,7 +213,7 @@ t1_trim = unary_union([q for q in as_polys(t1_trim.simplify(0.05)) if q.area > 2
 print(f"Tranche 1 ground under the street along it: {t1_trim.area:.0f} m2")
 # the main streets round the blocks in full, to their far kerb and 1 m past it (client 22-10: the street "6"
 # down the west side of the southern block, between it and the type C villas, is 6 m between its kerbs)
-side = zstreet.intersection(blocks.buffer(9.0, join_style=2)).buffer(1.0, join_style=2).intersection(boundary).difference(t1)
+side = zstreet.intersection(unary_union([blocks, blocks_c, spa_cell]).buffer(9.0, join_style=2)).buffer(1.0, join_style=2).intersection(boundary).difference(t1)
 works = max(as_polys(unary_union([works, side, t1_trim]).buffer(0.01, join_style=2).buffer(-0.01, join_style=2)), key=lambda q: q.area)
 
 # ---- the plan's ground pieces: its top-level lines (fences, kerbs, buildings: '012', 'cadastre', the
@@ -352,6 +384,31 @@ for l in villas:
                 "rot": math.degrees(math.atan2(u[1], u[0])), "mirror": mirror, "compact": bool(compact),
                 "drawn": l["drawn"], "c": c})
 print("compact villas:", sum(o["compact"] for o in out))
+# type C: the model of 14_villa_c (local x 0-16.53 across, its outside stair at x 0-1.14; y 0 behind the pool
+# to 18.02 at the porch's step), its house (15.38 x 12.15 m, centred at x 8.84, y 11.58) on the plan's house
+# outline, its front on the side of the plan's two terraces, its stair on the side of the plan's mark. The
+# plot: the plan's region in the lot, as for type B
+VC_W, VC_D, VC_HC = 16.528, 18.015, (8.836, 11.5765)
+for l in lots_c:
+    r = list(l["foot"].minimum_rotated_rectangle.exterior.coords)
+    ev = min((np.array(r[k + 1]) - np.array(r[k]) for k in range(2)), key=np.linalg.norm)
+    v = ev / np.linalg.norm(ev)
+    v = v if np.dot(v, l["ter"] - l["c"]) > 0 else -v
+    u = np.array([v[1], -v[0]])
+    mirror = bool(np.dot(l["mark"] - l["c"], u) > 0)        # the model's stair is on its -x side
+    origin = l["c"] - u * ((VC_W - VC_HC[0]) if mirror else VC_HC[0]) - v * VC_HC[1]
+    ids = []
+    for i in comps_in(l["lot"].buffer(0.6), 0.7):            # not the strip of parking in front of the fences
+        rr = list(gvec(lab == i).minimum_rotated_rectangle.exterior.coords)
+        e_ = sorted(math.dist(*pp) for pp in zip(rr[:2], rr[1:3]))
+        if not (e_[0] < 4.0 and e_[1] > 3.5 * e_[0]):
+            ids.append(i)
+    plot = gvec(np.isin(lab, ids)).buffer(0.3, join_style=2).buffer(-0.3, join_style=2) if ids else Polygon()
+    plot = Polygon(max(as_polys(plot), key=lambda q: q.area).exterior) if not plot.is_empty else l["lot"]
+    out.append({"block": "C", "type": "C", "lot": l["lot"], "plot": plot, "origin": origin, "u": u, "v": v,
+                "rot": math.degrees(math.atan2(u[1], u[0])), "mirror": mirror, "compact": False, "drawn": True, "c": l["c"]})
+oc = [o for o in out if o.get("type") == "C"]
+print(f"type C villas: {len(oc)}, mirrored {sum(o['mirror'] for o in oc)}, plots {[round(o['plot'].area) for o in oc]}")
 
 
 def world_box(o, g):
@@ -362,7 +419,7 @@ def world_box(o, g):
 # gardens: the plot, and the model's own plot box where it reaches past it (the box wins over neighbours)
 kerbs = zstreet.buffer(0.40, join_style=2)          # the main streets with the 0.40 m to the fences
 for o in out:
-    o["box"] = world_box(o, box(0.0, 1.90 if o["compact"] else 0.40, 12.20, 20.10))
+    o["box"] = world_box(o, box(0.0, 0.0, VC_W, VC_D) if o.get("type") == "C" else box(0.0, 1.90 if o["compact"] else 0.40, 12.20, 20.10))
 for o in out:
     others = unary_union([q["box"] for q in out if q is not o])
     if o["box"].intersection(zstreet).area > 0.02:   # a villa over a street's kerb line: moved off it
@@ -432,6 +489,8 @@ for name, pt in KIOSKS:
     g = affinity.translate(g, *mr.centroid.coords[0])
     kiosks.append({"name": name, "poly": g})
     gfill(g, 5, CL)
+spa_plot = spa_cell.buffer(-0.40, join_style=2)               # the SPA's walls 0.40 m inside its cell's kerb lines
+gfill(spa_plot, 5, CL)
 bays = []
 south_edge = LineString(B_SOUTH).buffer(45.0)
 for i in range(1, ncomp):
@@ -456,7 +515,7 @@ for i in range(1, ncomp):
         g = gvec(m)
         r = g.minimum_rotated_rectangle
         e = sorted(math.dist(*pp) for pp in zip(list(r.exterior.coords)[:2], list(r.exterior.coords)[1:3]))
-        if not blocks.buffer(1.0).contains(g.representative_point()) and g.area / r.area > 0.75 and e[0] > 6.0 and e[1] < 45.0:
+        if not unary_union([blocks, blocks_c]).buffer(1.0).contains(g.representative_point()) and g.area / r.area > 0.75 and e[0] > 6.0 and e[1] < 45.0:
             CL[m] = 9                                          # a lot of the type C villas: not ours
             continue
     pub |= m
@@ -567,7 +626,7 @@ foreign = foreign.difference(greens.buffer(0.01))
 env = works.difference(foreign.buffer(0.05)).buffer(0.0)
 env = Polygon(max(as_polys(env), key=lambda q: q.area).exterior)
 greens = greens.intersection(env)
-solid = unary_union([gardens, greens] + [k["poly"] for k in kiosks])
+solid = unary_union([gardens, greens, spa_plot] + [k["poly"] for k in kiosks])
 # streets, verges and planted strips from the class map; pavements the rest of the ground. Scraps of street
 # shut in between gardens (the drawing's double fences, notches of its outlines) go to the garden that
 # borders them most; then along every fence on a street the plan's kerb 0.40 m off it
@@ -714,9 +773,12 @@ def edge_open(o, side):
     from shapely import affinity
     loc = affinity.rotate(affinity.translate(o["garden"], -o["origin"][0], -o["origin"][1]), -o["rot"], origin=(0, 0))
     x0_, y0_, x1_, y1_ = loc.bounds
-    strip = {"front": box(x0_ + 1.0, y1_ + 0.4, x1_ - 1.0, y1_ + 1.4), "right": box(x1_ + 0.4, 9.0, x1_ + 1.4, 19.0),
-             "left": box(x0_ - 1.4, 9.0, x0_ - 0.4, 19.0)}[side]
+    ya, yb = (12.6, 17.0) if o.get("type") == "C" else (9.0, 19.0)      # type C: in front of its outside stair
+    strip = {"front": box(x0_ + 1.0, y1_ + 0.4, x1_ - 1.0, y1_ + 1.4), "right": box(x1_ + 0.4, ya, x1_ + 1.4, yb),
+             "left": box(x0_ - 1.4, ya, x0_ - 0.4, yb)}[side]
     w = world_box(o, strip)
+    if o.get("type") == "C" and side != "front":              # type C: the gate on the side of the street
+        return w.intersection(roads).area / w.area
     return w.intersection(unary_union([roads, pave, parking, verges, stair])).area / w.area
 
 
@@ -725,6 +787,10 @@ for o in out:
     if os.environ.get("T2_DEBUG"):
         print("  DBG gate", [round(float(x)) for x in o["c"]], "m" if o["mirror"] else " ", {k: round(v_, 2) for k, v_ in sc.items()})
     terrace = "left" if o["mirror"] else "right"               # the side of the front terrace and the door
+    if o.get("type") == "C":                                   # type C: its portal on the front, else a side; on
+        inward = float(np.dot(o["u"], np.mean([q["c"] for q in out if q.get("type") == "C"], 0) - o["c"]))   # the street
+        terrace = ("right" if inward > 0 else "left") if min(sc["right"], sc["left"]) >= 0.6 else \
+            ("right" if sc["right"] >= sc["left"] else "left")  # between the two rows when on both sides
     if sc["front"] >= 0.6 or sc["front"] >= max(sc["right"], sc["left"]):
         o["gate"] = "front"
     elif sc[terrace] >= 0.6:
@@ -737,6 +803,13 @@ out.sort(key=lambda o: (o["block"] != "north", -round(o["c"][1] / 12.0), o["c"][
 villas_js = []
 for o in out:                                                 # valid outlines once rounded to the millimetre
     o["garden"] = max(as_polys(Polygon([(round(x, 3), round(y, 3)) for x, y in o["garden"].exterior.coords]).buffer(0)), key=lambda q: q.area)
+oc = [o for o in out if o.get("type") == "C"]
+out = [o for o in out if o.get("type") != "C"]
+oc.sort(key=lambda o: (-round(float(np.dot(o["c"], [0.499, 0.867])) / 10.0), float(np.dot(o["c"], [0.867, -0.499]))))
+villas_c = [{"id": f"C-{i:02d}", "block": "C", "origin": [round(float(x), 3) for x in o["origin"]], "rot_deg": round(o["rot"], 3),
+             "mirror": bool(o["mirror"]), "gate": o["gate"], "plot": poly_out(o["plot"])[0], "garden": poly_out(o["garden"])[0],
+             "lot": poly_out(o["lot"])[0]} for i, o in enumerate(oc, 1)]
+print("type C villas", len(villas_c), "gates", Counter(v["gate"] for v in villas_c))
 for i, o in enumerate(out, 1):
     villas_js.append({"id": f"B-{i:02d}", "block": o["block"], "origin": [round(float(x), 3) for x in o["origin"]],
                       "rot_deg": round(o["rot"], 3), "mirror": bool(o["mirror"]), "compact": o["compact"], "gate": o["gate"],
@@ -746,7 +819,8 @@ print("villas", len(villas_js), "mirrored", sum(v["mirror"] for v in villas_js),
 js = {"source": "plan de masse 31-05-13 (villas type B west of Tranche 1), model frame of site.json",
       "env": poly_out(env)[0], "blocks": poly_out(blocks)[0], "villas": villas_js,
       "roads": poly_out(roads), "pavements": poly_out(pave), "verges": poly_out(verges), "parking": poly_out(parking), "greens": poly_out(greens),
-      "t1_trim": poly_out(t1_trim),
+      "t1_trim": poly_out(t1_trim), "villas_c": villas_c,
+      "spa": {"plot": poly_out(spa_plot)[0], "cell": poly_out(spa_cell)[0]},
       "stair": {"axis": [[round(x, 3), round(y, 3)] for x, y in axis.coords], "poly": poly_out(stair), "fountains": fountains},
       "bays": [poly_out(b)[0] for b in bays], "buildings": [{"name": k["name"], "poly": poly_out(k["poly"])[0]} for k in kiosks]}
 json.dump(js, open(os.path.join(ROOT, "data", "t2_site.json"), "w"))

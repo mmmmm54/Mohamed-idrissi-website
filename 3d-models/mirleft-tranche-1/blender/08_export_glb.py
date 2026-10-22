@@ -151,6 +151,7 @@ FLAT = {   # plain colours (hex), roughness, metallic
     "A07_Curtain_Sheer": ("#F2ECE1", 0.9, 0.0),
     "A08_Interior_Warm": ("#C9A47E", 0.9, 0.0), "A09_Interior_Floor": ("#C9B394", 0.6, 0.0),
     "A10_Sofa_Linen": ("#D8CBB4", 0.9, 0.0), "A11_Cushion_Grey": ("#8E857A", 0.9, 0.0),
+    "Lamp_Warm": ("#FFC98F", 0.5, 0.0),                      # the SPA's lanterns (set emissive in D5)
 }
 ALPHA = {"D01_Mashrabiya_Wood": "#3B2414", "V01_Palm_Fan": None, "V03_Olive_Foliage": None,
          "V07_Pink_Blossom_Tree": None, "V08_Green_Shade_Tree": None}

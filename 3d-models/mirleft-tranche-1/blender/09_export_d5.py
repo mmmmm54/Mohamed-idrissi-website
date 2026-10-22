@@ -45,7 +45,8 @@ def bake_normal(src, dst, strength=4.0):
 
 # client 22-10: Tranche 2's ground takes Tranche 1's own materials in D5, so a texture changed there changes
 # both tranches together (their copies looked the same in Blender but were finished apart in D5)
-T2_SAME = {"T2_M11_Asphalt": "M11_Asphalt", "T2_M11_Asphalt_Parking": "M11_Asphalt",
+T2_SAME = {"T2_T17_Pavers_Beige_Herringbone": "T17_Pavers_Beige_Herringbone",
+           "T2_T17_Pavers_Beige_Herringbone_Parking": "T17_Pavers_Beige_Herringbone",
            "T2_T17_Pavers_Beige_Herringbone_Pavements": "T17_Pavers_Beige_Herringbone",
            "T2_T17_Pavers_Beige_Herringbone_Paths": "T17_Pavers_Beige_Herringbone",
            "T2_Kerb_Concrete": "Kerb_Concrete", "T2_T03_Lawn_Gardens": "T03_Lawn", "T2_T03_Lawn_Verges": "T03_Lawn"}
@@ -116,7 +117,7 @@ GUIDE = """# D5 import guide: Mirleft 1er TRANCHE
 
 | File | Contents | Use it when |
 |---|---|---|
-| `Mirleft_Tranche_1_D5_FULL.fbx` | Everything: duplexes, restaurant, commerces, pool court, ground, walls, stairs, furniture, trees, palms and plants, Tranche 2 (33 villas type B), and the 20 cameras | You want everything placed already |
+| `Mirleft_Tranche_1_D5_FULL.fbx` | Everything: duplexes, restaurant, commerces, pool court, ground, walls, stairs, furniture, trees, palms and plants, Tranche 2 (33 villas type B, 13 villas type C, the SPA), and the cameras | You want everything placed already |
 | `Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx` | The same without the palms and trees; the shrubs, agaves and grasses stay | You place D5 library palms and trees yourself |
 
 Both FBX files carry their textures inside. The same images are in `textures/`: keep that folder next to the FBX.
@@ -149,8 +150,8 @@ The material names are the Blender ones: `T13_Travertine_Planks` (pool deck), `M
 
 ## Rev 4 finishes (remarks on the D5 model)
 - The ground is split so each part can be finished on its own in D5 (separate objects and materials):
-  - by the villas: roads `GROUND_ROADS_T1_T2` (`M11_Asphalt`, with Tranche 2's streets and bays), the lane by D-1 to D-4 `GROUND_LANE_1` (`T23_Lane_1_Herringbone`), the lane by D-13 to D-18 `GROUND_LANE_2` (`T24_Lane_2_Herringbone`), the other lanes `GROUND_LANES_VILLAS` (`T01_Pavers_Herringbone_Beige`), all in the beige pavers since 22-10, pavements `GROUND_KERBS_T1_T2` (`Kerb_Concrete`, with Tranche 2's kerbs);
-  - in the entrance zone: roads `GROUND_ROADS_ENTRANCE` (`M11_Asphalt_Entrance`), herringbone trottoirs `GROUND_TROTTOIRS_HERRINGBONE_ENTRANCE` (`T21_Trottoir_Herringbone_Entrance`, beige since 22-10), kerb trottoirs `GROUND_TROTTOIRS_KERB_ENTRANCE` (`T22_Trottoir_Kerb_Entrance`);
+  - by the villas: roads `GROUND_ROADS_T1_T2` (with Tranche 2's streets and bays, in `T17_Pavers_Beige_Herringbone` since 22-10), the lane by D-1 to D-4 `GROUND_LANE_1` (`T23_Lane_1_Herringbone`), the lane by D-13 to D-18 `GROUND_LANE_2` (`T24_Lane_2_Herringbone`), the other lanes `GROUND_LANES_VILLAS` (`T01_Pavers_Herringbone_Beige`), all in the beige pavers since 22-10, pavements `GROUND_KERBS_T1_T2` (`Kerb_Concrete`, with Tranche 2's kerbs);
+  - in the entrance zone: roads `GROUND_ROADS_ENTRANCE` (`T17_Pavers_Beige_Herringbone` since 22-10), herringbone trottoirs `GROUND_TROTTOIRS_HERRINGBONE_ENTRANCE` (`T21_Trottoir_Herringbone_Entrance`, beige since 22-10), kerb trottoirs `GROUND_TROTTOIRS_KERB_ENTRANCE` (`T22_Trottoir_Kerb_Entrance`);
   - commerce terrace `GROUND_TERRACOTTA` (`T03_Terracotta_Herringbone`), the dark squares in that terrace `GROUND_COMMERCE_TERRACE_SQUARES` (`T25_Commerce_Terrace_Squares`), the strip between the commerces and D-1/D-2 `GROUND_COMMERCE_STRIP_BEIGE` (`T26_Commerce_Strip_Beige`), the trottoirs along the commerces and the restaurant plaza to the road `GROUND_TROTTOIRS_COMMERCES_RESTAURANT` (`T20_Pavers_Sidewalk_Beige`, beige as the strip since 22-10), restaurant terrace and plaza `GROUND_TERRACE` (`T02_Pavers_Herringbone_Light`), playground `GROUND_COURT_TILE` (`T18_Tile_Ardesia_Beige`), villa entrance paths `GROUND_PAVERS_BEIGE_T1_T2` (`T17_Pavers_Beige_Herringbone`, with Tranche 2's pavements and paths), rear terraces `DUPLEX_REAR_TERRACES` (`M09_Terrace_Stone`).
 - Beige paver and grey trottoir textures are in `data/textures/` of the repository if you want them (`TEX_PAVERS_BEIGE_HERRINGBONE.jpg`, and the grey `TEX_PAVERS_SIDEWALK_GREY.jpg` the trottoirs had before 22-10).
 - `T18_Tile_Ardesia_Beige`: the ground of the playground area by the pool (AZUVI Ardesia Nature type, 30 x 60).
@@ -170,13 +171,30 @@ its own materials, so it can be finished apart from Tranche 1:
 - the Centre d'entretien and the Office `T2_BUILDINGS_CENTRE_ENTRETIEN_OFFICE`, the bay lines `T2_ROAD_PAINT_PARKING`,
   the stair between the two blocks with its two square fountains `T2_STAIR_BETWEEN_BLOCKS` (22-10).
   Since 22-10 the two tranches' ground is one object per surface, with one material each, in this package:
-  streets and bays `GROUND_ROADS_T1_T2` (`M11_Asphalt`; the entrance zone keeps `GROUND_ROADS_ENTRANCE`),
+  streets and bays `GROUND_ROADS_T1_T2` (the entrance zone keeps `GROUND_ROADS_ENTRANCE`),
   beige pavements and paths `GROUND_PAVERS_BEIGE_T1_T2` (`T17_Pavers_Beige_Herringbone`), kerbs and the villas'
   pavements `GROUND_KERBS_T1_T2` (`Kerb_Concrete`), gardens, verges and lawns `GROUND_LAWN_T1_T2` (`T03_Lawn`):
   change one in D5 and both tranches change. Delete the old model in D5 before importing this one;
 - garden walls `T2_WALLS_GARDENS`, street front walls with gate pillars and gates `T2_WALLS_FRONT_GATES`, palm pits `T2_TREE_PITS`,
   (the lawn by Tranche 1's limit and the verges are in `GROUND_LAWN_T1_T2`).
 Cameras `T2_CAM_01` to `T2_CAM_07`.
+
+## Roads in beige pavers (22-10)
+Every road and the parking bays (both tranches, the entrance zone too) are in the plaza's beige herringbone pavers,
+the very same material `T17_Pavers_Beige_Herringbone` (0.80 m tile): no asphalt is left. Change that one material in
+D5 and the roads, pavements and paths change together.
+
+## Villas type C and the SPA (22-10)
+- The 13 villas type C of the plan de masse (the block south-west of the southern block): `T2_VILLA_C01` to
+  `T2_VILLA_C13`, villa type C of `PLAN_VILLA_TYPE_C.dwg` (battered towers with horns, the portal tower with its
+  arch and studded door, the outside stair, its pool), in the same finishes as the other villas; their gardens,
+  walls and gates are in the Tranche 2 objects above.
+- The SPA (a design suggestion on the plan's SPA cell, collection `T2_05_SPA`, objects `T2_SPA_<material>`): the
+  courtyard pool `M10_Pool_Water` over `M10_Pool_Mosaic`, travertine decks `T06_Travertine_Deck`, arcade floors
+  `T03_Terracotta_Herringbone`, hipped roofs `D11_Roof_Tiles_Terracotta` on `M03_Timber_Pergola` eaves, the
+  lanterns `Lamp_Warm` (set them emissive in D5 for the night views).
+- Cameras `T2_CAM_08_VILLA_C_FRONT`, `T2_CAM_09_TYPE_C_AERIAL`, `T2_CAM_10_SPA_ENTRANCE`, `T2_CAM_11_SPA_COURTYARD`.
+Delete the old model in D5 before importing this one.
 """
 
 

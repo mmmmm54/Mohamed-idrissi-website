@@ -39,6 +39,7 @@ ROOT = os.path.dirname(HERE)
 T2 = json.load(open(os.path.join(ROOT, "data", "t2_site.json")))
 RNG = random.Random(20261021)
 LAWN_DZ = 0.17           # lawn over the pad (the terraces at +0.195)
+LAWN_C = 0.07            # type C: lawn over the natural ground level of its model (pool coping +0.10, terraces +0.195)
 PAVE_DZ = 0.15           # pavements over the street
 W_GARDEN, W_FRONT = 1.80, 0.70
 GATE = (5.62, 7.70)      # pedestrian gate on the front, drawing x (the plan's 'Accès', between kitchen and stair)
@@ -61,8 +62,23 @@ def envelope():
 
 
 def blocks():
-    """The two blocks of villas, graded on the plane: the empty land blends into them (05 build_terrain)."""
-    return P(T2["blocks"])
+    """The two blocks of villas, graded on the plane: the empty land blends into them (05 build_terrain).
+    The SPA's cell beside the northern block too (a level court); the type C villas follow the ground."""
+    return unary_union([P(T2["blocks"])] + ([P(T2["spa"]["cell"])] if "spa" in T2 else [])).buffer(0)
+
+
+def spa_frame():
+    """The SPA's local frame (15_spa): origin, u (across), v (along, to the entrance on the Voie Publique), W, Lg."""
+    sp = P(T2["spa"]["plot"])
+    rr = list(sp.minimum_rotated_rectangle.exterior.coords)
+    e1, e2 = np.array(rr[1]) - np.array(rr[0]), np.array(rr[2]) - np.array(rr[1])
+    el, es = (e1, e2) if np.linalg.norm(e1) >= np.linalg.norm(e2) else (e2, e1)
+    v = el / np.linalg.norm(el)
+    v = v if v[1] > 0 else -v                                 # its north end, on the Voie Publique
+    u = np.array([v[1], -v[0]])
+    W, Lg = float(np.linalg.norm(es)), float(np.linalg.norm(el))
+    c = np.array(sp.minimum_rotated_rectangle.centroid.coords[0])
+    return c - u * W / 2 - v * Lg / 2, u, v, W, Lg
 
 
 def t1_trim():
@@ -82,9 +98,9 @@ def mats(M):
 
 
 class Villa:
-    def __init__(self, v):
-        self.id, self.v = v["id"], v
-        self.o, self.rot, self.m, self.c = np.array(v["origin"]), v["rot_deg"], v["mirror"], v["compact"]
+    def __init__(self, v, t="B", W=12.20):
+        self.id, self.v, self.t, self.W = v["id"], v, t, W
+        self.o, self.rot, self.m, self.c = np.array(v["origin"]), v["rot_deg"], v["mirror"], v.get("compact", False)
         a = math.radians(self.rot)
         self.ex, self.ey = np.array([math.cos(a), math.sin(a)]), np.array([-math.sin(a), math.cos(a)])
         self.garden = P(v["garden"])
@@ -94,7 +110,7 @@ class Villa:
         self.gy0, self.gy1 = min(y for _, y in xs), max(y for _, y in xs)
 
     def mx(self, x):
-        return 12.20 - x if self.m else x
+        return self.W - x if self.m else x
 
     def w(self, x, y):
         """drawing local (before mirroring) -> world"""
@@ -107,7 +123,7 @@ class Villa:
     def g(self, geom):
         """a polygon in drawing coordinates -> world (mirrored with the villa)"""
         if self.m:
-            geom = affinity.scale(geom, -1.0, 1.0, origin=(6.10, 0.0))
+            geom = affinity.scale(geom, -1.0, 1.0, origin=(self.W / 2.0, 0.0))
         return self.f(geom)
 
     def f(self, geom):
@@ -138,6 +154,7 @@ def build(M, B, srcv, H):
     function (xy array -> z). Returns the T2 cameras."""
     hz = lambda x, y: float(H(np.array([[x, y]]))[0])
     VB = B.load("12_villa_b.py")
+    VC = B.load("14_villa_c.py")
     mats(M)
     cols = {k: C.collection(k) for k in ("T2_01_GROUND", "T2_02_VILLAS", "T2_03_LANDSCAPE", "T2_04_TREES_PALMS")}
     srcc = C.collection("SRC")
@@ -148,8 +165,11 @@ def build(M, B, srcv, H):
         src[(True, compact)] = VB.mirrored(src[(False, compact)], "SRC_T2_VILLA_B" + sfx + "_MIRRORED")
     hard = {c: VB.ground(c)[2] for c in (False, True)}
     deck = {c: VB.ground(c)[1] for c in (False, True)}
+    src_c = {False: VC.build(M, srcc, "SRC_T2_VILLA_C")}
+    src_c[True] = VC.mirrored(src_c[False], "SRC_T2_VILLA_C_MIRRORED")
+    hard_of = lambda v: v.g(hard[v.c]) if v.t == "B" else v.g(VC.HARD)
 
-    vs = [Villa(v) for v in T2["villas"]]
+    vs = [Villa(v) for v in T2["villas"]] + [Villa(v, "C", VC.PLOT_W) for v in T2.get("villas_c", [])]
     gardens = unary_union([v.garden for v in vs])
     roads, pave, parking = PL(T2["roads"]), PL(T2["pavements"]), PL(T2["parking"])
     greens = PL(T2.get("greens", []))
@@ -162,13 +182,13 @@ def build(M, B, srcv, H):
 
     # ---- villas --------------------------------------------------------------------------------
     for v in vs:
-        v.pad = hz(*v.w(6.10, 12.0))
-        v.zl = v.pad + LAWN_DZ
-        ob = bpy.data.objects.new("T2_VILLA_" + v.id.replace("-", ""), src[(v.m, v.c)].data)
+        v.pad = hz(*(v.w(6.10, 12.0) if v.t == "B" else v.w(*VC.HOUSE_C)))
+        v.zl = v.pad + (LAWN_DZ if v.t == "B" else LAWN_C)
+        ob = bpy.data.objects.new("T2_VILLA_" + v.id.replace("-", ""), (src[(v.m, v.c)] if v.t == "B" else src_c[v.m]).data)
         ob.location = (*v.o, v.pad)
         ob.rotation_euler = (0, 0, math.radians(v.rot))
         cols["T2_02_VILLAS"].objects.link(ob)
-    print(f"  T2: {len(vs)} villas type B ({sum(v.m for v in vs)} mirrored, {sum(v.c for v in vs)} compact); gates "
+    print(f"  T2: {sum(v.t == 'B' for v in vs)} villas type B, {sum(v.t == 'C' for v in vs)} type C ({sum(v.m for v in vs)} mirrored, {sum(v.c for v in vs)} compact); gates "
           f"{sum(v.gate == 'front' for v in vs)} on the front, {sum(v.gate != 'front' for v in vs)} on the side")
 
     def level(x, y, pad=0.6):
@@ -186,6 +206,17 @@ def build(M, B, srcv, H):
     outside_ok = lambda p: public.contains(Point(p)) and not blocked.contains(Point(p))
 
     def gate_options(v):
+        if v.t == "C":                                        # type C: on the front, on the portal's axis; or on
+            for side in [v.gate] + [g for g in ("front", "right", "left") if g != v.gate]:   # a side, past the stair
+                if side == "front":
+                    a, b = sorted((v.mx(VC.PORTAL_X - 1.0), v.mx(VC.PORTAL_X + 1.0)))
+                    c = v.edge("y", 1, (a + b) / 2)
+                    yield (v, "y", c, a, b, "c_front"), v.fw((a + b) / 2, c + 1.2)
+                else:
+                    y1 = max(14.4, min(v.gy1 - 0.5, 18.4))
+                    c = v.edge("x", 1 if side == "right" else -1, y1 - 1.0)
+                    yield (v, "x", c, y1 - 2.0, y1, "c_side"), v.fw(c + (1.2 if side == "right" else -1.2), y1 - 1.0)
+            return
         terr = "right" if not v.m else "left"
         kit = "left" if terr == "right" else "right"
         order = [v.gate] + [g for g in ("front", terr, kit, "rear") if g != v.gate]
@@ -222,7 +253,7 @@ def build(M, B, srcv, H):
 
     # ---- walls: garden walls on the gardens' outlines, the low wall on each villa's street side -----
     ring = unary_union([v.garden.boundary.buffer(0.10, cap_style=2, join_style=2) for v in vs])
-    houses = unary_union([v.g(VB.RDC.union(box(1.03, 18.11, 5.47, 20.11))) for v in vs])
+    houses = unary_union([v.g(VB.RDC.union(box(1.03, 18.11, 5.47, 20.11))) if v.t == "B" else v.g(VC.FOOT) for v in vs])
     low_zone, openings = [], []
     for v, axis, c, a, b, kind in gates:
         if kind != "rear":                                    # the rear stays a high wall round the pool
@@ -236,7 +267,7 @@ def build(M, B, srcv, H):
                 if np.linalg.norm(e) < 0.05:
                     continue
                 nrm = np.array([e[1], -e[0]]) / np.linalg.norm(e)
-                if float(np.dot(nrm, dvec)) > 0.82 and (axis == "y" or v.local(((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2))[1] > 10.0):
+                if float(np.dot(nrm, dvec)) > 0.82 and (axis == "y" or v.local(((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2))[1] > (10.0 if v.t == "B" else 12.0)):
                     low_zone.append(LineString([p0, p1]).buffer(0.60, cap_style=2, join_style=2))
         openings.append(v.f(gate_box(axis, c, a, b)))
     lz = unary_union(low_zone).intersection(public.buffer(0.4))
@@ -281,8 +312,13 @@ def build(M, B, srcv, H):
     mb_l, mb_p, mb_s = C.MeshBuilder(), C.MeshBuilder(), C.MeshBuilder()
     paths = []
     for (v, axis, c, a, b, kind) in gates:
-        hd = v.g(hard[v.c])
-        if kind == "front":
+        hd = hard_of(v)
+        if kind == "c_front":                                 # type C: straight to the portal's step
+            path = v.f(box(a, VC.PLOT_D - 0.40, b, c + 1.0))
+        elif kind == "c_side":                                # along the front of the house to the portal
+            px_ = v.mx(VC.PORTAL_X)
+            path = v.f(box(min(c, px_) - 0.6, a, max(c, px_) + 0.6, b)).union(v.f(box(px_ - 0.87, 16.8, px_ + 0.87, max(b, VC.PLOT_D + 0.1))))
+        elif kind == "front":
             path = v.f(box(a, 18.05, b, c + 1.0))
         elif kind == "front_terrace":                         # onto the front terrace
             path = v.f(box(a, 19.20, b, c + 1.0))
@@ -303,7 +339,8 @@ def build(M, B, srcv, H):
         flat = lambda x, y, z=v.zl: z
         L.prism(mb_l, "t2_lawn", lawn, low_z - v.zl, 0.0, zf=flat)
         L.prism(mb_p, "t2_path", path.difference(walls), low_z - v.zl, Z_PATH, zf=flat)
-        L.prism(mb_s, "interior_floor", v.g(VB.RDC.buffer(-0.05, join_style=2)), low_z - v.zl, 0.02, zf=flat)
+        slab = v.g(VB.RDC.buffer(-0.05, join_style=2)) if v.t == "B" else v.g(VC.HOUSE.buffer(-0.05, join_style=2))
+        L.prism(mb_s, "interior_floor", slab, low_z - v.zl, 0.02 if v.t == "B" else VC.Z_FL - LAWN_C - 0.01, zf=flat)
     mb_l.build("T2_GROUND_GARDENS_LAWN", cols["T2_01_GROUND"], M)
     mb_p.build("T2_GROUND_ENTRANCE_PATHS", cols["T2_01_GROUND"], M)
     mb_s.build("T2_GROUND_HOUSE_SLABS", cols["T2_01_GROUND"], M)
@@ -460,8 +497,8 @@ def build(M, B, srcv, H):
 
     path_all = unary_union(paths)
     for v in vs:
-        foot = v.g(VB.FOOT.union(deck[v.c]))
-        lawn = v.garden.difference(v.g(hard[v.c])).difference(walls).difference(path_all).buffer(-1.3)
+        foot = v.g(VB.FOOT.union(deck[v.c])) if v.t == "B" else v.g(VC.FOOT.union(VC.HARD))
+        lawn = v.garden.difference(hard_of(v)).difference(walls).difference(path_all).buffer(-1.3)
         if lawn.is_empty:
             continue
         n = min(4, 1 + int(lawn.area / 45.0))
@@ -480,7 +517,7 @@ def build(M, B, srcv, H):
                 put("date", (p.x, p.y), v.zl, RNG.uniform(0.55, 0.75))
     # shrubs behind the low walls, inside the gardens
     bed = low.buffer(0.75, join_style=2).intersection(gardens).difference(low.buffer(0.15)).difference(houses.buffer(0.3))
-    bed = bed.difference(path_all.buffer(0.3)).difference(unary_union([v.g(hard[v.c]) for v in vs]))
+    bed = bed.difference(path_all.buffer(0.3)).difference(unary_union([hard_of(v) for v in vs]))
     for q in L.as_polys(bed):
         if q.area < 0.4:
             continue
@@ -559,10 +596,29 @@ def build(M, B, srcv, H):
             if pave.contains(p):
                 put("date", (p.x, p.y), hz(p.x, p.y) + PAVE_DZ, RNG.uniform(0.6, 0.75))
     print(f"  T2: planting {nveg[0]} (street palms {len(pits)})")
-    return cameras(vs, hz, buildings)
+
+    # ---- the SPA (15_spa, a design suggestion on the plan's SPA cell): built in its frame, its palms and
+    # olive trees planted from the scene's sources ---------------------------------------------------------
+    spa = None
+    if "spa" in T2:
+        SPA = B.load("15_spa.py")
+        o_, u_, v_, W_, Lg_ = spa_frame()
+        c_ = o_ + u_ * W_ / 2 + v_ * Lg_ / 2
+        z_ = hz(*c_)
+        col_s = C.collection("T2_05_SPA")
+        obs, plants, lamps = SPA.build(M, col_s, W_, Lg_)
+        for ob in obs:
+            ob.location = (o_[0], o_[1], z_)
+            ob.rotation_euler = (0, 0, math.atan2(u_[1], u_[0]))
+        n0 = nveg[0]
+        for kind, x, y, z, sc_ in plants:
+            put(kind, tuple(o_ + u_ * x + v_ * y), z_ + z, sc_)
+        spa = (o_, u_, v_, W_, Lg_, z_)
+        print(f"  T2: SPA {W_:.1f} x {Lg_:.1f} m on its cell, {len(obs)} objects, {nveg[0] - n0} palms and olive trees, {len(lamps)} lanterns")
+    return cameras(vs, hz, buildings, spa)
 
 
-def cameras(vs, hz, buildings):
+def cameras(vs, hz, buildings, spa=None):
     """Tranche 2's cameras: aerial of the two blocks, a villa's front and its garden with the pool, a street
     of the northern block, the southern block from above, a gate, the parking strip."""
     col = bpy.data.collections["07_CAMERAS"]
@@ -580,6 +636,15 @@ def cameras(vs, hz, buildings):
         "T2_CAM_06_GATE": (fr(hero, 6.6, 23.0), 1.6, fr(hero, 6.6, 16.0), 1.6, 24),
         "T2_CAM_07_PARKING_CENTRE_ENTRETIEN": (tuple(b0 + np.array([10.0, -24.0])), 6.0, tuple(b0), 2.0, 24),
     }
+    if "C-12" in by:                                          # type C: a villa's portal from street 6, the block
+        vc, vm = by["C-12"], by["C-04"]
+        shots["T2_CAM_08_VILLA_C_FRONT"] = (fr(vc, vc.mx(8.7) + 5.0, 25.0), 1.7, fr(vc, vc.mx(8.7), 14.0), 3.6, 22)
+        shots["T2_CAM_09_TYPE_C_AERIAL"] = (fr(vm, -30.0, 70.0), 55.0, fr(vm, 8.0, -12.0), 0.0, 26)
+    if spa:                                                   # the SPA: its portal, its courtyard
+        o_, u_, v_, W_, Lg_, z_ = spa
+        sw = lambda x, y: tuple(o_ + u_ * x + v_ * y)
+        shots["T2_CAM_10_SPA_ENTRANCE"] = (sw(W_ / 2 + 9.0, Lg_ + 13.0), 1.7, sw(W_ / 2, Lg_ - 4.0), 4.2, 22)
+        shots["T2_CAM_11_SPA_COURTYARD"] = (sw(W_ / 2 - 3.0, Lg_ - 11.2), 1.9, sw(W_ / 2, 12.0), 2.4, 20)
     cams = {}
     from mathutils import Vector
     for n, (e, eh, t, th, lens) in shots.items():

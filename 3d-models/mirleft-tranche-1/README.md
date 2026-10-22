@@ -277,12 +277,15 @@ four façades, coupes A-A and B-B).
   entrance's herringbone trottoirs are in the same beige pavers as the pavements (they were charcoal, the same
   pattern darker); the commerce terrace keeps its dark squares.
 - **D5 (22-10)**: in the D5 package the two tranches' ground is one object per surface with one material:
-  streets and bays `GROUND_ROADS_T1_T2` (`M11_Asphalt`), beige pavements and paths `GROUND_PAVERS_BEIGE_T1_T2`
+  streets and bays `GROUND_ROADS_T1_T2`, beige pavements and paths `GROUND_PAVERS_BEIGE_T1_T2`
   (`T17_Pavers_Beige_Herringbone`), kerbs `GROUND_KERBS_T1_T2` (`Kerb_Concrete`), lawns `GROUND_LAWN_T1_T2`
-  (`T03_Lawn`), so a texture changed in D5 changes both tranches together. The entrance zone keeps its own
-  (`M11_Asphalt_Entrance`). The Blender scene keeps them apart.
-- **Exports (22-10)**: the scene and `Mirleft_Tranche_1_PACKED_2K.blend` were rebuilt for this revision
-  (client: the blender file only), then the D5 package (`d5/`, both FBX); the GLB, OBJ and renders are from 21-10.
+  (`T03_Lawn`), so a texture changed in D5 changes both tranches together. The entrance zone's roads stay their
+  own object (`GROUND_ROADS_ENTRANCE`). The Blender scene keeps them apart.
+- **Roads in beige pavers (22-10, later)**: "hadi ka7la mabghinahach, dir hadi texture bdabt bdabt": every road
+  and the parking bays, both tranches and the entrance zone, are in the beige herringbone pavers of the plaza,
+  the very same material `T17_Pavers_Beige_Herringbone` (0.80 m tile). No asphalt is left.
+- **Exports (22-10)**: the scene, `Mirleft_Tranche_1_PACKED_2K.blend` and the D5 package (`d5/`, both FBX) were
+  rebuilt with the villas type C, the SPA and the roads in beige pavers; the GLB, OBJ and renders are from 21-10.
 - **Parking strip (rev 21-10)**: the 26 bays the plan draws along the south road, painted, and its three buildings:
   'Centre d'entretien' twice and 'Office', the squares with hipped roofs of the plan, in the villas' render
   with their cornice, a terracotta pyramid roof, a timber door to the parking and windows in taupe surrounds
@@ -292,6 +295,45 @@ four façades, coupes A-A and B-B).
   villa at the height of its centre; the streets follow the site's ground beyond them (blended over 25 m), so
   the south road goes down along the type C villas as the contours do; the empty land stops at the streets.
 - **To confirm**: the compact pool of the southern block; the rear gates of B-02 and B-08; the buildings' heights; the planting.
+
+## Villas type C and the SPA (22-10)
+Client 22-10: "dzid villa type c nfs style dima, dont do mistakes, and add spa: we don't have a plan but we want
+a suggestion on the same size as on the plan" (with reference photos of a riad spa).
+- **Villa type C** (`14_villa_c.py`, from `PLAN_VILLA_TYPE_C.dwg`: rez-de-chaussée, terrasse, the four façades,
+  coupes A-A and B-B): a single-storey kasbah house, 15.38 x 12.15 m. Four battered towers (the rooms of the two
+  wings: Chambre III and the salon marocain, Chambres I and II), their walls leaning in 0.255 m over 4.31 m as the
+  façades draw them, the villas' cornice (grey ledge / ochre band / grey ledge), a crown, parapet +4.80 with horns,
+  roofs at +3.70 with a door in each parapet onto the terrace over the bathroom between them; the bathrooms lower
+  (plain walls, parapet +4.60); the centre (kitchen, hall, W.C., salon) to +5.50 with the rounded coping, roof
+  +4.50, four steps up to it from the bathroom terraces; the portal tower +6.70 with horns over the entrance hall:
+  a taupe alfiz round a pointed horseshoe arch, the studded door and its transom, a mashrabiya tympanum. Rows of
+  square niches, the horizontal grooves every metre of the façades, taupe surrounds (the wide panels of the
+  small windows as drawn), quartz aluminium, curtains, the salon's 4-leaf glazing set back with the lit salon
+  behind; the outside stair up to the west terrace (18 treads of 0.27 m and a landing, solid parapet); the pool
+  7.50 x 4.00 m over its coping (basin 4.50 x 3.00 m, -1.40, Roman steps; spa basin 1.70 x 3.00 m).
+- **Choices where the drawing's views differ** (to confirm): the salon marocain's tower is the whole room as the
+  plans draw it (the façade gauche draws it 1.6 m shorter); the portal's arch is 1.40 m as the façade draws it
+  (the plan's opening is 1.14 m); the façade principale is drawn mirrored (its stair on the wrong side): the plans
+  win; the window of the salon marocain over the stair is set high (sill +2.05) to clear the treads.
+- **Placement**: the 13 type C villas of the plan de masse 31-05-13 (the block south-west of the southern block:
+  two rows of six, C-01 to C-12, and C-13 turned in the corner on the south road), each where the plan draws it:
+  the plan's house outline is the drawing's house to the centimetre (15.38 x 12.15 m), so each villa sits on it,
+  its front (portal) on the side of the plan's two terraces, its pool behind, its stair on the side of the plan's
+  stair mark (all 13 the mirrored model). Plots and gardens from the plan's lines as for type B (not the parking
+  strip in front of the south row's fences). Gates: on the front for the villas whose front is on a street
+  (C-06, C-12, C-13), else on the side, past the stair, on the street between the two rows; the path runs along
+  the front of the house to the portal. Each villa at the height of its centre (the block follows the ground,
+  not Tranche 1's plane), its lawn flat (+0.07, the pool coping +0.10, the terraces +0.20), held by its walls.
+- **SPA** (`15_spa.py`) — a design suggestion, there is no drawing: it fills the plan's SPA cell (the one its
+  "SPA" label points into, west of the northern block), its walls 0.40 m inside the cell's kerb lines (about
+  50.9 x 23.2 m), in the villas' style. The portal on the Voie Publique in a block with the villas' cornice and
+  horns; the reception pavilion and the hammam pavilion under hipped terracotta roofs on timber eaves; between
+  them the courtyard: a 20 x 4 m pool in turquoise mosaic with a white coping, travertine decks with loungers and
+  parasols, a timber pergola with bougainvillea over loungers at its south end, a round fountain at its north end,
+  date palms in planters at its corners, olive trees in terracotta jars; along both sides the treatment rooms
+  behind arcades of pointed horseshoe arches on square pillars, a lantern in each bay, crenellated parapets on
+  the street side; the crenellated tower (three floors of small arched windows) at the south-west corner. The
+  cell is graded level with the northern block. Everything about it is to confirm.
 
 ## Removed (client, 13-10)
 Direction arrows and cars. The zebra crossings were put back as paint (15-10).

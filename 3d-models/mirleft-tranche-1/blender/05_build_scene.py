@@ -796,7 +796,9 @@ def main():
     M["kerb_paving"] = M["kerb"]
     M["site_land"] = site_land_material()
     # separate materials for the entrance zone's roads and trottoirs (client, 19-10: finished by hand in D5)
-    M["asphalt_ent"] = M["asphalt"].copy(); M["asphalt_ent"].name = "M11_Asphalt_Entrance"
+    # client 22-10: every road (the entrance zone's too) and the parking in the beige herringbone pavers of the
+    # plaza, its very material T17 ("hadi ka7la mabghinahach, dir hadi texture bdabt bdabt"): no asphalt left
+    M["asphalt"] = M["asphalt_ent"] = M["pave_beige"]
     M["lane_ent"] = M["lane"].copy(); M["lane_ent"].name = "T21_Trottoir_Herringbone_Entrance"
     M["kerb_ent"] = M["kerb"].copy(); M["kerb_ent"].name = "T22_Trottoir_Kerb_Entrance"
     # client 19-10: one material each for the two villa lanes, the commerce terrace squares and the strip
