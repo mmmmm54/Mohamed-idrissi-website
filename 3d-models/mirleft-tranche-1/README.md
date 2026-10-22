@@ -263,8 +263,8 @@ four façades, coupes A-A and B-B).
   along the whole askew front (a high wall stood behind the gate); the lanes run into the streets their full
   width, without the pavement returns into their mouths; the first row of bays backs onto its planted strip
   as the second does, with one line between two bays in the staggered row too.
-- **Exports (22-10)**: only the scene and `Mirleft_Tranche_1_PACKED_2K.blend` were rebuilt for this revision
-  (client: the blender file only); the GLB, OBJ, D5 package and renders are from 21-10.
+- **Exports (22-10)**: the scene and `Mirleft_Tranche_1_PACKED_2K.blend` were rebuilt for this revision
+  (client: the blender file only), then the D5 package (`d5/`, both FBX); the GLB, OBJ and renders are from 21-10.
 - **Parking strip (rev 21-10)**: the 26 bays the plan draws along the south road, painted, and its three buildings:
   'Centre d'entretien' twice and 'Office', the squares with hipped roofs of the plan, in the villas' render
   with their cornice, a terracotta pyramid roof, a timber door to the parking and windows in taupe surrounds
