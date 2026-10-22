@@ -53,11 +53,11 @@ block 12), villa type B of `5-VILLA_TYPE_B.DWG` with its own pool, in the finish
 collections (`T2_01_GROUND`, `T2_02_VILLAS`, `T2_03_LANDSCAPE`, `T2_04_TREES_PALMS`) and objects, and its ground in
 its own materials, so it can be finished apart from Tranche 1:
 - villas `T2_VILLA_B01` to `T2_VILLA_B33` (one mesh shared, the mirrored ones another);
-- streets `T2_GROUND_ROADS` (`T2_M11_Asphalt`), pavements `T2_GROUND_PAVEMENTS` (`T2_T17_Pavers_Beige_Herringbone_Pavements`),
-  kerbs `T2_GROUND_KERBS` (`T2_Kerb_Concrete`), gardens `T2_GROUND_GARDENS_LAWN` (`T2_T03_Lawn_Gardens`), paths to the doors
-  `T2_GROUND_ENTRANCE_PATHS` (`T2_T17_Pavers_Beige_Herringbone_Paths`),
-  the parking bays `T2_GROUND_PARKING` (`T2_M11_Asphalt_Parking`) with their lines, the Centre d'entretien and the
-  Office `T2_BUILDINGS_CENTRE_ENTRETIEN_OFFICE`;
+- streets `T2_GROUND_ROADS` and the parking bays `T2_GROUND_PARKING` (with their lines), pavements `T2_GROUND_PAVEMENTS`,
+  kerbs `T2_GROUND_KERBS`, gardens `T2_GROUND_GARDENS_LAWN`, paths to the doors `T2_GROUND_ENTRANCE_PATHS`, the Centre
+  d'entretien and the Office `T2_BUILDINGS_CENTRE_ENTRETIEN_OFFICE`. Since 22-10 Tranche 2's ground uses Tranche 1's
+  own materials: streets and bays `M11_Asphalt`, pavements and paths `T17_Pavers_Beige_Herringbone`, kerbs
+  `Kerb_Concrete`, gardens, verges and lawn `T03_Lawn`: change one in D5 and both tranches change;
 - garden walls `T2_WALLS_GARDENS`, street front walls with gate pillars and gates `T2_WALLS_FRONT_GATES`, palm pits `T2_TREE_PITS`,
-  the lawn left by Tranche 1's limit `T2_GROUND_LAWN_BY_TRANCHE_1` and the verges and planted strips `T2_GROUND_VERGES` (`T2_T03_Lawn_Verges`).
+  the lawn left by Tranche 1's limit `T2_GROUND_LAWN_BY_TRANCHE_1` and the verges and planted strips `T2_GROUND_VERGES`.
 Cameras `T2_CAM_01` to `T2_CAM_07`.
