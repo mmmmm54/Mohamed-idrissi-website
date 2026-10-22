@@ -258,6 +258,11 @@ four façades, coupes A-A and B-B).
   the plan draws with another building (B-24) takes its whole lot, as wide as the next villa, up to the west
   street with the rounded kerb of the corner; what was left of Tranche 1's west pavement between the two
   carriageways at the south road is gone; the small islands of pavement at the lane mouths are street.
+- **Client remarks (22-10, third round)**: the gates of the villas whose front fence runs askew along the
+  street (B-18, B-20, B-21 on the street along Tranche 1) stand in the fence itself, the low stone wall
+  along the whole askew front (a high wall stood behind the gate); the lanes run into the streets their full
+  width, without the pavement returns into their mouths; the first row of bays backs onto its planted strip
+  as the second does, with one line between two bays in the staggered row too.
 - **Exports (22-10)**: only the scene and `Mirleft_Tranche_1_PACKED_2K.blend` were rebuilt for this revision
   (client: the blender file only); the GLB, OBJ, D5 package and renders are from 21-10.
 - **Parking strip (rev 21-10)**: the 26 bays the plan draws along the south road, painted, and its three buildings:

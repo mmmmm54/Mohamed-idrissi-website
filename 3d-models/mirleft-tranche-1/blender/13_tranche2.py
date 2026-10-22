@@ -29,6 +29,7 @@ import bpy
 import numpy as np
 from shapely import affinity
 from shapely.geometry import LineString, Point, Polygon, box
+from shapely.geometry.polygon import orient
 from shapely.ops import unary_union
 
 L = globals()["L"]
@@ -117,6 +118,19 @@ class Villa:
         d = np.array(p) - self.o
         return float(np.dot(d, self.ex)), float(np.dot(d, self.ey))
 
+    def edge(self, axis, out, t):
+        """the garden's fence across frame x = t (axis 'y') or y = t (axis 'x'), on the side out (+1 or -1):
+        where the gate goes, the fence being askew to the villa where the street is (client 22-10)"""
+        if axis == "y":
+            ln = LineString([self.fw(t, self.gy0 - 1.0), self.fw(t, self.gy1 + 1.0)])
+        else:
+            ln = LineString([self.fw(self.gx0 - 1.0, t), self.fw(self.gx1 + 1.0, t)])
+        x = ln.intersection(self.garden)
+        vals = [self.local(q)[1 if axis == "y" else 0] for g in getattr(x, "geoms", [x]) for q in getattr(g, "coords", [])]
+        if not vals:
+            return (self.gy1 if out > 0 else self.gy0) if axis == "y" else (self.gx1 if out > 0 else self.gx0)
+        return max(vals) if out > 0 else min(vals)
+
 
 
 def build(M, B, srcv, H):
@@ -177,14 +191,16 @@ def build(M, B, srcv, H):
             if side == "front":
                 for ga, gb in (GATE, (8.60, 10.60)):
                     a, b = sorted((v.mx(ga), v.mx(gb)))
-                    yield (v, "y", v.gy1, a, b, "front" if ga == GATE[0] else "front_terrace"), v.fw((a + b) / 2, v.gy1 + 1.2)
+                    c = v.edge("y", 1, (a + b) / 2)
+                    yield (v, "y", c, a, b, "front" if ga == GATE[0] else "front_terrace"), v.fw((a + b) / 2, c + 1.2)
             elif side == "rear":
                 a, b = sorted((v.mx(9.30), v.mx(11.30)))
-                yield (v, "y", v.gy0, a, b, "rear"), v.fw((a + b) / 2, v.gy0 - 1.2)
+                c = v.edge("y", -1, (a + b) / 2)
+                yield (v, "y", c, a, b, "rear"), v.fw((a + b) / 2, c - 1.2)
             else:
                 kind = "terrace" if side == terr else "kitchen"
                 y0, y1 = (17.30, 19.30) if kind == "terrace" else (16.20, 17.80)
-                c = v.gx1 if side == "right" else v.gx0
+                c = v.edge("x", 1 if side == "right" else -1, (y0 + y1) / 2)
                 yield (v, "x", c, y0, y1, kind), v.fw(c + (1.2 if side == "right" else -1.2), (y0 + y1) / 2)
 
     gates = []
@@ -207,12 +223,19 @@ def build(M, B, srcv, H):
     houses = unary_union([v.g(VB.RDC.union(box(1.03, 18.11, 5.47, 20.11))) for v in vs])
     low_zone, openings = [], []
     for v, axis, c, a, b, kind in gates:
-        if kind == "rear":                                    # the rear stays a high wall round the pool
-            pass
-        elif axis == "y":
-            low_zone.append(v.f(box(v.gx0 - 1.0, c - 0.60, v.gx1 + 1.0, c + 0.60)))
-        else:
-            low_zone.append(v.f(box(c - 0.60, 10.0, c + 0.60, v.gy1 + 1.0)))
+        if kind != "rear":                                    # the rear stays a high wall round the pool
+            # the low wall: the stretches of the fence on the gate's side, square to it or askew (up to 35
+            # degrees) where the street runs askew to the villa, the house's front half only on a side gate
+            mid_ = (v.gy0 + v.gy1) / 2 if axis == "y" else (v.gx0 + v.gx1) / 2
+            dvec = (v.ey if axis == "y" else v.ex) * (1.0 if c >= mid_ else -1.0)
+            ring_ = orient(v.garden, 1.0).exterior.coords
+            for p0, p1 in zip(ring_[:-1], ring_[1:]):
+                e = np.array(p1) - np.array(p0)
+                if np.linalg.norm(e) < 0.05:
+                    continue
+                nrm = np.array([e[1], -e[0]]) / np.linalg.norm(e)
+                if float(np.dot(nrm, dvec)) > 0.82 and (axis == "y" or v.local(((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2))[1] > 10.0):
+                    low_zone.append(LineString([p0, p1]).buffer(0.60, cap_style=2, join_style=2))
         openings.append(v.f(gate_box(axis, c, a, b)))
     lz = unary_union(low_zone).intersection(public.buffer(0.4))
     low = ring.intersection(lz).difference(houses).difference(unary_union(openings))
@@ -326,8 +349,8 @@ def build(M, B, srcv, H):
         q = list(b.exterior.coords)[:4]
         for p0, p1 in sorted(((q[i], q[(i + 1) % 4]) for i in range(4)), key=lambda ab: -math.dist(*ab))[:2]:
             ln = LineString([p0, p1])
-            if any(ln.centroid.distance(o) < 0.45 and abs(ln.length - o.length) < 2.0 for o in lines):
-                continue
+            if any(ln.centroid.distance(o) < 0.45 or o.centroid.distance(ln) < 0.45 for o in lines):
+                continue                                      # a side shared with the next bay (staggered rows too)
             lines.append(ln)
     for ln in lines:
         L.prism(mb, "paint", ln.buffer(0.03, cap_style=2), 0.004, 0.006, zf=hz, sides=False)

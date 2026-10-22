@@ -509,7 +509,7 @@ nl, lbl, stl, _ = cv2.connectedComponentsWithStats(cm.astype(np.uint8), connecti
 LANE = np.isin(lbl, [j for j in range(1, nl) if stl[j, 4] >= 40.0 * RG * RG]) & pub
 k9 = np.ones((9, 9), np.uint8)
 cand = lane & (dmax * 2.0 <= 7.0) & (psize >= 30.0) & (inmain <= 0.5) & ~island
-behind = ndimage.sum(cv2.dilate((CL == 4).astype(np.uint8), k9) > 0, lpub, index=pidx) / RG / RG / 0.4 > 6.0
+behind = ndimage.sum(cv2.dilate((CL == 4).astype(np.uint8), np.ones((13, 13), np.uint8)) > 0, lpub, index=pidx) / RG / RG > 1.5
 by_kiosk = ndimage.maximum(cv2.dilate((CL == 5).astype(np.uint8), k9) > 0, lpub, index=pidx) > 0
 cand &= ~behind & ~by_kiosk                                    # the squares behind the bays, round the kiosks
 while True:
@@ -519,7 +519,7 @@ while True:
     if not new.any():
         break
     carr |= new
-strip = lane & ~carr & ~island & ~behind & (psize >= 40.0)
+strip = lane & ~carr & ~island & (psize >= 40.0)            # the strips behind the bays too, as by the second row
 CL[pub & carr[lpub]] = 2
 CL[pub & ~carr[lpub]] = 3
 CL[pub & (verge_p | strip)[lpub]] = 6
@@ -621,13 +621,30 @@ verges = unary_union([q for q in as_polys(verges) if q.area > 1.0])
 roads = unary_union([roads, t1_trim.intersection(ground)])        # Tranche 1's ground under the street: all carriageway
 verges = verges.difference(t1_trim)
 pave = ground.difference(roads).difference(verges)
+# the lanes run into the streets their full width (client 22-10, "remove this, the road comes through"): the
+# pavement returns into a lane's mouth between the planted strips or fences, and the pavement across it,
+# are street. The mouth: what lies between two gardens or strips less than 7 m apart, by a lane
+gv = unary_union([gardens, verges])
+mouth = gv.buffer(3.5, join_style=2).buffer(-3.5, join_style=2).difference(gv).intersection(ground)
+lanes_ = roads.difference(zstreet.buffer(0.5, join_style=2)).intersection(gardens.buffer(4.0, join_style=2))
+mouth = unary_union([q for q in as_polys(mouth) if q.distance(lanes_) < 0.5])
+reach = unary_union([roads, mouth]).buffer(1.25, join_style=2).buffer(-1.25, join_style=2)
+into = reach.intersection(pave).intersection(lanes_.buffer(12.0)).intersection(gardens.buffer(6.0, join_style=2))
+into = into.intersection(mouth.buffer(2.5, join_style=2)).difference(gardens.buffer(0.40, join_style=2))
+into = unary_union([q for q in as_polys(into) if q.area > 0.3])
+roads, pave = unary_union([roads, into]), pave.difference(into)
+print(f"pavement at the lanes' mouths turned to street: {into.area:.0f} m2")
+if os.environ.get("T2_DEBUG"):
+    for q in as_polys(into):
+        if q.area > 1.0:
+            print("  DBG mouth", [round(c, 1) for c in q.centroid.coords[0]], round(q.area, 1))
 # the bays open straight onto the carriageway (client 22-10): the slivers the drawing's lines leave between
 # them and the street go to the bays, the scraps of pavement at the ends of their rows to the street
 thin = pave.difference(pave.buffer(-0.25, join_style=2).buffer(0.25, join_style=2))
 slv = thin.intersection(parking.buffer(0.40, join_style=2)).difference(gardens.buffer(0.60, join_style=2))
 parking = unary_union([parking, slv])
 pave = pave.difference(slv)
-ends = [q for q in as_polys(pave) if q.area < 6.0 and q.distance(parking) < 1.0]
+ends = [q for q in as_polys(pave) if q.area < 10.0 and q.distance(parking) < 1.0]
 ends += [q for q in as_polys(pave) if q.area < 12.0 and q.exterior.intersection(roads.buffer(0.05)).length > 0.6 * q.exterior.length]
 roads = unary_union([roads] + ends)
 pave = pave.difference(unary_union(ends)) if ends else pave
