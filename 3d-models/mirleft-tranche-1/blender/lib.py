@@ -337,7 +337,8 @@ def materials():
                      or mod.stone_wall("D18_Stone_Cladding_Beige"))
     M["coping_beige"] = mod.simple("D19_Coping_Beige_Stone", "#CDBBA6", 0.6, 0.0, 20.0, 0.12, 0.1)
     M["pave_beige"] = img_mat("T17_Pavers_Beige_Herringbone", "pavers", 0.8, 0.35)
-    M["pave_side"] = img_mat("T20_Pavers_Sidewalk_Grey", "sidewalk", 0.8, 0.35)
+    # client 22-10: the trottoirs along the commerces and the restaurant plaza in the beige pavers too
+    M["pave_side"] = img_mat("T20_Pavers_Sidewalk_Beige", "pavers", 0.8, 0.35)
     M["tile_ardesia"] = img_mat("T18_Tile_Ardesia_Beige", "ardesia", 0.55, 0.25)
     M["tile_jade"] = img_mat("T19_Tile_Jade_Green", "jade", 0.35, 0.2)
     # rev 4 (19-10): the salon's sliding door as the reference photo (frames, sheer curtains, the lit salon)
