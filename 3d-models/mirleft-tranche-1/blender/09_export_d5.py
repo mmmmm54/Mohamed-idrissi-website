@@ -149,9 +149,9 @@ The material names are the Blender ones: `T13_Travertine_Planks` (pool deck), `M
 
 ## Rev 4 finishes (remarks on the D5 model)
 - The ground is split so each part can be finished on its own in D5 (separate objects and materials):
-  - by the villas: roads `GROUND_ROADS_VILLAS` (`M11_Asphalt`), the lane by D-1 to D-4 `GROUND_LANE_1` (`T23_Lane_1_Herringbone`), the lane by D-13 to D-18 `GROUND_LANE_2` (`T24_Lane_2_Herringbone`), the other lanes `GROUND_LANES_VILLAS` (`T01_Pavers_Herringbone_Beige`), all in the beige pavers since 22-10, pavements `GROUND_PAVEMENTS_VILLAS` (`Kerb_Concrete`);
+  - by the villas: roads `GROUND_ROADS_T1_T2` (`M11_Asphalt`, with Tranche 2's streets and bays), the lane by D-1 to D-4 `GROUND_LANE_1` (`T23_Lane_1_Herringbone`), the lane by D-13 to D-18 `GROUND_LANE_2` (`T24_Lane_2_Herringbone`), the other lanes `GROUND_LANES_VILLAS` (`T01_Pavers_Herringbone_Beige`), all in the beige pavers since 22-10, pavements `GROUND_KERBS_T1_T2` (`Kerb_Concrete`, with Tranche 2's kerbs);
   - in the entrance zone: roads `GROUND_ROADS_ENTRANCE` (`M11_Asphalt_Entrance`), herringbone trottoirs `GROUND_TROTTOIRS_HERRINGBONE_ENTRANCE` (`T21_Trottoir_Herringbone_Entrance`, beige since 22-10), kerb trottoirs `GROUND_TROTTOIRS_KERB_ENTRANCE` (`T22_Trottoir_Kerb_Entrance`);
-  - commerce terrace `GROUND_TERRACOTTA` (`T03_Terracotta_Herringbone`), the dark squares in that terrace `GROUND_COMMERCE_TERRACE_SQUARES` (`T25_Commerce_Terrace_Squares`), the strip between the commerces and D-1/D-2 `GROUND_COMMERCE_STRIP_BEIGE` (`T26_Commerce_Strip_Beige`), the trottoirs along the commerces and the restaurant plaza to the road `GROUND_TROTTOIRS_COMMERCES_RESTAURANT` (`T20_Pavers_Sidewalk_Beige`, beige as the strip since 22-10), restaurant terrace and plaza `GROUND_TERRACE` (`T02_Pavers_Herringbone_Light`), playground `GROUND_COURT_TILE` (`T18_Tile_Ardesia_Beige`), villa entrance paths `DUPLEX_ENTRANCE_PATHS` (`T17_Pavers_Beige_Herringbone`), rear terraces `DUPLEX_REAR_TERRACES` (`M09_Terrace_Stone`).
+  - commerce terrace `GROUND_TERRACOTTA` (`T03_Terracotta_Herringbone`), the dark squares in that terrace `GROUND_COMMERCE_TERRACE_SQUARES` (`T25_Commerce_Terrace_Squares`), the strip between the commerces and D-1/D-2 `GROUND_COMMERCE_STRIP_BEIGE` (`T26_Commerce_Strip_Beige`), the trottoirs along the commerces and the restaurant plaza to the road `GROUND_TROTTOIRS_COMMERCES_RESTAURANT` (`T20_Pavers_Sidewalk_Beige`, beige as the strip since 22-10), restaurant terrace and plaza `GROUND_TERRACE` (`T02_Pavers_Herringbone_Light`), playground `GROUND_COURT_TILE` (`T18_Tile_Ardesia_Beige`), villa entrance paths `GROUND_PAVERS_BEIGE_T1_T2` (`T17_Pavers_Beige_Herringbone`, with Tranche 2's pavements and paths), rear terraces `DUPLEX_REAR_TERRACES` (`M09_Terrace_Stone`).
 - Beige paver and grey trottoir textures are in `data/textures/` of the repository if you want them (`TEX_PAVERS_BEIGE_HERRINGBONE.jpg`, and the grey `TEX_PAVERS_SIDEWALK_GREY.jpg` the trottoirs had before 22-10).
 - `T18_Tile_Ardesia_Beige`: the ground of the playground area by the pool (AZUVI Ardesia Nature type, 30 x 60).
   In D5 it can be swapped for the real product's texture if you have it.
@@ -167,15 +167,40 @@ block 12), villa type B of `5-VILLA_TYPE_B.DWG` with its own pool, in the finish
 collections (`T2_01_GROUND`, `T2_02_VILLAS`, `T2_03_LANDSCAPE`, `T2_04_TREES_PALMS`) and objects, and its ground in
 its own materials, so it can be finished apart from Tranche 1:
 - villas `T2_VILLA_B01` to `T2_VILLA_B33` (one mesh shared, the mirrored ones another);
-- streets `T2_GROUND_ROADS` and the parking bays `T2_GROUND_PARKING` (with their lines), pavements `T2_GROUND_PAVEMENTS`,
-  kerbs `T2_GROUND_KERBS`, gardens `T2_GROUND_GARDENS_LAWN`, paths to the doors `T2_GROUND_ENTRANCE_PATHS`, the Centre
-  d'entretien and the Office `T2_BUILDINGS_CENTRE_ENTRETIEN_OFFICE`. Since 22-10 Tranche 2's ground uses Tranche 1's
-  own materials: streets and bays `M11_Asphalt`, pavements and paths `T17_Pavers_Beige_Herringbone`, kerbs
-  `Kerb_Concrete`, gardens, verges and lawn `T03_Lawn`: change one in D5 and both tranches change;
+- the Centre d'entretien and the Office `T2_BUILDINGS_CENTRE_ENTRETIEN_OFFICE`, the bay lines `T2_ROAD_PAINT_PARKING`.
+  Since 22-10 the two tranches' ground is one object per surface, with one material each, in this package:
+  streets and bays `GROUND_ROADS_T1_T2` (`M11_Asphalt`; the entrance zone keeps `GROUND_ROADS_ENTRANCE`),
+  beige pavements and paths `GROUND_PAVERS_BEIGE_T1_T2` (`T17_Pavers_Beige_Herringbone`), kerbs and the villas'
+  pavements `GROUND_KERBS_T1_T2` (`Kerb_Concrete`), gardens, verges and lawns `GROUND_LAWN_T1_T2` (`T03_Lawn`):
+  change one in D5 and both tranches change. Delete the old model in D5 before importing this one;
 - garden walls `T2_WALLS_GARDENS`, street front walls with gate pillars and gates `T2_WALLS_FRONT_GATES`, palm pits `T2_TREE_PITS`,
-  the lawn left by Tranche 1's limit `T2_GROUND_LAWN_BY_TRANCHE_1` and the verges and planted strips `T2_GROUND_VERGES`.
+  (the lawn by Tranche 1's limit and the verges are in `GROUND_LAWN_T1_T2`).
 Cameras `T2_CAM_01` to `T2_CAM_07`.
 """
+
+
+# client 22-10: the two tranches' streets (and pavements, kerbs, lawns) in one object each, with one material,
+# so D5 can neither show them apart nor give them two material instances
+JOIN = {"GROUND_ROADS_T1_T2": ("GROUND_ROADS_VILLAS_asphalt", "T2_GROUND_ROADS_t2_road", "T2_GROUND_PARKING_t2_parking"),
+        "GROUND_PAVERS_BEIGE_T1_T2": ("DUPLEX_ENTRANCE_PATHS_pave_beige", "T2_GROUND_PAVEMENTS_t2_pave", "T2_GROUND_ENTRANCE_PATHS_t2_path"),
+        "GROUND_KERBS_T1_T2": ("GROUND_PAVEMENTS_VILLAS_kerb_paving", "T2_GROUND_KERBS_t2_kerb"),
+        "GROUND_LAWN_T1_T2": ("GROUND_LAWN_lawn", "T2_GROUND_GARDENS_LAWN_t2_lawn", "T2_GROUND_VERGES_t2_verge",
+                              "T2_GROUND_LAWN_BY_TRANCHE_1_t2_verge")}
+
+
+def join_ground():
+    for name, parts in JOIN.items():
+        obs = [bpy.data.objects[p] for p in parts if bpy.data.objects.get(p)]
+        if len(obs) < 2:
+            continue
+        for o in obs:
+            if o.data.users > 1:
+                o.data = o.data.copy()
+        with bpy.context.temp_override(active_object=obs[0], selected_editable_objects=obs, selected_objects=obs):
+            bpy.ops.object.join()
+        obs[0].name = name
+        obs[0].data.name = name
+        print("JOINED", name, [m.name for m in obs[0].data.materials])
 
 
 def main():
@@ -191,6 +216,7 @@ def main():
     vl.update()
     swapped = d5_materials(vl)
     print("D5_MATERIALS", len(swapped))
+    join_ground()
     export(os.path.join(OUT, "Mirleft_Tranche_1_D5_FULL.fbx"))
     for cn in ("06_TREES_PALMS", "T2_04_TREES_PALMS"):
         trees = bpy.data.collections.get(cn)
