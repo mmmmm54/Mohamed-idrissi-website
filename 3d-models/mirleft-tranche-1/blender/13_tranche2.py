@@ -318,14 +318,19 @@ def build(M, B, srcv, H):
     mb = C.MeshBuilder()
     L.prism(mb, "t2_parking", parking, -0.65, 0.0, zf=hz)
     mb.build("T2_GROUND_PARKING", cols["T2_01_GROUND"], M)
-    # the bays as the plan draws them: 10 cm white lines on their two long sides
+    # the bays: one thin white line (6 cm) between two bays and at the ends of the rows, none across their
+    # mouths (client 22-10); where two bays share a side it is painted once
     mb = C.MeshBuilder()
+    lines = []
     for b in bays:
         q = list(b.exterior.coords)[:4]
-        e = sorted(((q[i], q[(i + 1) % 4]) for i in range(4)), key=lambda ab: -math.dist(*ab))[:2]
-        for p0, p1 in e:
-            g = LineString([p0, p1]).buffer(0.05, cap_style=2)
-            L.prism(mb, "paint", g, 0.004, 0.006, zf=hz, sides=False)
+        for p0, p1 in sorted(((q[i], q[(i + 1) % 4]) for i in range(4)), key=lambda ab: -math.dist(*ab))[:2]:
+            ln = LineString([p0, p1])
+            if any(ln.centroid.distance(o) < 0.45 and abs(ln.length - o.length) < 2.0 for o in lines):
+                continue
+            lines.append(ln)
+    for ln in lines:
+        L.prism(mb, "paint", ln.buffer(0.03, cap_style=2), 0.004, 0.006, zf=hz, sides=False)
     mb.build("T2_ROAD_PAINT_PARKING", cols["T2_01_GROUND"], M)
     print(f"  T2: streets {roads.area:.0f} m2, pavements {pave.area:.0f} m2, verges and planted strips {verges.area:.0f} m2 "
           f"({n_cross} crossings at the gates), parking {parking.area:.0f} m2 ({len(bays)} bays)")

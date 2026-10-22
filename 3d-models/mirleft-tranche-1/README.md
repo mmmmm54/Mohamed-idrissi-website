@@ -252,6 +252,12 @@ four façades, coupes A-A and B-B).
   from the south road) the street runs over Tranche 1's west pavement, as the plan draws it: that pavement is
   cut away under it (and where less than 1.5 m of it would be left), the street is built there by Tranche 2
   (`t1_trim` in `data/t2_site.json`). The rest of Tranche 1 is untouched.
+- **Client remarks (22-10, second round)**: the second 'Centre d'entretien', drawn askew, is squared on the
+  block like the other two, with lawn round it and a 1.50 m paved apron as the first; the bays open straight
+  onto the street (no kerb across their mouths) with one 6 cm line between two bays; the villa on the lot
+  the plan draws with another building (B-24) takes its whole lot, as wide as the next villa, up to the west
+  street with the rounded kerb of the corner; what was left of Tranche 1's west pavement between the two
+  carriageways at the south road is gone; the small islands of pavement at the lane mouths are street.
 - **Exports (22-10)**: only the scene and `Mirleft_Tranche_1_PACKED_2K.blend` were rebuilt for this revision
   (client: the blender file only); the GLB, OBJ, D5 package and renders are from 21-10.
 - **Parking strip (rev 21-10)**: the 26 bays the plan draws along the south road, painted, and its three buildings:

@@ -171,13 +171,12 @@ nT = np.array([dT[1], -dT[0]])
 band = Polygon([tuple(oT + dT * t + nT * s) for t, s in ((-15.0, -3.0), (60.0, -3.0), (60.0, 7.0), (16.0, 7.0), (16.0, 16.0), (-15.0, 16.0))])
 t1_trim = zstreet.intersection(t1).intersection(band).buffer(-0.05, join_style=2).buffer(0.05, join_style=2)
 t1_trim = unary_union([q for q in as_polys(t1_trim) if q.area > 2.0])
-# what that leaves of the pavement between the street and Tranche 1's own road where it is under 1.5 m
-# wide (and its tail at the south road) goes too: the two carriageways meet there, no sliver of kerb
+# and what that leaves of that pavement between the street and Tranche 1's own road (client 22-10, "remove
+# those"): the two carriageways are one there down to the south road, no islands of kerb between them
 t1pav = unary_union([Polygon(p["ext"], p.get("holes", [])).buffer(0) for p in site["surfaces"].get("paving", [])])
-rem = t1pav.intersection(t1).intersection(band).difference(t1_trim)
-thin = rem.difference(rem.buffer(-0.75, join_style=2).buffer(0.75, join_style=2))
-thin = unary_union([q for q in as_polys(thin) if q.distance(t1_trim) < 0.05])
-t1_trim = unary_union([t1_trim, thin]).buffer(0.10, join_style=2).buffer(-0.10, join_style=2).intersection(t1)
+rem = t1pav.intersection(t1).intersection(band.buffer(3.0, join_style=2)).difference(t1_trim)
+rem = unary_union([q for q in as_polys(rem) if q.distance(t1_trim) < 0.05])
+t1_trim = unary_union([t1_trim, rem]).buffer(0.10, join_style=2).buffer(-0.10, join_style=2).intersection(t1)
 t1_trim = unary_union([q for q in as_polys(t1_trim.simplify(0.05)) if q.area > 2.0])
 print(f"Tranche 1 ground under the street along it: {t1_trim.area:.0f} m2")
 # the main streets round the blocks in full, to their far kerb and 1 m past it (client 22-10: the street "6"
@@ -274,16 +273,49 @@ for l in lots:
     villas.append(l)
 from shapely import affinity
 good = [v for v in villas if v["plot"].area >= 250]
-for l in villas:                                              # fence lines not closed on the plan: the outline of the
-    if l["plot"].area < 250:                                  # nearest plot of the block, moved onto this lot
-        nb = min((v for v in good if v["block"] == l["block"]), key=lambda v: v["lot"].distance(l["lot"]))
-        d = np.array(l["lot"].centroid.coords[0]) - np.array(nb["lot"].centroid.coords[0])
-        l["plot"] = affinity.translate(nb["plot"], *d).intersection(l["lot"].buffer(0.5))
-        print("  plot of the lot at", [round(float(x), 1) for x in l["lot"].centroid.coords[0]], "from its neighbour's")
-for l in villas:                                              # the empty lot takes its neighbour's layout
-    if not l["drawn"]:
-        nb = min((v for v in villas if v["drawn"] and v["block"] == l["block"]), key=lambda v: v["plot"].distance(l["plot"]))
+# a lot with its fences not closed on the plan, or drawn with another building: the plot of the next villa
+# in its row (same front line), set beside it, and that villa's layout (client 22-10: "like the others")
+lc = lambda v: np.array(v["lot"].centroid.coords[0])
+
+
+def row_of(l):
+    return [v for v in good if v["drawn"] and v["block"] == l["block"] and v is not l and abs(float(np.dot(lc(v) - lc(l), v["fwd"]))) < 4.0]
+
+
+for l in villas:
+    if not l["drawn"]:            # drawn with another building: its whole lot, as wide as the next villa it faces
+        line = [v for v in good if v["drawn"] and v["block"] == l["block"]
+                and abs(float(np.dot(lc(v) - lc(l), np.array([v["fwd"][1], -v["fwd"][0]])))) < 4.0]
+        nb = min(line, key=lambda v: np.linalg.norm(lc(v) - lc(l)))
         l["fwd"], l["side"] = nb["fwd"], nb["side"]
+        f_, n_ = np.array(nb["fwd"]), np.array([nb["fwd"][1], -nb["fwd"][0]])
+        pn = [float(np.dot(np.array(q), n_)) for q in nb["plot"].exterior.coords]
+        c0 = lc(l)
+        o_ = c0 - n_ * float(np.dot(c0, n_))
+        strip = lambda a_, b_: Polygon([tuple(o_ + n_ * p + f_ * q) for p, q in ((a_, -60.0), (b_, -60.0), (b_, 60.0), (a_, 60.0))])
+        lo, hi = min(pn), max(pn)
+        oth = unary_union([v["plot"] for v in villas if v is not l and v["drawn"]])
+        lot_ = l["lot"].buffer(0.3, join_style=2)
+        if strip(lo - 4.0, lo).intersection(lot_.buffer(4.0)).intersection(oth).area > 5.0:
+            lo -= 4.0                                         # up to the next garden on that side: one wall
+        if strip(hi, hi + 4.0).intersection(lot_.buffer(4.0)).intersection(oth).area > 5.0:
+            hi += 4.0
+        g_ = lot_.intersection(strip(lo, hi)).difference(zstreet.buffer(0.40, join_style=2)).difference(oth.buffer(0.02))
+        l["plot"] = max(as_polys(g_), key=lambda q: q.area)
+        print("  lot at", [round(float(x), 1) for x in c0], "drawn with another building: its villa on its lot, as wide as",
+              [round(float(x), 1) for x in lc(nb)])
+        continue
+    if l["plot"].area < 250:
+        nb = min(row_of(l), key=lambda v: np.linalg.norm(lc(v) - lc(l)))
+        far = [v for v in row_of(nb) if np.dot(lc(v) - lc(nb), lc(l) - lc(nb)) < 0]        # the one past it
+        if far:                                               # one step of the row's own spacing
+            step = lc(nb) - lc(min(far, key=lambda v: np.linalg.norm(lc(v) - lc(nb))))
+        else:
+            u_ = np.array([nb["fwd"][1], -nb["fwd"][0]])
+            pu = [float(np.dot(np.array(q), u_)) for q in nb["plot"].exterior.coords]
+            step = u_ * math.copysign(max(pu) - min(pu), float(np.dot(lc(l) - lc(nb), u_)))
+        l["plot"] = affinity.translate(nb["plot"], *step)
+        print("  plot of the lot at", [round(float(x), 1) for x in l["lot"].centroid.coords[0]], "from the next villa's in its row")
 print("villas", len(villas), "drawn", sum(l["drawn"] for l in villas))
 
 # Placement as the plan draws each villa: pool at the rear, its house across where the plan's house is,
@@ -347,7 +379,7 @@ boxes = [o["box"] for o in out]
 for i, a in enumerate(boxes):
     for b in boxes[i + 1:]:
         if a.intersection(b).area > 0.05:
-            print("  WARNING villa boxes overlap", round(a.intersection(b).area, 2))
+            print("  WARNING villa boxes overlap", round(a.intersection(b).area, 2), [round(float(x), 1) for x in a.centroid.coords[0]], [round(float(x), 1) for x in b.centroid.coords[0]])
 taken = Polygon()
 for i, o in enumerate(out):
     g = unary_union([o["plot"], o["box"]]).difference(unary_union(boxes[:i] + boxes[i + 1:])).intersection(works).difference(taken)
@@ -385,13 +417,19 @@ gardens = unary_union([o["garden"] for o in out])
 # ---- the rest of the works: buildings, parking bays, streets and pavements, read from the plan's pieces
 # 'Centre d'entretien' (two) and 'Office' on the parking strip: the plan's squares with hipped roofs
 KIOSKS = [("CENTRE_ENTRETIEN_1", (-175.6, 14.1)), ("CENTRE_ENTRETIEN_2", (-155.7, 0.9)), ("OFFICE", (-119.9, -4.6))]
+# all three squared on the southern block's villas (client 22-10: the second one, drawn askew, "like the other")
+K_ROT = float(np.mean([o["rot"] for o in out if o["block"] == "south"]))
 CL = np.zeros((GH, GW), np.uint8)                              # 1 garden 2 road 3 pavement 4 bay 5 building 9 not ours
 gfill(gardens, 1, CL)
 kiosks = []
 for name, pt in KIOSKS:
     near = [i for i in range(1, ncomp) if csize[i] < 40 and Point(pt).distance(gvec(lab == i)) < 5.5] if True else []
     g = gvec(np.isin(lab, near)).buffer(0.2).convex_hull if near else Point(pt).buffer(4.0, 4)
-    g = g.minimum_rotated_rectangle
+    mr = g.minimum_rotated_rectangle
+    r = list(mr.exterior.coords)
+    a_, b_ = sorted(math.dist(*pp) for pp in zip(r[:2], r[1:3]))
+    g = affinity.rotate(box(-b_ / 2, -a_ / 2, b_ / 2, a_ / 2), K_ROT, origin=(0, 0))     # squared on the block
+    g = affinity.translate(g, *mr.centroid.coords[0])
     kiosks.append({"name": name, "poly": g})
     gfill(g, 5, CL)
 bays = []
@@ -474,10 +512,6 @@ cand = lane & (dmax * 2.0 <= 7.0) & (psize >= 30.0) & (inmain <= 0.5) & ~island
 behind = ndimage.sum(cv2.dilate((CL == 4).astype(np.uint8), k9) > 0, lpub, index=pidx) / RG / RG / 0.4 > 6.0
 by_kiosk = ndimage.maximum(cv2.dilate((CL == 5).astype(np.uint8), k9) > 0, lpub, index=pidx) > 0
 cand &= ~behind & ~by_kiosk                                    # the squares behind the bays, round the kiosks
-for i in np.nonzero(by_kiosk & lane)[0]:                       # paved, but the long strips that end at one
-    r = gvec(lpub == i).minimum_rotated_rectangle
-    e = sorted(math.dist(*pp) for pp in zip(list(r.exterior.coords)[:2], list(r.exterior.coords)[1:3]))
-    behind[i] |= e[1] < 4.0 * e[0]
 while True:
     hit = ndimage.maximum(cv2.dilate((pub & (carr[lpub] | LANE)).astype(np.uint8), k9) > 0, lpub, index=pidx) > 0
     new = hit & cand & ~carr
@@ -549,19 +583,6 @@ for q in as_polys(roads):
         roads = roads.difference(q.buffer(0.02))
         n_abs += 1
         print("  street scrap", [round(c, 1) for c in q.centroid.coords[0]], f"{q.area:.0f} m2 to a garden")
-# the lot the 2013 plan draws with another building (its villa from the client's plan): the dead-end lane off
-# the street between its fences and the next lot's goes to the gardens, each up to its lot line (a paved
-# forecourt is left at the street)
-undrawn = unary_union([o["lot"] for o in out if not o["drawn"]])
-for q in as_polys(roads.difference(kerbs)):
-    mouths = q.boundary.intersection(kerbs.buffer(0.05)).buffer(0.2)
-    if q.area > 2.0 and len(as_polys(mouths)) == 1 and q.intersection(undrawn).area > 0.4 * q.area:
-        for o in out:
-            part = q.intersection(o["lot"].buffer(0.05))
-            if part.area > 1.0:
-                o["garden"] = max(as_polys(unary_union([o["garden"], part.buffer(0.02)]).buffer(0)), key=lambda g: g.area)
-        roads = roads.difference(q.buffer(0.02))
-        print(f"  dead end by the lot drawn with another building: {q.area:.0f} m2 to the gardens")
 gardens = unary_union([o["garden"] for o in out])
 ground = ground.difference(gardens)
 roads = roads.intersection(ground).difference(gardens.buffer(0.40, join_style=2))
@@ -600,7 +621,23 @@ verges = unary_union([q for q in as_polys(verges) if q.area > 1.0])
 roads = unary_union([roads, t1_trim.intersection(ground)])        # Tranche 1's ground under the street: all carriageway
 verges = verges.difference(t1_trim)
 pave = ground.difference(roads).difference(verges)
+# the bays open straight onto the carriageway (client 22-10): the slivers the drawing's lines leave between
+# them and the street go to the bays, the scraps of pavement at the ends of their rows to the street
+thin = pave.difference(pave.buffer(-0.25, join_style=2).buffer(0.25, join_style=2))
+slv = thin.intersection(parking.buffer(0.40, join_style=2)).difference(gardens.buffer(0.60, join_style=2))
+parking = unary_union([parking, slv])
+pave = pave.difference(slv)
+ends = [q for q in as_polys(pave) if q.area < 6.0 and q.distance(parking) < 1.0]
+ends += [q for q in as_polys(pave) if q.area < 12.0 and q.exterior.intersection(roads.buffer(0.05)).length > 0.6 * q.exterior.length]
+roads = unary_union([roads] + ends)
+pave = pave.difference(unary_union(ends)) if ends else pave
 pave = unary_union([q for q in as_polys(pave) if q.area > 0.3])
+for q in as_polys(pave):                                      # scraps of pavement shut in where gardens meet
+    if q.area < 10.0 and q.exterior.intersection(gardens.buffer(0.3, join_style=2)).length > 0.8 * q.exterior.length:
+        o = max(out, key=lambda o: q.exterior.intersection(o["garden"].buffer(0.3, join_style=2)).length)
+        o["garden"] = max(as_polys(unary_union([o["garden"], q.buffer(0.02)]).buffer(0)), key=lambda g: g.area)
+        pave = pave.difference(q.buffer(0.02))
+gardens = unary_union([o["garden"] for o in out])
 print("street scraps between gardens given to them:", n_abs)
 
 
