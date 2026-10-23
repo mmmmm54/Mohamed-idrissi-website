@@ -284,8 +284,9 @@ four façades, coupes A-A and B-B).
 - **Roads in beige pavers (22-10, later)**: "hadi ka7la mabghinahach, dir hadi texture bdabt bdabt": every road
   and the parking bays, both tranches and the entrance zone, are in the beige herringbone pavers of the plaza,
   the very same material `T17_Pavers_Beige_Herringbone` (0.80 m tile). No asphalt is left.
-- **Exports (22-10)**: the scene, `Mirleft_Tranche_1_PACKED_2K.blend` and the D5 package (`d5/`, both FBX) were
-  rebuilt with the villas type C, the SPA and the roads in beige pavers; the GLB, OBJ and renders are from 21-10.
+- **Exports (23-10)**: the scene, `Mirleft_Tranche_1_PACKED_2K.blend` and the D5 package (`d5/`, both FBX) were
+  rebuilt with the villas type C, the SPA, the roads in beige pavers and the fixes of 23-10; the GLB, OBJ and
+  renders are from 21-10.
 - **Parking strip (rev 21-10)**: the 26 bays the plan draws along the south road, painted, and its three buildings:
   'Centre d'entretien' twice and 'Office', the squares with hipped roofs of the plan, in the villas' render
   with their cornice, a terracotta pyramid roof, a timber door to the parking and windows in taupe surrounds
@@ -340,6 +341,17 @@ a suggestion on the same size as on the plan" (with reference photos of a riad s
   behind arcades of pointed horseshoe arches on square pillars, a lantern in each bay, crenellated parapets on
   the street side; the crenellated tower (three floors of small arched windows) at the south-west corner. The
   cell is graded level with the northern block. Everything about it is to confirm.
+- **Fixes (client 23-10, "remove this / fix this")**: the island with its turning circle that the old plan drew in
+  the street east of the SPA is gone (street), the SPA's cell keeps only its 0.40 m of pavement round its walls;
+  the small notch in C-12's front fence (and C-05's) is filled, so no piece of high wall stands in the low front
+  wall; where a lane opens onto a street's pavement (B-03/B-06, B-09/B-11, B-11/B-15, B-15/B-18, C-01/C-07) the
+  pavement stops square on the lines of the gardens' side fences, with no wedge into the lane and no slanted end.
+  Nothing else in the layout changed (the gates, gardens, stair, bays and kiosks are as on 22-10).
+- **Roads in D5 (client 23-10, "3lach ka7la wakha fiha texture")**: the roads showed black in D5 from afar and
+  grey close to, though they carry the same `T17_Pavers_Beige_Herringbone` as the pavements. Their meshes had
+  triangles of up to 1,700 m2, and D5 kept the old asphalt look on the objects of the same name. In the D5
+  package they are now `GROUND_ROADS_BEIGE_T1_T2` and `GROUND_ROADS_BEIGE_ENTRANCE`, cut on a 3 m grid (same
+  surface, same material, same UVs). Delete the old model in D5 completely before importing.
 
 ## Removed (client, 13-10)
 Direction arrows and cars. The zebra crossings were put back as paint (15-10).

@@ -469,6 +469,15 @@ for i, o in enumerate(out):
     g = Polygon(max(as_polys(g.buffer(0)), key=lambda q: q.area).exterior).simplify(0.03).buffer(0)
     o["garden"] = max(as_polys(g), key=lambda q: q.area)
     taken = taken.union(o["garden"])
+# notches under 1.2 m wide left in the type C villas' fences (where the kerb lines of a street's corner or a lot
+# line cut in) filled: no stub of high wall standing in a low front wall (client 23-10, "fix this"; the type B
+# gardens stay as they were, their gates read on them)
+for i, o in enumerate(out):
+    if o.get("type") != "C":
+        continue
+    others = unary_union([q["garden"] for j, q in enumerate(out) if j != i])
+    g = o["garden"].buffer(0.6, join_style=2).buffer(-0.6, join_style=2).difference(others).buffer(0)
+    o["garden"] = Polygon(max(as_polys(g), key=lambda q: q.area).exterior).simplify(0.03).buffer(0)
 gardens = unary_union([o["garden"] for o in out])
 
 # ---- the rest of the works: buildings, parking bays, streets and pavements, read from the plan's pieces
@@ -489,7 +498,8 @@ for name, pt in KIOSKS:
     g = affinity.translate(g, *mr.centroid.coords[0])
     kiosks.append({"name": name, "poly": g})
     gfill(g, 5, CL)
-spa_plot = spa_cell.buffer(-0.40, join_style=2)               # the SPA's walls 0.40 m inside its cell's kerb lines
+spa_plot = spa_cell.buffer(-0.40, join_style=2).minimum_rotated_rectangle   # the SPA's walls 0.40 m inside its cell's kerb lines
+spa_plot = spa_plot.buffer(-0.02, join_style=2)               # (the rectangle: without the notches the lot lines leave in the cell)
 gfill(spa_plot, 5, CL)
 bays = []
 south_edge = LineString(B_SOUTH).buffer(45.0)
@@ -797,6 +807,75 @@ for o in out:
         o["gate"] = terrace
     else:
         o["gate"] = max(("right", "left"), key=lambda s: sc[s])
+
+# client 23-10 ("fix this"): where a lane between two gardens opens onto a street's pavement, the pavement stops
+# square on the lines of the two gardens' side fences (no wedge into the lane, no slanted end or step short of
+# it): the lane's mouth past the gardens' fronts is street, and over the 3 m next to the lane the pavement in
+# front of each garden is a rectangle as deep as the pavement just beyond. Only the lanes' mouths onto a
+# pavement change (the lanes onto the stair, the kiosks' and the other pavements stay as they were)
+MD, MS = 3.0, 3.0                                   # depth of the mouth past the fronts, length of the squared ends
+to_road, to_pave, n_sq = [], [], 0
+for i, oi in enumerate(out):
+    u = np.asarray(oi["u"], float) / np.linalg.norm(oi["u"])
+    v = np.asarray(oi["v"], float) / np.linalg.norm(oi["v"])
+    for oj in out[i + 1:]:
+        if oi["garden"].distance(oj["garden"]) > 8.0 or abs(float(np.dot(u, oj["u"]) / np.linalg.norm(oj["u"]))) < 0.996:
+            continue
+        for e, f in ((u, v), (v, u)):                   # the lane runs along f, the two gardens either side of it on e
+            R = lambda A, B, e=e, f=f: Polygon([tuple(e * x + f * y) for x, y in ((A[0], B[0]), (A[1], B[0]), (A[1], B[1]), (A[0], B[1]))])
+            pe = [np.asarray(g.exterior.coords) @ e for g in (oi["garden"], oj["garden"])]
+            pf = [np.asarray(g.exterior.coords) @ f for g in (oi["garden"], oj["garden"])]
+            k = 0 if pe[1].min() > pe[0].max() else 1 if pe[0].min() > pe[1].max() else None
+            if k is None:
+                continue
+            lo, hi = pe[k].max(), pe[1 - k].min()       # garden k on the low side of the lane, the other on the high
+            b0, b1 = max(pf[0].min(), pf[1].min()), min(pf[0].max(), pf[1].max())
+            if not (2.5 < hi - lo < 8.0 and b1 - b0 > 5.0) or roads.intersection(R((lo, hi), (b0, b1))).area < 0.5 * (hi - lo) * (b1 - b0):
+                continue
+            for sg in (1, -1):                          # the lane's two ends
+                bf = {g: (pf[g].max() if sg > 0 else pf[g].min()) for g in (0, 1)}
+                rows = {}
+                for g, side, away in ((k, lo, -1), (1 - k, hi, 1)):
+                    beyond = R(sorted((side + away * MS, side + away * (MS + 1.0))), sorted((bf[g], bf[g] + sg * MD)))
+                    d = pave.intersection(beyond).area   # the pavement's depth 3 m from the lane
+                    if d >= 1.0:
+                        rows[g] = (side, away, min(d, MD))
+                if not rows:
+                    continue
+                near_f, far_f = (min(bf.values()), max(bf.values())) if sg > 0 else (max(bf.values()), min(bf.values()))
+                inner = near_f if abs(far_f - near_f) < 2.0 else far_f
+                to_road.append(pave.intersection(R((lo, hi), sorted((inner, far_f + sg * MD)))).difference(gardens.buffer(0.45, join_style=2)))
+                for g, (side, away, d) in rows.items():
+                    end = R(sorted((side, side + away * MS)), sorted((bf[g], bf[g] + sg * MD)))
+                    rect = R(sorted((side, side + away * MS)), sorted((bf[g], bf[g] + sg * d)))
+                    to_pave.append(rect.intersection(roads))
+                    to_road.append(pave.intersection(end).difference(rect))
+                n_sq += 1
+cut = unary_union([q for q in as_polys(unary_union(to_road)) if q.area > 0.01]) if to_road else Polygon()
+fill = unary_union(to_pave).difference(cut) if to_pave else Polygon()
+pave = unary_union([pave.difference(cut), fill])
+thin = pave.difference(pave.buffer(-0.12, join_style=2).buffer(0.12, join_style=2)).intersection(unary_union([cut, fill]).buffer(0.6))
+pave, roads = pave.difference(thin), unary_union([roads.difference(fill), cut, thin])
+# the SPA's cell: its 0.40 m round its walls is pavement, the rest of the old plan's pavement in it is street;
+# so is the island with its turning circle in the street east of it ("remove this"): what lies in the streets
+# along its four sides, over 0.45 m off the gardens. The pavements along the gardens and streets round it stay
+ring_spa = spa_plot.buffer(0.40, join_style=2).difference(spa_plot).intersection(ground)
+rr = np.array(spa_plot.minimum_rotated_rectangle.exterior.coords[:4])
+mid = rr.mean(axis=0)
+sides = []
+for p0, p1 in zip(rr, np.roll(rr, -1, axis=0)):
+    nrm = np.array([p1[1] - p0[1], p0[0] - p1[0]]) / np.linalg.norm(p1 - p0)
+    nrm = nrm if np.dot(nrm, (p0 + p1) / 2 - mid) > 0 else -nrm
+    sides.append(Polygon([tuple(p0), tuple(p1), tuple(p1 + 8.0 * nrm), tuple(p0 + 8.0 * nrm)]))
+loose = [q for q in as_polys(pave.difference(gardens.buffer(0.45, join_style=2)).difference(ring_spa))
+         if any(sd.contains(q.centroid) for sd in sides) and q.area < 120.0]
+near_spa = unary_union([pave.intersection(spa_cell).difference(ring_spa)] + loose)
+roads = unary_union([roads, near_spa, spa_cell.difference(spa_plot).difference(ring_spa).intersection(ground)]).difference(ring_spa)
+pave = unary_union([pave.difference(near_spa).difference(spa_cell), ring_spa])
+islands = [q for q in as_polys(pave) if q.area < 1.0 and q.distance(roads) < 0.1]
+roads = unary_union([roads] + islands)
+pave = unary_union([q for q in as_polys(pave) if q.area >= 1.0 or q.distance(roads) >= 0.1])
+print(f"pavement squared at {n_sq} lanes' mouths ({cut.area:.0f} m2 to the street, {fill.area:.0f} m2 to the pavement); round the SPA: {near_spa.area:.0f} m2 to the street")
 
 # numbering: the northern block then the southern one, rows from the north
 out.sort(key=lambda o: (o["block"] != "north", -round(o["c"][1] / 12.0), o["c"][0]))

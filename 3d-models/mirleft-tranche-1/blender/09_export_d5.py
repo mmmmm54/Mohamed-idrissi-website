@@ -16,11 +16,13 @@ name, and the textured ones get a normal map baked from their colour image. Writ
 and zips the folder to Mirleft_Tranche_1_D5.zip next to the .blend.
 """
 import importlib.util
+import math
 import os
 import shutil
 import zipfile
 
 import bpy  # noqa: I001
+import bmesh  # after bpy, which provides it
 import numpy as np
 from PIL import Image, ImageFilter
 
@@ -150,8 +152,8 @@ The material names are the Blender ones: `T13_Travertine_Planks` (pool deck), `M
 
 ## Rev 4 finishes (remarks on the D5 model)
 - The ground is split so each part can be finished on its own in D5 (separate objects and materials):
-  - by the villas: roads `GROUND_ROADS_T1_T2` (with Tranche 2's streets and bays, in `T17_Pavers_Beige_Herringbone` since 22-10), the lane by D-1 to D-4 `GROUND_LANE_1` (`T23_Lane_1_Herringbone`), the lane by D-13 to D-18 `GROUND_LANE_2` (`T24_Lane_2_Herringbone`), the other lanes `GROUND_LANES_VILLAS` (`T01_Pavers_Herringbone_Beige`), all in the beige pavers since 22-10, pavements `GROUND_KERBS_T1_T2` (`Kerb_Concrete`, with Tranche 2's kerbs);
-  - in the entrance zone: roads `GROUND_ROADS_ENTRANCE` (`T17_Pavers_Beige_Herringbone` since 22-10), herringbone trottoirs `GROUND_TROTTOIRS_HERRINGBONE_ENTRANCE` (`T21_Trottoir_Herringbone_Entrance`, beige since 22-10), kerb trottoirs `GROUND_TROTTOIRS_KERB_ENTRANCE` (`T22_Trottoir_Kerb_Entrance`);
+  - by the villas: roads `GROUND_ROADS_BEIGE_T1_T2` (with Tranche 2's streets and bays, in `T17_Pavers_Beige_Herringbone` since 22-10), the lane by D-1 to D-4 `GROUND_LANE_1` (`T23_Lane_1_Herringbone`), the lane by D-13 to D-18 `GROUND_LANE_2` (`T24_Lane_2_Herringbone`), the other lanes `GROUND_LANES_VILLAS` (`T01_Pavers_Herringbone_Beige`), all in the beige pavers since 22-10, pavements `GROUND_KERBS_T1_T2` (`Kerb_Concrete`, with Tranche 2's kerbs);
+  - in the entrance zone: roads `GROUND_ROADS_BEIGE_ENTRANCE` (`T17_Pavers_Beige_Herringbone` since 22-10), herringbone trottoirs `GROUND_TROTTOIRS_HERRINGBONE_ENTRANCE` (`T21_Trottoir_Herringbone_Entrance`, beige since 22-10), kerb trottoirs `GROUND_TROTTOIRS_KERB_ENTRANCE` (`T22_Trottoir_Kerb_Entrance`);
   - commerce terrace `GROUND_TERRACOTTA` (`T03_Terracotta_Herringbone`), the dark squares in that terrace `GROUND_COMMERCE_TERRACE_SQUARES` (`T25_Commerce_Terrace_Squares`), the strip between the commerces and D-1/D-2 `GROUND_COMMERCE_STRIP_BEIGE` (`T26_Commerce_Strip_Beige`), the trottoirs along the commerces and the restaurant plaza to the road `GROUND_TROTTOIRS_COMMERCES_RESTAURANT` (`T20_Pavers_Sidewalk_Beige`, beige as the strip since 22-10), restaurant terrace and plaza `GROUND_TERRACE` (`T02_Pavers_Herringbone_Light`), playground `GROUND_COURT_TILE` (`T18_Tile_Ardesia_Beige`), villa entrance paths `GROUND_PAVERS_BEIGE_T1_T2` (`T17_Pavers_Beige_Herringbone`, with Tranche 2's pavements and paths), rear terraces `DUPLEX_REAR_TERRACES` (`M09_Terrace_Stone`).
 - Beige paver and grey trottoir textures are in `data/textures/` of the repository if you want them (`TEX_PAVERS_BEIGE_HERRINGBONE.jpg`, and the grey `TEX_PAVERS_SIDEWALK_GREY.jpg` the trottoirs had before 22-10).
 - `T18_Tile_Ardesia_Beige`: the ground of the playground area by the pool (AZUVI Ardesia Nature type, 30 x 60).
@@ -171,7 +173,7 @@ its own materials, so it can be finished apart from Tranche 1:
 - the Centre d'entretien and the Office `T2_BUILDINGS_CENTRE_ENTRETIEN_OFFICE`, the bay lines `T2_ROAD_PAINT_PARKING`,
   the stair between the two blocks with its two square fountains `T2_STAIR_BETWEEN_BLOCKS` (22-10).
   Since 22-10 the two tranches' ground is one object per surface, with one material each, in this package:
-  streets and bays `GROUND_ROADS_T1_T2` (the entrance zone keeps `GROUND_ROADS_ENTRANCE`),
+  streets and bays `GROUND_ROADS_BEIGE_T1_T2` (the entrance zone keeps `GROUND_ROADS_BEIGE_ENTRANCE`),
   beige pavements and paths `GROUND_PAVERS_BEIGE_T1_T2` (`T17_Pavers_Beige_Herringbone`), kerbs and the villas'
   pavements `GROUND_KERBS_T1_T2` (`Kerb_Concrete`), gardens, verges and lawns `GROUND_LAWN_T1_T2` (`T03_Lawn`):
   change one in D5 and both tranches change. Delete the old model in D5 before importing this one;
@@ -183,6 +185,9 @@ Cameras `T2_CAM_01` to `T2_CAM_07`.
 Every road and the parking bays (both tranches, the entrance zone too) are in the plaza's beige herringbone pavers,
 the very same material `T17_Pavers_Beige_Herringbone` (0.80 m tile): no asphalt is left. Change that one material in
 D5 and the roads, pavements and paths change together.
+Since 23-10 the road objects are `GROUND_ROADS_BEIGE_T1_T2` and `GROUND_ROADS_BEIGE_ENTRANCE`, cut on a 3 m grid
+(they had faces of hundreds of m2, which D5 showed black from afar). **Delete the old model in D5 completely
+before importing** (don't replace or update it): D5 would keep the old dark road material on the old objects.
 
 ## Villas type C and the SPA (22-10)
 - The 13 villas type C of the plan de masse (the block south-west of the southern block): `T2_VILLA_C01` to
@@ -200,7 +205,7 @@ Delete the old model in D5 before importing this one.
 
 # client 22-10: the two tranches' streets (and pavements, kerbs, lawns) in one object each, with one material,
 # so D5 can neither show them apart nor give them two material instances
-JOIN = {"GROUND_ROADS_T1_T2": ("GROUND_ROADS_VILLAS_asphalt", "T2_GROUND_ROADS_t2_road", "T2_GROUND_PARKING_t2_parking"),
+JOIN = {"GROUND_ROADS_BEIGE_T1_T2": ("GROUND_ROADS_VILLAS_asphalt", "T2_GROUND_ROADS_t2_road", "T2_GROUND_PARKING_t2_parking"),
         "GROUND_PAVERS_BEIGE_T1_T2": ("DUPLEX_ENTRANCE_PATHS_pave_beige", "T2_GROUND_PAVEMENTS_t2_pave", "T2_GROUND_ENTRANCE_PATHS_t2_path"),
         "GROUND_KERBS_T1_T2": ("GROUND_PAVEMENTS_VILLAS_kerb_paving", "T2_GROUND_KERBS_t2_kerb"),
         "GROUND_LAWN_T1_T2": ("GROUND_LAWN_lawn", "T2_GROUND_GARDENS_LAWN_t2_lawn", "T2_GROUND_VERGES_t2_verge",
@@ -220,6 +225,42 @@ def join_ground():
         obs[0].name = name
         obs[0].data.name = name
         print("JOINED", name, [m.name for m in obs[0].data.materials])
+    for old, name in RENAME.items():
+        o = bpy.data.objects.get(old)
+        if o is not None:
+            o.name = o.data.name = name
+
+
+# client 23-10: the roads came out black in D5 from afar and grey close to, though in T17 like the pavements.
+# Their meshes had triangles up to 1700 m2 (the plan's long straight kerbs): D5 lights such faces badly, and
+# it kept the old asphalt look on the objects of the same name. New names, and the faces cut on a 3 m grid:
+# the very same surface and material, in pieces of 3 m at most (the cuts split the faces where they lie,
+# their UVs interpolated exactly)
+RENAME = {"GROUND_ROADS_ENTRANCE_asphalt_ent": "GROUND_ROADS_BEIGE_ENTRANCE"}
+FINE = ("GROUND_ROADS_BEIGE_T1_T2", "GROUND_ROADS_BEIGE_ENTRANCE")
+
+
+def grid_cut(names, cell=3.0):
+    for name in names:
+        o = bpy.data.objects.get(name)
+        if o is None:
+            continue
+        bm = bmesh.new()
+        bm.from_mesh(o.data)
+        n0 = len(bm.faces)
+        for axis in (0, 1):
+            vals = [v.co[axis] for v in bm.verts]
+            c = (math.floor(min(vals) / cell) + 1) * cell
+            while c < max(vals):
+                co, no = [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]
+                co[axis], no[axis] = c, 1.0
+                bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], plane_co=co, plane_no=no)
+                c += cell
+        bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 3])
+        bm.to_mesh(o.data)
+        o.data.update()
+        print("FINE", name, n0, "->", len(bm.faces), "faces, largest", round(max(f.calc_area() for f in bm.faces), 2), "m2")
+        bm.free()
 
 
 def main():
@@ -236,6 +277,7 @@ def main():
     swapped = d5_materials(vl)
     print("D5_MATERIALS", len(swapped))
     join_ground()
+    grid_cut(FINE)
     export(os.path.join(OUT, "Mirleft_Tranche_1_D5_FULL.fbx"))
     for cn in ("06_TREES_PALMS", "T2_04_TREES_PALMS"):
         trees = bpy.data.collections.get(cn)

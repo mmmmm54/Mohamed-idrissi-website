@@ -35,8 +35,8 @@ The material names are the Blender ones: `T13_Travertine_Planks` (pool deck), `M
 
 ## Rev 4 finishes (remarks on the D5 model)
 - The ground is split so each part can be finished on its own in D5 (separate objects and materials):
-  - by the villas: roads `GROUND_ROADS_T1_T2` (with Tranche 2's streets and bays, in `T17_Pavers_Beige_Herringbone` since 22-10), the lane by D-1 to D-4 `GROUND_LANE_1` (`T23_Lane_1_Herringbone`), the lane by D-13 to D-18 `GROUND_LANE_2` (`T24_Lane_2_Herringbone`), the other lanes `GROUND_LANES_VILLAS` (`T01_Pavers_Herringbone_Beige`), all in the beige pavers since 22-10, pavements `GROUND_KERBS_T1_T2` (`Kerb_Concrete`, with Tranche 2's kerbs);
-  - in the entrance zone: roads `GROUND_ROADS_ENTRANCE` (`T17_Pavers_Beige_Herringbone` since 22-10), herringbone trottoirs `GROUND_TROTTOIRS_HERRINGBONE_ENTRANCE` (`T21_Trottoir_Herringbone_Entrance`, beige since 22-10), kerb trottoirs `GROUND_TROTTOIRS_KERB_ENTRANCE` (`T22_Trottoir_Kerb_Entrance`);
+  - by the villas: roads `GROUND_ROADS_BEIGE_T1_T2` (with Tranche 2's streets and bays, in `T17_Pavers_Beige_Herringbone` since 22-10), the lane by D-1 to D-4 `GROUND_LANE_1` (`T23_Lane_1_Herringbone`), the lane by D-13 to D-18 `GROUND_LANE_2` (`T24_Lane_2_Herringbone`), the other lanes `GROUND_LANES_VILLAS` (`T01_Pavers_Herringbone_Beige`), all in the beige pavers since 22-10, pavements `GROUND_KERBS_T1_T2` (`Kerb_Concrete`, with Tranche 2's kerbs);
+  - in the entrance zone: roads `GROUND_ROADS_BEIGE_ENTRANCE` (`T17_Pavers_Beige_Herringbone` since 22-10), herringbone trottoirs `GROUND_TROTTOIRS_HERRINGBONE_ENTRANCE` (`T21_Trottoir_Herringbone_Entrance`, beige since 22-10), kerb trottoirs `GROUND_TROTTOIRS_KERB_ENTRANCE` (`T22_Trottoir_Kerb_Entrance`);
   - commerce terrace `GROUND_TERRACOTTA` (`T03_Terracotta_Herringbone`), the dark squares in that terrace `GROUND_COMMERCE_TERRACE_SQUARES` (`T25_Commerce_Terrace_Squares`), the strip between the commerces and D-1/D-2 `GROUND_COMMERCE_STRIP_BEIGE` (`T26_Commerce_Strip_Beige`), the trottoirs along the commerces and the restaurant plaza to the road `GROUND_TROTTOIRS_COMMERCES_RESTAURANT` (`T20_Pavers_Sidewalk_Beige`, beige as the strip since 22-10), restaurant terrace and plaza `GROUND_TERRACE` (`T02_Pavers_Herringbone_Light`), playground `GROUND_COURT_TILE` (`T18_Tile_Ardesia_Beige`), villa entrance paths `GROUND_PAVERS_BEIGE_T1_T2` (`T17_Pavers_Beige_Herringbone`, with Tranche 2's pavements and paths), rear terraces `DUPLEX_REAR_TERRACES` (`M09_Terrace_Stone`).
 - Beige paver and grey trottoir textures are in `data/textures/` of the repository if you want them (`TEX_PAVERS_BEIGE_HERRINGBONE.jpg`, and the grey `TEX_PAVERS_SIDEWALK_GREY.jpg` the trottoirs had before 22-10).
 - `T18_Tile_Ardesia_Beige`: the ground of the playground area by the pool (AZUVI Ardesia Nature type, 30 x 60).
@@ -56,7 +56,7 @@ its own materials, so it can be finished apart from Tranche 1:
 - the Centre d'entretien and the Office `T2_BUILDINGS_CENTRE_ENTRETIEN_OFFICE`, the bay lines `T2_ROAD_PAINT_PARKING`,
   the stair between the two blocks with its two square fountains `T2_STAIR_BETWEEN_BLOCKS` (22-10).
   Since 22-10 the two tranches' ground is one object per surface, with one material each, in this package:
-  streets and bays `GROUND_ROADS_T1_T2` (the entrance zone keeps `GROUND_ROADS_ENTRANCE`),
+  streets and bays `GROUND_ROADS_BEIGE_T1_T2` (the entrance zone keeps `GROUND_ROADS_BEIGE_ENTRANCE`),
   beige pavements and paths `GROUND_PAVERS_BEIGE_T1_T2` (`T17_Pavers_Beige_Herringbone`), kerbs and the villas'
   pavements `GROUND_KERBS_T1_T2` (`Kerb_Concrete`), gardens, verges and lawns `GROUND_LAWN_T1_T2` (`T03_Lawn`):
   change one in D5 and both tranches change. Delete the old model in D5 before importing this one;
@@ -68,6 +68,9 @@ Cameras `T2_CAM_01` to `T2_CAM_07`.
 Every road and the parking bays (both tranches, the entrance zone too) are in the plaza's beige herringbone pavers,
 the very same material `T17_Pavers_Beige_Herringbone` (0.80 m tile): no asphalt is left. Change that one material in
 D5 and the roads, pavements and paths change together.
+Since 23-10 the road objects are `GROUND_ROADS_BEIGE_T1_T2` and `GROUND_ROADS_BEIGE_ENTRANCE`, cut on a 3 m grid
+(they had faces of hundreds of m2, which D5 showed black from afar). **Delete the old model in D5 completely
+before importing** (don't replace or update it): D5 would keep the old dark road material on the old objects.
 
 ## Villas type C and the SPA (22-10)
 - The 13 villas type C of the plan de masse (the block south-west of the southern block): `T2_VILLA_C01` to
