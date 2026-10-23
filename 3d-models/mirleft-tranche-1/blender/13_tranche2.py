@@ -91,12 +91,15 @@ def t1_trim():
 
 def mats(M):
     """Tranche 2's ground materials: copies of Tranche 1's under their own names, to be finished apart in D5."""
-    for k, src, suffix in (("t2_road", "asphalt", ""), ("t2_parking", "asphalt", "_Parking"), ("t2_pave", "pave_beige", "_Pavements"),
+    for k, src, suffix in (("t2_road", "asphalt", ""), ("t2_parking", "asphalt", "_Parking"),
                            ("t2_path", "pave_beige", "_Paths"), ("t2_kerb", "kerb", ""), ("t2_lawn", "lawn", "_Gardens"),
                            ("t2_verge", "lawn", "_Verges")):
         name = f"T2_{M[src].name}{suffix}"                    # T2_<Tranche 1's material>: 08 exports it with that one's texture
         M[k] = M[src].copy()
         M[k].name = name
+    # client 23-10: the pavements (trottoirs) apart from the roads, in their own material, grey pavers, to be
+    # finished on their own in D5 ("fslom bach nt7akm fihum maykunuch dakhlin m3a road")
+    M["t2_pave"] = L.img_mat("T27_Trottoirs_Grey", "sidewalk", 0.8, 0.35)
 
 
 class Villa:
@@ -420,7 +423,7 @@ def build(M, B, srcv, H):
             g = stair.intersection(slab(t0, t1))
             if g.is_empty:
                 continue
-            L.prism(mb, "t2_pave", g, -0.90, 0.0, zf=lambda x, y, z=z: z)
+            L.prism(mb, "t2_path", g, -0.90, 0.0, zf=lambda x, y, z=z: z)        # the stair's treads stay beige
             if k < n_r:
                 L.prism(mb, "coping_beige", stair.intersection(slab(t1 - 0.30, t1)), -0.05, 0.006, zf=lambda x, y, z=z: z, sides=False)
         for fx, fy in st["fountains"]:

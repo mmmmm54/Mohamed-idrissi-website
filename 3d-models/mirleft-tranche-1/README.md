@@ -339,8 +339,7 @@ a suggestion on the same size as on the plan" (with reference photos of a riad s
   parasols, a timber pergola with bougainvillea over loungers at its south end, a round fountain at its north end,
   date palms in planters at its corners, olive trees in terracotta jars; along both sides the treatment rooms
   behind arcades of pointed horseshoe arches on square pillars, a lantern in each bay, crenellated parapets on
-  the street side; the crenellated tower (three floors of small arched windows) at the south-west corner. The
-  cell is graded level with the northern block. Everything about it is to confirm.
+  the street side (no tower since 23-10, the courtyard roofed as a pool hall, see below). The cell is graded level with the northern block. Everything about it is to confirm.
 - **Fixes (client 23-10, "remove this / fix this")**: the island with its turning circle that the old plan drew in
   the street east of the SPA is gone (street), the SPA's cell keeps only its 0.40 m of pavement round its walls;
   the small notch in C-12's front fence (and C-05's) is filled, so no piece of high wall stands in the low front
@@ -352,6 +351,21 @@ a suggestion on the same size as on the plan" (with reference photos of a riad s
   triangles of up to 1,700 m2, and D5 kept the old asphalt look on the objects of the same name. In the D5
   package they are now `GROUND_ROADS_BEIGE_T1_T2` and `GROUND_ROADS_BEIGE_ENTRANCE`, cut on a 3 m grid (same
   surface, same material, same UVs). Delete the old model in D5 completely before importing.
+- **The corner on the south road (client 23-10, "remove this and redo it with the road")**: the plan's 13th type C
+  villa (C-13, turned in the corner on the south road) and the planted V beside it are left out; that corner,
+  between the fences of C-10 to C-12 and the south road, is street (about 1,200 m2), with the 0.40 m of pavement
+  along the fences as on the other streets. C-11's and C-12's fences there are brought back 0.6 to 0.9 m onto
+  the line of the row's other fences, so the wall along the road runs straight. 12 type C villas remain.
+- **Pavements apart from the roads (client 23-10, "fslom bach nt7akm fihum")**: Tranche 2's pavements (trottoirs,
+  the strips along the fences, the islands of the south road, round the kiosks) are in their own material
+  `T27_Trottoirs_Grey` (the grey pavers) and their own D5 object `GROUND_TROTTOIRS_T2`, no longer the roads' T17;
+  the stair between the blocks stays beige.
+- **The SPA closed (client 23-10, "we don't want it opened, something perfect and creative"; "zwl hadi" for the
+  tower)**: the courtyard is now a pool hall. Its walls rise on the arcades to +7.00 with a clerestory of
+  pointed horseshoe arches glazed behind mashrabiya screens, a frieze of green zellige under the villas' cornice,
+  and three steep terracotta pyramids (36 deg, about +10.8) crowned by bronze finials; inside, a cedar ceiling on
+  beams and a big lantern under each pyramid. The pergola, its bougainvillea and the parasols are gone (under a
+  roof now), and so is the tower: the hammam pavilion is closed on its four sides with arched windows.
 
 ## Removed (client, 13-10)
 Direction arrows and cars. The zebra crossings were put back as paint (15-10).

@@ -125,6 +125,7 @@ TEX = {
     "D19_Coping_Beige_Stone": (gen_tiles("coping_beige", 0, 0, "#CDBBA6", None, (205, 187, 166), noise=10), 1.0),
     "T17_Pavers_Beige_Herringbone": (tinted(os.path.join(GEN, "TEX_PAVERS_BEIGE_HERRINGBONE.jpg"), "pave_beige"), 0.8),
     "T20_Pavers_Sidewalk_Beige": (tinted(os.path.join(GEN, "TEX_PAVERS_BEIGE_HERRINGBONE.jpg"), "pave_side"), 0.8),
+    "T27_Trottoirs_Grey": (tinted(os.path.join(GEN, "TEX_PAVERS_SIDEWALK_GREY.jpg"), "trottoirs_grey"), 0.8),
     "T23_Lane_1_Herringbone": (tinted(os.path.join(GEN, "TEX_PAVERS_BEIGE_HERRINGBONE.jpg"), "lane_1"), 0.8),
     "T24_Lane_2_Herringbone": (tinted(os.path.join(GEN, "TEX_PAVERS_BEIGE_HERRINGBONE.jpg"), "lane_2"), 0.8),
     "T25_Commerce_Terrace_Squares": (gen_tiles("terrace_squares", 10, 20, "#5A5B5E", "#4B4C50", (56, 57, 59)), 2.0),

@@ -11,13 +11,15 @@ Local frame: x 0-W across the cell, y 0-Lg along it, y = Lg at its north end on 
 entrance); z = 0 at the pad, floors +0.20.
   north pavilion (reception, tea salon): the portal on the street, hipped terracotta roof on timber eaves,
     three arched doors onto the courtyard;
-  the courtyard: a 20 x 4 m pool in turquoise mosaic with a white stone coping, travertine decks with white
-    loungers, a timber pergola over the loungers at its south end under bougainvillea, a round fountain at
-    its north end, date palms in square planters at its four corners, olive trees in terracotta jars;
+  the pool hall (client 23-10: closed, "something perfect and creative"): the courtyard roofed, its walls
+    rising on the arcades to +7.00 with a clerestory of pointed horseshoe arches glazed behind mashrabiya
+    screens, a frieze of green zellige under the villas' cornice, three steep terracotta pyramids crowned by
+    bronze finials, a cedar ceiling on beams inside and a big lantern under each pyramid; on its floor a
+    20 x 4 m pool in turquoise mosaic with a white stone coping, travertine decks with white loungers, a round
+    fountain at its north end, date palms in square planters at its four corners, olive trees in terracotta jars;
   the two wings (treatment rooms) behind arcades of pointed horseshoe arches on square pillars, a hanging
     lantern in each bay; flat roofs behind a crenellated parapet;
-  south pavilion (hammam), hipped roof, its arched door on the courtyard; the crenellated tower at its
-    south-west corner (11 m, three floors of small arched windows).
+  south pavilion (hammam), hipped roof, its arched door on the courtyard (no tower: client 23-10).
 """
 import importlib.util
 import math
@@ -39,8 +41,7 @@ D = VC.D
 Z_FL = 0.20
 WING_D, ARC_D = 5.00, 2.40          # treatment rooms, arcade
 PAV_D, APRON = 9.00, 1.50           # pavilions (depth), paved apron in front of the north one
-Z_WING, Z_PAV, Z_TOWER = 4.20, 5.00, 10.60
-TOWER = 6.00
+Z_WING, Z_PAV, Z_HALL = 4.20, 5.00, 7.00
 
 
 def ext(mb, mat, poly, P, w0, w1):
@@ -63,8 +64,9 @@ def merlons(mb, mat, ring_line, z0, h=0.55, w=0.55, pitch=1.10, t=0.40, inward=N
         L.prism(mb, mat, g, z0, z0 + h)
 
 
-def hipped(mb, rect, ze, pitch_deg=30.0, ov=0.55):
-    """Hipped terracotta roof over rect, eaves ov out at height ze, timber fascia and corbels under it."""
+def hipped(mb, rect, ze, pitch_deg=30.0, ov=0.55, under=True):
+    """Hipped terracotta roof over rect, eaves ov out at height ze, timber fascia and corbels under it (under);
+    returns the apex (x, y, z) at the middle of its ridge."""
     x0, y0, x1, y1 = rect.bounds
     x0, y0, x1, y1 = x0 - ov, y0 - ov, x1 + ov, y1 + ov
     w, l = x1 - x0, y1 - y0
@@ -98,6 +100,8 @@ def hipped(mb, rect, ze, pitch_deg=30.0, ov=0.55):
         face([b, c, r1], (b, c))
         face([c, d, r0, r1], (c, d))
         face([d, a, r0], (d, a))
+    if not under:
+        return (0.5 * (r0[0] + r1[0]), 0.5 * (r0[1] + r1[1]), r0[2])
     # underside (soffit) and fascia
     L.prism(mb, "timber", box(x0, y0, x1, y1).difference(rect), ze - 0.16, ze, bottom=True)
     for k in range(int((x1 - x0) / 0.9) + 1):           # corbels along the long sides
@@ -106,6 +110,7 @@ def hipped(mb, rect, ze, pitch_deg=30.0, ov=0.55):
             break
         for yy0, yy1 in ((y0 + 0.05, rect.bounds[1]), (rect.bounds[3], y1 - 0.05)):
             mb.box("timber", xx - 0.06, xx + 0.06, yy0, yy1, ze - 0.34, ze - 0.16)
+    return (0.5 * (r0[0] + r1[0]), 0.5 * (r0[1] + r1[1]), r0[2])
 
 
 def face_with_holes(mb, mat, p, q, z0, z1, holes, dep=0.30, back=None, reveals=True, deps=None):
@@ -275,6 +280,69 @@ def build(M, col, W, Lg, name="T2_SPA"):
         D.pbox(mb, P3, cx - 0.03, cx + 0.03, z0_ + 0.06, zt, 0.17, 0.23, "frame")
         D.pbox(mb, P3, jw[0], jw[1], zt - 0.06, zt, 0.17, 0.23, "frame")
 
+    # ---- the pool hall (client 23-10: "we don't want it open, something perfect and creative"): the courtyard
+    # roofed. Its walls rise on the arcades to +7.00 with a clerestory of pointed horseshoe arches, glazed behind
+    # mashrabiya screens, a frieze of green zellige under the villas' cornice, and three steep terracotta
+    # pyramids over it, each crowned by a bronze finial; inside, a cedar ceiling on beams and a big lantern
+    # hanging under each pyramid
+    hx0, hx1 = aW - 0.45, aE + 0.45                         # the hall's outer faces (the arcades' walls)
+    hall = box(hx0, yS, hx1, yN)
+
+    def screen_back(h, P3):
+        arch_surround(h, P3, 0.12)
+        for gg in L.as_polys(h):
+            for t in L.tri_poly(gg):
+                mb.poly("mashrabiya", [P3(s_, z_, 0.10) for s_, z_ in t], [(s_, z_) for s_, z_ in t])
+                mb.poly("glass", [P3(s_, z_, 0.30) for s_, z_ in t], [(s_, z_) for s_, z_ in t])
+
+    for side, xf in (("W", aW), ("E", aE)):
+        xb = xf - 0.45 if side == "W" else xf + 0.45
+        holes = [arch((k + 0.5) * bay, 1.40, 5.20, 4.45) for k in range(nb)]
+        po, qo = ((xb, yN), (xb, yS)) if side == "W" else ((xb, yS), (xb, yN))     # outside, onto the wing's roof
+        Lw, _ = face_with_holes(mb, "villa", po, qo, 4.05, Z_HALL, holes, 0.45, screen_back)
+        pi_, qi = ((xf, yS), (xf, yN)) if side == "W" else ((xf, yN), (xf, yS))    # inside, over the arcade
+        face_with_holes(mb, "villa", pi_, qi, 4.05, Z_HALL, [affinity.scale(h, -1.0, 1.0, origin=(Lw / 2, 0.0)) for h in holes], 0.45, reveals=False)
+    for y0_, y1_ in ((yS, yS + 0.40), (yN - 0.40, yN)):      # the end walls over the pavilions' roofs
+        L.prism(mb, "villa", box(hx0, y0_, hx1, y1_), Z_PAV - 0.40, Z_HALL)
+    L.prism(mb, "tile_jade", hall.buffer(0.02, join_style=2).difference(hall), Z_HALL - 0.78, Z_HALL - 0.42)
+    for z0, z1, pd, mat in ((Z_HALL - 0.42, Z_HALL - 0.34, 0.10, "ledge"), (Z_HALL - 0.34, Z_HALL - 0.18, 0.06, "band"), (Z_HALL - 0.18, Z_HALL, 0.14, "ledge")):
+        L.prism(mb, mat, hall.buffer(pd, join_style=2).difference(hall), z0, z1, bottom=True)
+    L.prism(mb, "villa", hall.difference(hall.buffer(-0.45, join_style=2)), Z_HALL - 0.01, Z_HALL + 0.02, sides=False)
+    # the three pyramids (their eaves 0.55 out all round the hall, one soffit under them), the finials
+    nP, ov = 3, 0.55
+    Lh = (yN - yS) / nP
+    for i in range(nP):
+        apex = hipped(mb, box(hx0, yS + i * Lh, hx1, yS + (i + 1) * Lh), Z_HALL + 0.02, 36.0, ov, under=False)
+        fx, fy, fz = apex
+        L.prism(mb, "bronze", Point(fx, fy).buffer(0.16, 10), fz - 0.10, fz + 0.12)
+        for r, z0 in ((0.20, 0.30), (0.15, 0.78), (0.10, 1.16)):            # three spheres on the rod
+            for j in range(6):
+                a0, a1 = math.pi * j / 6, math.pi * (j + 1) / 6
+                L.prism(mb, "bronze", Point(fx, fy).buffer(r * max(math.sin(a0), math.sin(a1)), 12),
+                        fz + z0 + r * (1 - math.cos(a0)) - r, fz + z0 + r * (1 - math.cos(a1)) - r)
+        L.prism(mb, "bronze", Point(fx, fy).buffer(0.03, 6), fz + 0.10, fz + 1.55)
+    ring = box(hx0 - ov, yS - ov, hx1 + ov, yN + ov).difference(hall)
+    L.prism(mb, "timber", ring, Z_HALL - 0.14, Z_HALL + 0.02, bottom=True)
+    for k in range(int((yN - yS + 2 * ov) / 0.9) + 1):      # corbels along the long sides
+        yy = yS - ov + 0.45 + 0.9 * k
+        if yy > yN + ov - 0.3:
+            break
+        for xx0, xx1 in ((hx0 - ov + 0.05, hx0), (hx1, hx1 + ov - 0.05)):
+            mb.box("timber", xx0, xx1, yy - 0.06, yy + 0.06, Z_HALL - 0.32, Z_HALL - 0.14)
+    # inside: the cedar ceiling on beams across, a lantern hanging under each pyramid
+    L.prism(mb, "timber", box(aW, yS + 0.40, aE, yN - 0.40), Z_HALL - 0.30, Z_HALL - 0.22, bottom=True)
+    for k in range(nb + 1):
+        yy = min(max(yS + bay * k, yS + 0.48), yN - 0.48)
+        mb.box("timber", aW, aE, yy - 0.08, yy + 0.08, Z_HALL - 0.55, Z_HALL - 0.30)
+    for xx in (aW + 0.10, aE - 0.10):
+        mb.box("timber", xx - 0.10, xx + 0.10, yS + 0.40, yN - 0.40, Z_HALL - 0.55, Z_HALL - 0.30)
+    for i in range(nP):
+        yc = yS + (i + 0.5) * Lh
+        L.prism(mb, "metal_dark", Point(W / 2, yc).buffer(0.015, 6), 5.05, Z_HALL - 0.55)
+        L.prism(mb, "bronze", Point(W / 2, yc).buffer(0.42, 8), 4.15, 4.25)
+        L.prism(mb, "lamp", Point(W / 2, yc).buffer(0.36, 8), 4.25, 4.95)
+        L.prism(mb, "bronze", Point(W / 2, yc).buffer(0.42, 8), 4.95, 5.05)
+
     # north pavilion: y from yN to Lg - APRON
     yP0, yP1 = yN, Lg - APRON
     gN = pavilion(yP0, yP1, "N")
@@ -312,54 +380,26 @@ def build(M, col, W, Lg, name="T2_SPA"):
         L.prism(mb, "soil", g.buffer(-0.08, join_style=2), 0.05, 0.40, sides=False)
         plants.append(("date", xp, Lg - APRON + 0.6, 0.40, 0.70))
 
-    # south pavilion: y 0 to yS, the tower at its south-west corner
+    # south pavilion: y 0 to yS (client 23-10: no tower at its corner, "zwl hadi")
     gS = pavilion(0.0, yS, "S")
     face_with_holes(mb, "villa", (W, yS), (0.0, yS), -1.0, Z_PAV - 0.40,
                     [arch(W - cx, 2.10, 2.70, Z_FL)] + [arch(W - x, 1.40, 2.20, Z_FL) for x in (cx - 3.2, cx + 3.2)], 0.40,
                     lambda h, P3: big_arch_back(h, P3) if abs(0.5 * (h.bounds[0] + h.bounds[2]) - (W - cx)) < 0.5 else glazed_arch_back(h, P3))
-    face_with_holes(mb, "villa", (TOWER, 0.0), (W, 0.0), -1.0, Z_PAV - 0.40,
-                    [arch(x - TOWER, 1.20, 2.20, 1.0) for x in (TOWER + 2.5, W / 2 + 1.0, W - 2.6)], 0.30, glazed_arch_back)
-    for p, q in (((W, 0.0), (W, yS)),):
+    face_with_holes(mb, "villa", (0.0, 0.0), (W, 0.0), -1.0, Z_PAV - 0.40,
+                    [arch(x, 1.20, 2.20, 1.0) for x in (2.6, 8.0, W - 8.0, W - 2.6)], 0.30, glazed_arch_back)
+    for p, q in (((W, 0.0), (W, yS)), ((0.0, yS), (0.0, 0.0))):
         face_with_holes(mb, "villa", p, q, -1.0, Z_PAV - 0.40, [arch(PAV_D / 2, 1.30, 2.10, 1.0)], 0.30, glazed_arch_back)
-    face_with_holes(mb, "villa", (0.0, yS), (0.0, TOWER), -1.0, Z_PAV - 0.40, [arch((yS - TOWER) / 2, 1.0, 2.0, 1.2)], 0.30, glazed_arch_back)
 
-    # the tower: plumb walls, small arched windows on three floors, the villas' cornice, merlons
-    T = box(0.0, 0.0, TOWER, TOWER)
-    for p, q in VC.edges(T):
-        face_with_holes(mb, "villa", p, q, -1.0, Z_TOWER, [arch(TOWER / 2, 0.80, zz + 1.10, zz) for zz in (2.0, 5.6, 8.4)], 0.30, glazed_arch_back)
-    for z0, z1, pd, mat in ((Z_TOWER, Z_TOWER + 0.08, 0.10, "ledge"), (Z_TOWER + 0.08, Z_TOWER + 0.24, 0.07, "band"), (Z_TOWER + 0.24, Z_TOWER + 0.40, 0.16, "ledge")):
-        L.prism(mb, mat, T.buffer(pd, join_style=2).difference(T), z0, z1, bottom=True)
-    L.prism(mb, "villa", T.buffer(-0.01, join_style=2).difference(T.buffer(-0.35, join_style=2)), Z_TOWER - 0.6, Z_TOWER + 1.00)
-    L.prism(mb, "terrace", T.buffer(-0.35, join_style=2), Z_TOWER - 0.61, Z_TOWER - 0.60, sides=False)
-    merlons(mb, "villa", T.buffer(-0.175, join_style=2).exterior, Z_TOWER + 1.00, h=0.65, w=0.60, pitch=1.15, t=0.35)
-
-    # ---- the courtyard: pool, decks, pergola, fountain, planters, jars, loungers ---------------------------
+    # ---- the pool hall's floor: pool, decks, fountain, planters, jars, loungers ------------------------------
     L.prism(mb, "coping", pool.buffer(0.35, join_style=2).difference(pool), Z_FL - 0.05, Z_FL + 0.06)
     L.prism(mb, "pool_tile", pool, -1.30, -1.25, sides=False)
     L.prism(mb, "pool_tile", pool.buffer(0.01, join_style=2).difference(pool.buffer(-0.01, join_style=2)), -1.25, Z_FL + 0.02)
     L.prism(mb, "pool_water", pool.buffer(-0.01, join_style=2), Z_FL - 0.10, Z_FL - 0.08, sides=False)
     for k in range(3):                                    # steps across its south end
         L.prism(mb, "pool_tile", box(cx - 2.0, pool.bounds[1], cx + 2.0, pool.bounds[1] + 0.40 * (3 - k)), -1.25, Z_FL - 0.25 - 0.35 * k)
-    # pergola at the south end over the loungers, bougainvillea on it
-    py0, py1 = yS + 0.6, pool.bounds[1] - 0.9
+    py0, py1 = yS + 0.6, pool.bounds[1] - 0.9                # the loungers' row at the south end
     px0, px1 = aW + 0.6, aE - 0.6
-    for x in (px0, px1):
-        for y in (py0, py1):
-            mb.box("timber", x - 0.09, x + 0.09, y - 0.09, y + 0.09, Z_FL, 3.10)
-    for y in (py0, py1):
-        mb.box("timber", px0 - 0.3, px1 + 0.3, y - 0.08, y + 0.08, 3.10, 3.34)
-    n_r = int((px1 - px0) / 0.45)
-    for k in range(n_r + 1):
-        x = px0 + (px1 - px0) * k / n_r
-        mb.box("timber", x - 0.035, x + 0.035, py0 - 0.4, py1 + 0.4, 3.34, 3.46)
-    for k in range(10):                                   # bougainvillea over it and at its posts
-        x = px0 + 0.5 + (px1 - px0 - 1.0) * ((k * 0.618) % 1.0)
-        y = py0 + 0.4 + (py1 - py0 - 0.8) * ((k * 0.382 + 0.2) % 1.0)
-        plants.append(("shrub_pink", x, y, 3.42, 0.95 + 0.15 * (k % 3)))
-    for x in (px0, px1):
-        for y in (py0, py1):
-            plants.append(("shrub_pink", x, y, Z_FL, 1.05))
-    # loungers along the pool, under the pergola and on the decks
+    # loungers along the pool and at its south end
     def lounger(x, y, ang):
         ca, sa = math.cos(ang), math.sin(ang)
         R = lambda u, v: (x + u * ca - v * sa, y + u * sa + v * ca)
@@ -375,13 +415,6 @@ def build(M, col, W, Lg, name="T2_SPA"):
     for x in (cx - 2.0 - 1.35, cx + 2.0 + 1.35):
         for k in range(4):
             lounger(x, pool.bounds[1] + 3.0 + 4.4 * k, 0.0 if x < cx else math.pi)
-    # parasols on the decks
-    for x, y in ((cx - 3.6, pool.bounds[1] + 5.2), (cx + 3.6, pool.bounds[1] + 9.6)):
-        L.prism(mb, "metal_dark", Point(x, y).buffer(0.03, 6), Z_FL, 2.55)
-        top = (x, y, 2.75)
-        rim = [(x + 1.3 * math.cos(2 * math.pi * k / 8), y + 1.3 * math.sin(2 * math.pi * k / 8), 2.30) for k in range(8)]
-        for k in range(8):
-            mb.poly("canvas", [rim[k], rim[(k + 1) % 8], top])
     # round fountain at the pool's north end
     fc = (cx, pool.bounds[3] + 2.6)
     f = Point(*fc).buffer(1.25, 24)

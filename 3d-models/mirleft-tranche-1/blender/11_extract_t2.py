@@ -872,6 +872,39 @@ loose = [q for q in as_polys(pave.difference(gardens.buffer(0.45, join_style=2))
 near_spa = unary_union([pave.intersection(spa_cell).difference(ring_spa)] + loose)
 roads = unary_union([roads, near_spa, spa_cell.difference(spa_plot).difference(ring_spa).intersection(ground)]).difference(ring_spa)
 pave = unary_union([pave.difference(near_spa).difference(spa_cell), ring_spa])
+# client 23-10 ("remove this, and redo it with the road"): no villa in the corner on the south road (the plan's
+# type C turned there, C-13) and no planted V beside it: the corner between the fences of the type C south row
+# and the south road is street, with the 0.40 m of pavement along the fences as on the other streets
+rot_c = float(np.median([o["rot"] for o in out if o.get("type") == "C"]))
+gone = [o for o in out if o.get("type") == "C" and abs((o["rot"] - rot_c + 180.0) % 360.0 - 180.0) > 5.0]
+out = [o for o in out if all(o is not g for g in gone)]
+gardens = unary_union([o["garden"] for o in out])
+corner = Polygon()
+if gone:
+    g13 = unary_union([unary_union([o["garden"], o["plot"]]) for o in gone])
+    vee = unary_union([q for q in as_polys(verges) if q.distance(g13) < 4.0 and q.area < 300.0])
+    hull = unary_union([g13, vee]).convex_hull
+    # the fences of the row on that street on one straight line (C-11 and C-12 reached 0.6 to 0.9 m past it)
+    for o in out:
+        if o.get("type") != "C" or o["garden"].distance(hull) > 1.0:
+            continue
+        uo = np.array([math.cos(math.radians(o["rot"])), math.sin(math.radians(o["rot"]))])
+        du = lambda q: np.asarray(q["garden"].exterior.coords) @ uo
+        row = [float(du(q).max()) for q in out if q.get("type") == "C" and q["garden"].distance(hull) > 1.0
+               and abs(float(du(q).min()) - float(du(o).min())) < 2.0]
+        if row and du(o).max() > np.median(row) + 0.05:
+            vo = np.array([-uo[1], uo[0]])
+            half = Polygon([tuple(uo * a + vo * b) for a, b in ((-1e4, -1e4), (np.median(row), -1e4), (np.median(row), 1e4), (-1e4, 1e4))])
+            o["garden"] = max(as_polys(o["garden"].intersection(half)), key=lambda q: q.area)
+    gardens = unary_union([o["garden"] for o in out])
+    keep = unary_union([q for q in as_polys(pave) if q.area < 60.0 and not hull.contains(q.representative_point())])
+    corner = hull.buffer(3.0, join_style=2).intersection(unary_union([ground, g13])).difference(gardens).difference(keep).difference(parking)
+    edge = gardens.buffer(0.40, join_style=2).intersection(corner)
+    roads = unary_union([roads, corner.difference(edge)])
+    pave = unary_union([pave.difference(corner), edge])
+    verges = verges.difference(corner)
+    print(f"corner on the south road: villa {[round(float(x), 1) for x in gone[0]['c']]} left out, {corner.area:.0f} m2 of street "
+          f"({vee.area:.0f} m2 of planted V)")
 islands = [q for q in as_polys(pave) if q.area < 1.0 and q.distance(roads) < 0.1]
 roads = unary_union([roads] + islands)
 pave = unary_union([q for q in as_polys(pave) if q.area >= 1.0 or q.distance(roads) >= 0.1])

@@ -24,7 +24,8 @@ out = sys.argv[-1]; os.makedirs(out, exist_ok=True)
 cam = bpy.data.objects.new("CAM", bpy.data.cameras.new("CAM")); sc.collection.objects.link(cam); sc.camera = cam
 views = {"aerial": ((50, -25, 38), (W / 2, Lg / 2, 2), 26), "north": ((W / 2 + 12, Lg + 22, 2.0), (W / 2, Lg - 3, 4.0), 24),
          "court": ((W / 2 - 3.0, 39.6, 1.7), (W / 2, 12, 2.2), 20), "court2": ((W / 2 + 3.0, 11.0, 1.7), (W / 2 - 1, 38, 2.5), 22),
-         "south": ((-14, -18, 3.0), (6, 6, 5.0), 24), "top": ((W / 2, Lg / 2, 80), (W / 2, Lg / 2 + 0.01, 0), 30)}
+         "south": ((-14, -18, 3.0), (6, 6, 5.0), 24), "top": ((W / 2, Lg / 2, 80), (W / 2, Lg / 2 + 0.01, 0), 30),
+         "east": ((W + 30, Lg / 2 - 8, 14), (W / 2, Lg / 2, 5.0), 28), "junction": ((W + 9, 4.0, 13.0), (W / 2, 10.0, 6.0), 26)}
 for k, (p, t, lens) in views.items():
     if os.environ.get("VIEWS") and k not in os.environ["VIEWS"].split(","): continue
     cam.data.lens = lens
