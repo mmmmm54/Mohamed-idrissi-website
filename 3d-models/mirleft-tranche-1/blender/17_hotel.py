@@ -315,7 +315,7 @@ def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
     (gS, fS, zrS), (gN, fN, zrN) = halves
     porch = box(*PORCH)
     towers = [box(*t) for t in TOWERS]
-    zbotA = min(zl(x, y) for x in (-POD - 2.5, 14.1) for y in (0.5, 47.3)) - 0.6
+    zbotA = min(zl(x, y) for x in (-POD - 2.5, 14.1) for y in (0.5, 47.3)) - 1.8          # below the arm's deck and the crossing too
     bay = (A_N[3] - A_S[1]) / (2 * NB)
     for k, (g, fl, zr) in enumerate(halves):
         x0, y0, x1, y1 = g.bounds
