@@ -602,8 +602,7 @@ def build(M, B, srcv, H):
                 put("date", (p.x, p.y), hz(p.x, p.y) + PAVE_DZ, RNG.uniform(0.6, 0.75))
     print(f"  T2: planting {nveg[0]} (street palms {len(pits)})")
 
-    # ---- the SPA (15_spa, a design suggestion on the plan's SPA cell): built in its frame, its palms and
-    # olive trees planted from the scene's sources ---------------------------------------------------------
+    # ---- the SPA (15_spa, from its permit drawing, on the plan's SPA cell): built in its frame -------------------
     spa = None
     if "spa" in T2:
         SPA = B.load("15_spa.py")
@@ -645,11 +644,11 @@ def cameras(vs, hz, buildings, spa=None):
         vc, vm = by["C-12"], by["C-04"]
         shots["T2_CAM_08_VILLA_C_FRONT"] = (fr(vc, vc.mx(8.7) + 5.0, 25.0), 1.7, fr(vc, vc.mx(8.7), 14.0), 3.6, 22)
         shots["T2_CAM_09_TYPE_C_AERIAL"] = (fr(vm, -30.0, 70.0), 55.0, fr(vm, 8.0, -12.0), 0.0, 26)
-    if spa:                                                   # the SPA: its portal, its courtyard
+    if spa:                                                   # the SPA (15_spa, its permit drawing): its front, its pools
         o_, u_, v_, W_, Lg_, z_ = spa
         sw = lambda x, y: tuple(o_ + u_ * x + v_ * y)
-        shots["T2_CAM_10_SPA_ENTRANCE"] = (sw(W_ / 2 + 9.0, Lg_ + 13.0), 1.7, sw(W_ / 2, Lg_ - 4.0), 4.2, 22)
-        shots["T2_CAM_11_SPA_COURTYARD"] = (sw(W_ / 2 - 3.0, Lg_ - 11.2), 1.9, sw(W_ / 2, 12.0), 2.4, 20)
+        shots["T2_CAM_10_SPA_ENTRANCE"] = (sw(-9.0, Lg_ / 2 + 5.0), 1.7, sw(6.2, Lg_ / 2 - 1.0), 3.0, 22)
+        shots["T2_CAM_11_SPA_POOLS"] = (sw(1.2, 3.0), 1.7, sw(3.6, 30.0), 1.2, 20)
     cams = {}
     from mathutils import Vector
     for n, (e, eh, t, th, lens) in shots.items():

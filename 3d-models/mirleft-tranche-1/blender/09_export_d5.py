@@ -118,7 +118,7 @@ GUIDE = """# D5 import guide: Mirleft 1er TRANCHE
 
 | File | Contents | Use it when |
 |---|---|---|
-| `Mirleft_Tranche_1_D5_FULL.fbx` | Everything: duplexes, restaurant, commerces, pool court, ground, walls, stairs, furniture, trees, palms and plants, Tranche 2 (33 villas type B, 12 villas type C, the SPA), and the cameras | You want everything placed already |
+| `Mirleft_Tranche_1_D5_FULL.fbx` | Everything: duplexes, restaurant, commerces, pool court, ground, walls, stairs, furniture, trees, palms and plants, Tranche 2 (33 villas type B, 12 villas type C, the SPA), Tranche 3 (the hotel, 4 villas type A), and the cameras | You want everything placed already |
 | `Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx` | The same without the palms and trees; the shrubs, agaves and grasses stay | You place D5 library palms and trees yourself |
 
 Both FBX files carry their textures inside. The same images are in `textures/`: keep that folder next to the FBX.
@@ -195,25 +195,51 @@ before importing** (don't replace or update it): D5 would keep the old dark road
   `T2_VILLA_C12` (the plan's 13th, in the corner on the south road, left out on 23-10: that corner is street), villa type C of `PLAN_VILLA_TYPE_C.dwg` (battered towers with horns, the portal tower with its
   arch and studded door, the outside stair, its pool), in the same finishes as the other villas; their gardens,
   walls and gates are in the Tranche 2 objects above.
-- The SPA (a design suggestion on the plan's SPA cell, collection `T2_05_SPA`, objects `T2_SPA_<material>`), closed
-  since 23-10: the courtyard is a pool hall under three terracotta pyramids `D11_Roof_Tiles_Terracotta` with bronze
-  finials `M05_Aluminium_Bronze`, a clerestory of arched windows behind mashrabiya screens `D01_Mashrabiya_Wood`, a
-  green zellige frieze `T19_Tile_Jade_Green`, a cedar ceiling `M03_Timber_Pergola`; no tower. The pool
-  `M10_Pool_Water` over `M10_Pool_Mosaic`, travertine decks `T06_Travertine_Deck`, arcade floors
-  `T03_Terracotta_Herringbone`, the lanterns `Lamp_Warm` (set them emissive in D5: the hall's inside is lit by its
-  clerestory and its lanterns).
-- Cameras `T2_CAM_08_VILLA_C_FRONT`, `T2_CAM_09_TYPE_C_AERIAL`, `T2_CAM_10_SPA_ENTRANCE`, `T2_CAM_11_SPA_COURTYARD`.
+- The SPA (collection `T2_05_SPA`, objects `T2_SPA_<material>`), since 23-10 from its permit drawing
+  `7-SPA-A0-1.pdf` (it replaces the design suggestion): single storey (floor +0.20, roof terrace +4.20, parapet
+  +5.20), the main block 37.6 x 13.65 m with its two glazed walls on the pools (louvred transoms), the indoor pool
+  behind the southern one, two pairs of tall windows at the back; the centre block standing proud to +7.20 with the
+  villas' cornice, horns, six niches and the studded door in its taupe alfiz; the roof terrace with the domes of the
+  two bassin halls, four cantilever parasols and loungers, reached by the outside stair past axis 8; the two outdoor
+  pools along the front, `M10_Pool_Water`, travertine `T06_Travertine_Deck`.
+- Cameras `T2_CAM_08_VILLA_C_FRONT`, `T2_CAM_09_TYPE_C_AERIAL`, `T2_CAM_10_SPA_ENTRANCE`, `T2_CAM_11_SPA_POOLS`.
+- In the corner road by C-10 to C-12, three islands of grey pavement `GROUND_TROTTOIRS_T2` as the plan's two in
+  front of C-08 and C-09 (23-10), and the 0.40 m pavement along the fences of C-11 and C-12 (a gap before).
+Delete the old model in D5 before importing this one.
+
+## Tranche 3: the hotel and the villas type A (23-10)
+West of the SPA and the type C block, from the plan de masse 31-05-13 (collections `T3_01_GROUND`, `T3_02_VILLAS`,
+`T3_03_LANDSCAPE`, `T3_04_TREES_PALMS`, `T3_05_HOTEL`):
+- villas type A `T3_VILLA_A01` to `T3_VILLA_A04` (one mesh shared), from the villa's drawing on the plan de masse
+  (no permit drawing of the type A received: heights, openings and finishes are the residence's, to confirm): a
+  single-storey house round its patio and date palm, raised salons, the entrance court with its arched gate, the
+  pool `T19_Tile_Jade_Green` under `M10_Pool_Water`, the terrace pergola; walls `T3_WALLS_GARDENS`,
+  `T3_WALLS_FRONT_GATES` on street 7;
+- the hotel, **a design proposal** (no plan received), objects `T3_HOTEL_<material>`: the main building in three
+  storeys with its monumental gate on the Voie Publique (giant pointed horseshoe arch in a taupe alfiz
+  `D14_Stone_Surround_Taupe` framed in green zellige `T19_Tile_Jade_Green`, studded doors `D02_Door_Wood_Dark`,
+  mashrabiya tympanum `D01_Mashrabiya_Wood`), the arcade on the garden terrace, cedar mashrabiya oriels and
+  balconies; the domed gate pavilion on the crossing with its fountain; fourteen suites with terraces and pergolas;
+  the water garden: the long basin in three basins over two weirs and its arm, `T19_Tile_Jade_Green` under
+  `M10_Pool_Water` (set it to D5 Water), travertine decks `T06_Travertine_Deck`, loungers, parasols, the palm
+  promenade `T17_Pavers_Beige_Herringbone` from the garden gate on street 7; lawns `T03_Lawn` (as T2's);
+- the ground joins the objects above: streets and parking `GROUND_ROADS_BEIGE_T1_T2`, pavements
+  `GROUND_TROTTOIRS_T2`, kerbs `GROUND_KERBS_T1_T2`, paths `GROUND_PAVERS_BEIGE_T1_T2`, gardens
+  `GROUND_LAWN_T1_T2`; bay lines `T3_ROAD_PAINT_PARKING`.
+Cameras `T3_CAM_01_AERIAL` to `T3_CAM_07_VILLA_A_POOL`. **Delete the old model in D5 completely before importing.**
 Delete the old model in D5 before importing this one.
 """
 
 
 # client 22-10: the two tranches' streets (and pavements, kerbs, lawns) in one object each, with one material,
 # so D5 can neither show them apart nor give them two material instances
-JOIN = {"GROUND_ROADS_BEIGE_T1_T2": ("GROUND_ROADS_VILLAS_asphalt", "T2_GROUND_ROADS_t2_road", "T2_GROUND_PARKING_t2_parking"),
-        "GROUND_PAVERS_BEIGE_T1_T2": ("DUPLEX_ENTRANCE_PATHS_pave_beige", "T2_GROUND_ENTRANCE_PATHS_t2_path"),
-        "GROUND_KERBS_T1_T2": ("GROUND_PAVEMENTS_VILLAS_kerb_paving", "T2_GROUND_KERBS_t2_kerb"),
+JOIN = {"GROUND_ROADS_BEIGE_T1_T2": ("GROUND_ROADS_VILLAS_asphalt", "T2_GROUND_ROADS_t2_road", "T2_GROUND_PARKING_t2_parking",
+                                     "T3_GROUND_ROADS_t2_road", "T3_GROUND_PARKING_t2_parking"),
+        "GROUND_PAVERS_BEIGE_T1_T2": ("DUPLEX_ENTRANCE_PATHS_pave_beige", "T2_GROUND_ENTRANCE_PATHS_t2_path", "T3_GROUND_PATHS_t2_path"),
+        "GROUND_KERBS_T1_T2": ("GROUND_PAVEMENTS_VILLAS_kerb_paving", "T2_GROUND_KERBS_t2_kerb", "T3_GROUND_KERBS_t2_kerb"),
         "GROUND_LAWN_T1_T2": ("GROUND_LAWN_lawn", "T2_GROUND_GARDENS_LAWN_t2_lawn", "T2_GROUND_VERGES_t2_verge",
-                              "T2_GROUND_LAWN_BY_TRANCHE_1_t2_verge")}
+                              "T2_GROUND_LAWN_BY_TRANCHE_1_t2_verge", "T3_GROUND_GARDENS_LAWN_t2_lawn", "T3_GROUND_VERGES_t2_verge"),
+        "GROUND_TROTTOIRS_T2": ("T2_GROUND_PAVEMENTS_t2_pave", "T3_GROUND_PAVEMENTS_t2_pave")}
 
 
 def join_ground():
@@ -242,7 +268,8 @@ def join_ground():
 # their UVs interpolated exactly)
 RENAME = {"GROUND_ROADS_ENTRANCE_asphalt_ent": "GROUND_ROADS_BEIGE_ENTRANCE",
           "T2_GROUND_PAVEMENTS_t2_pave": "GROUND_TROTTOIRS_T2"}       # client 23-10: the pavements apart from the roads
-FINE = ("GROUND_ROADS_BEIGE_T1_T2", "GROUND_ROADS_BEIGE_ENTRANCE", "GROUND_TROTTOIRS_T2")
+FINE = ("GROUND_ROADS_BEIGE_T1_T2", "GROUND_ROADS_BEIGE_ENTRANCE", "GROUND_TROTTOIRS_T2",
+        "T3_HOTEL_t2_lawn", "T3_HOTEL_pave_beige", "T3_HOTEL_deck_stone")     # the hotel's long lawns, promenade, decks
 
 
 def grid_cut(names, cell=3.0):
@@ -284,7 +311,7 @@ def main():
     join_ground()
     grid_cut(FINE)
     export(os.path.join(OUT, "Mirleft_Tranche_1_D5_FULL.fbx"))
-    for cn in ("06_TREES_PALMS", "T2_04_TREES_PALMS"):
+    for cn in ("06_TREES_PALMS", "T2_04_TREES_PALMS", "T3_04_TREES_PALMS"):
         trees = bpy.data.collections.get(cn)
         for o in list(trees.objects if trees else []):
             bpy.data.objects.remove(o, do_unlink=True)

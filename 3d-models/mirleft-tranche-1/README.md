@@ -7,6 +7,7 @@ This is a Blender model of the 1er TRANCHE of the Mirleft project, built from th
 - the pétanque courts and their pergola
 - the lanes, the roads and parking in beige herringbone pavers (rev 4), the pedestrian crossings, the entrance with its paved median and the fountain
 - **Tranche 2 (21-10)**: the 33 villas type B of the plan de masse 31-05-13 west of the tranche, with their pools, gardens, walls and gates, the streets round them, the parking and the Centre d'entretien (see **Tranche 2** below)
+- **Tranche 3 (23-10)**: the hotel (a design proposal, no plan) and the 4 villas type A of the plan de masse 31-05-13, west of the SPA and of the type C block, with their streets and parking (see **Tranche 3** below)
 
 The rest of the site is empty land: the exact site boundary and the natural slope from the contours. Everything is exterior only (no interiors).
 
@@ -33,6 +34,9 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 | `blender/11_extract_t2.py` | Tranche 2: reads the plan de masse 31-05-13 and writes `data/t2_site.json` (lots, villa placements, gardens, streets). |
 | `blender/12_villa_b.py` | The villa type B of `5-VILLA_TYPE_B.DWG`, in the finishes of the duplexes, with its pool. |
 | `blender/13_tranche2.py` | Builds Tranche 2 into the scene (called by `05_build_scene.py`), in its own collections, objects and materials. |
+| `blender/14_villa_c.py`, `15_spa.py` | The villa type C of `PLAN_VILLA_TYPE_C.dwg`; the SPA of `7-SPA-A0-1.pdf`. |
+| `blender/16_villa_a.py`, `17_hotel.py` | The villa type A (from the plan de masse's drawing); the hotel (a design proposal). |
+| `blender/18_extract_t3.py`, `19_tranche3.py` | Tranche 3: reads the plan de masse 31-05-13 into `data/t3_site.json`; builds it into the scene (called by `05_build_scene.py`). |
 | `blender/10_fetch_geo.py` | Downloads the heights and the satellite image round the site into `data/geo/` (run once, outside Blender; needs pyproj and rasterio). |
 | `tools/` | `dwg2json.mjs` (DWG reader), `flatten.py` (primitives with their block path), `inserts.py` (block placements). |
 
@@ -331,15 +335,20 @@ a suggestion on the same size as on the plan" (with reference photos of a riad s
   up to 9 m under the gardens and their gates, C-13 stood on a high platform with a void beside it. Now the
   streets come level with the gates (the plane falls about 4 % across the block) and the real terrain round
   the site is moved to meet the boundary there.
-- **SPA** (`15_spa.py`) — a design suggestion, there is no drawing: it fills the plan's SPA cell (the one its
-  "SPA" label points into, west of the northern block), its walls 0.40 m inside the cell's kerb lines (about
-  50.9 x 23.2 m), in the villas' style. The portal on the Voie Publique in a block with the villas' cornice and
-  horns; the reception pavilion and the hammam pavilion under hipped terracotta roofs on timber eaves; between
-  them the courtyard: a 20 x 4 m pool in turquoise mosaic with a white coping, travertine decks with loungers and
-  parasols, a timber pergola with bougainvillea over loungers at its south end, a round fountain at its north end,
-  date palms in planters at its corners, olive trees in terracotta jars; along both sides the treatment rooms
-  behind arcades of pointed horseshoe arches on square pillars, a lantern in each bay, crenellated parapets on
-  the street side (no tower since 23-10, the courtyard roofed as a pool hall, see below). The cell is graded level with the northern block. Everything about it is to confirm.
+- **SPA** (`15_spa.py`), since 23-10 from its permit drawing `7-SPA-A0-1.pdf` (client: "ha huwa plan dyal SPA";
+  rez-de-chaussée with its grid 1-9 / A-I, terrasse / masse, the four façades, coupes A-A and B-B). It replaces
+  the design suggestion of 22-10 (the riad with its courtyard, closed as a pool hall on 23-10, its tower removed).
+  A single storey (floor +0.20, roof terrace +4.20, parapet +5.20) on the plan's SPA lot, the pools on the
+  cell's west side, the back on street 5: the main block 37.6 x 13.65 m (axes 1-8), on its front a glazed wall
+  each side of the centre (9 leaves, louvred transoms over glass doors to +2.04) with the indoor pool (14.85 m)
+  behind the southern one, on its back two pairs of tall windows in framed stone surrounds; the centre block
+  (accueil, fontaine) 7.00 x 6.40 m, 1.29 m proud of the front, rising to +7.20 with the villas' cornice, the
+  horns, six square niches, the studded door and transom in a taupe alfiz, a tall framed window each side; the
+  roof terrace with the parapet, rounded coping and horns, the two domes of the bassin halls, four cantilever
+  parasols with loungers, the outside stair past axis 8 (1.35 m wide, solid parapet); the lot paved round it, the
+  two outdoor pools (16.6 x 3.35 m) along the front either side of the entrance path, loungers and parasols at
+  their ends as the masse draws them. The façade principale is drawn as from the back (its stair on the wrong
+  side): the plans win, as for the villa type C.
 - **Fixes (client 23-10, "remove this / fix this")**: the island with its turning circle that the old plan drew in
   the street east of the SPA is gone (street), the SPA's cell keeps only its 0.40 m of pavement round its walls;
   the small notch in C-12's front fence (and C-05's) is filled, so no piece of high wall stands in the low front
@@ -360,12 +369,57 @@ a suggestion on the same size as on the plan" (with reference photos of a riad s
   the strips along the fences, the islands of the south road, round the kiosks) are in their own material
   `T27_Trottoirs_Grey` (the grey pavers) and their own D5 object `GROUND_TROTTOIRS_T2`, no longer the roads' T17;
   the stair between the blocks stays beige.
-- **The SPA closed (client 23-10, "we don't want it opened, something perfect and creative"; "zwl hadi" for the
-  tower)**: the courtyard is now a pool hall. Its walls rise on the arcades to +7.00 with a clerestory of
-  pointed horseshoe arches glazed behind mashrabiya screens, a frieze of green zellige under the villas' cornice,
-  and three steep terracotta pyramids (36 deg, about +10.8) crowned by bronze finials; inside, a cedar ceiling on
-  beams and a big lantern under each pyramid. The pergola, its bougainvillea and the parasols are gone (under a
-  roof now), and so is the tower: the hammam pavilion is closed on its four sides with arched windows.
+- **Islands in the corner road (client 23-10, "zid 7ta hadi f7al hakda trotoire")**: the two islands of grey
+  pavement the plan draws in the south road in front of C-08 and C-09 go on in front of C-10, C-11 and C-12 (the
+  same island, 16.6 x 1.95 m, moved along the row by the villas' step, about 3 m off the fences). Along C-11's
+  and C-12's fences the 0.40 m of pavement is now there (a strip of about 18 m2 was left neither street nor
+  pavement when their fences were straightened).
+
+## Tranche 3: the hotel and the villas type A (23-10)
+Client 23-10: "zid db had tranche kayn fiha hotel and villa type a ... for hotel we dont have plan so i want you
+to be creative and give me proposition ... the same style we have on our residence ... not the same design ...
+the perfect one". The zone circled in blue on the plan de masse 31-05-13, west of the SPA and of the type C block.
+- **Data** (`18_extract_t3.py` -> `data/t3_site.json`): the plan's 'zoning' and '012' lines polygonised in the
+  plan's own frame: the four lots of the villas type A west of street 7 (826 to 887 m2) and the passage between
+  the second and the third (a footpath between two planted strips); the hotel's plot between street 7 and the
+  parking (4,939 m2: the two buildings' cells, the crossing between them, the long basin with its arm, the strip
+  along the basin with its inlet from street 7, the garden); the parking along the hotel's east side, one bay per
+  tooth of the plan's zigzag; the rest of the tranche is street (street 7, the Voie Publique, the south road) with
+  the 0.40 m of pavement along the fences (grey, `T27_Trottoirs_Grey`, as Tranche 2's). Graded on Tranche 1's
+  plane like Tranche 2 (the plane falls about 4 % along the hotel).
+- **Villa type A** (`16_villa_a.py`) from the villa's drawing on the plan de masse (block 'FGHF', the same
+  drawing four times): the outline of the house with its parapet line, the patio, the pool, the terraces and the
+  planters. **No permit drawing of the type A was received**: the heights, the openings and the finishes are the
+  residence's, to confirm. A single-storey courtyard house round a patio with its date palm: the north and south
+  wings with a raised salon over the patio (+5.30), the outer rooms lower (+4.40), the entrance hall between them
+  (+4.90) with its studded door on the entrance court, the court closed on street 7 by a wall with its arched
+  gate; on the pool side the terrace and its bay between the wings under a timber pergola, the patio opening onto
+  it through a pointed horseshoe arch; the pool 5.00 x 15.87 m (jade tiles), the planters along the south front.
+  Each villa where the plan draws it, its garden flat at the house's height, its walls as Tranche 2's (1.80 m,
+  a low stone-clad wall on street 7 with the gate pillars and timber gate on the court's axis, a paved path).
+- **The hotel** (`17_hotel.py`) — **a design proposal, there is no plan**. It keeps the plan's zoning of the plot
+  and builds, in the residence's materials but in forms of its own, a kasbah of three storeys on a water garden:
+  - the main building (north cell, 14.1 x 45.5 m, three storeys, +12.00, stepping down 0.9 m at mid-length with
+    the ground): on the Voie Publique its gate block 1.30 m proud, rising to +14.20 with its horns, a giant pointed
+    horseshoe arch (4.40 m) in a taupe alfiz framed in green zellige, studded doors under a mashrabiya tympanum,
+    two steps down inside; on the garden an arcade of pointed horseshoe arches (lobby, restaurant) glazed in quartz
+    aluminium on a stone terrace with its balustrade and flights of steps, cedar mashrabiya oriels on the first
+    floor, stone balconies with cedar railings on the second; windows in taupe surrounds on the parking side;
+    towers at the southern corners with their horns; a cedar pergola on the roof terrace;
+  - the gate pavilion on the crossing between the two buildings: a domed qubba (7 x 7 m, dome to about +10.5 with
+    a bronze finial), pointed horseshoe arches east (from the parking) and west (onto the arm) in taupe alfiz
+    framed in zellige, blind zellige arches north and south, a fountain inside;
+  - the suites (south cell, 13.3 x 56.4 m, two storeys): fourteen, stepping down the slope in pairs of heights
+    (the higher ones with horns), each with its terrace on the garden behind low walls under a cedar pergola, a
+    balcony with a cedar railing upstairs, its door and windows on the parking side;
+  - the water garden: the long basin (7.1 x 53.7 m) in three basins stepping 0.59 m down the slope, the water
+    running over two weirs, and its arm (5.0 x 15 m) on the crossing's axis, whose head under the pavilion is a
+    zellige wall with three bronze spouts; green zellige, travertine decks with loungers, parasols and date palms,
+    stone kerbs where the lawn stands higher or lower; the strip along the basin is a promenade in beige pavers
+    under Washingtonia palms from the garden gate on street 7 (a block with its arch, studded doors, cornice and
+    horns) on the arm's axis; olive trees and date palms in the lawns; walls (2.00 m) on the streets.
+  Collections `T3_01_GROUND`, `T3_02_VILLAS`, `T3_03_LANDSCAPE`, `T3_04_TREES_PALMS`, `T3_05_HOTEL`
+  (`19_tranche3.py`); the ground joins Tranche 1 and 2's objects in the D5 package.
 
 ## Removed (client, 13-10)
 Direction arrows and cars. The zebra crossings were put back as paint (15-10).
@@ -404,7 +458,9 @@ Direction arrows and cars. The zebra crossings were put back as paint (15-10).
   - The terrace separation walls go up to the pergolas as the drawing draws the joint; their height is to confirm.
   - The front garden wall runs from the gate to 0.60 m past the house and turns back 1.5 m; the lot widths are not on the drawing.
 - **Tile and paver textures** (rev 4): drawn to look like the references (`data/textures/`), not the manufacturers' own images. In D5 the real product textures can replace them (`T18_Tile_Ardesia_Beige`, `T19_Tile_Jade_Green`, `T17_Pavers_Beige_Herringbone`).
-- **Not modelled**: interiors, the sous-sols, the other tranches (beyond Tranche 2), and the RN road outside the boundary.
+- **Villa type A**: from the plan de masse's drawing only (no permit drawing): heights, openings and finishes to confirm.
+- **Hotel**: a design proposal (no plan): everything about it is to confirm.
+- **Not modelled**: interiors, the sous-sols, the other tranches (beyond Tranches 2 and 3), and the RN road outside the boundary.
 
 ## Renders
 | Camera | View |
@@ -429,5 +485,16 @@ Direction arrows and cars. The zebra crossings were put back as paint (15-10).
 | T2_CAM_05_SOUTH_BLOCK | The southern block from above |
 | T2_CAM_06_GATE | The front wall, gate and path of a villa |
 | T2_CAM_07_PARKING_CENTRE_ENTRETIEN | The parking strip, its bays and the Centre d'entretien |
+| T2_CAM_08_VILLA_C_FRONT | A villa type C from its street (C-12) |
+| T2_CAM_09_TYPE_C_AERIAL | The type C block from above |
+| T2_CAM_10_SPA_ENTRANCE | The SPA's front, its centre block and pools |
+| T2_CAM_11_SPA_POOLS | Along the SPA's outdoor pools |
+| T3_CAM_01_AERIAL | Tranche 3: the hotel and the villas type A from above |
+| T3_CAM_02_HOTEL_GATE | The hotel's gate on the Voie Publique |
+| T3_CAM_03_HOTEL_WATER_GARDEN | Along the long basin, the decks and the palm promenade |
+| T3_CAM_04_HOTEL_PAVILION | Down the arm to the gate pavilion between the two buildings |
+| T3_CAM_05_HOTEL_SUITES | The suites and their terraces on the garden |
+| T3_CAM_06_VILLA_A_STREET | A villa type A from street 7 (A-02) |
+| T3_CAM_07_VILLA_A_POOL | Its pool and terrace |
 
 **Lighting**: the sun at 10:15 on 15 October, at the site's latitude and longitude, through a Nishita sky. The view transform is AgX Punchy.
