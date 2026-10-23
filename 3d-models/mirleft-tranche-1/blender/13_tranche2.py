@@ -10,10 +10,10 @@ the client marked in yellow, 21-10), the parking bays and the three buildings on
 ('Centre d'entretien' twice and 'Office'). Model: 12_villa_b (villa type B with its pool; the compact one
 where the plan's plot is short).
 
-Levels: the blocks are graded on the plane of Tranche 1 (the 2013 contours fit it within 1.5 m there);
-away from them the streets follow the site's own ground (the terrain's height function H of 05, which
-blends the plane into the natural ground over 25 m), so the south road goes down along the type C villas
-as the contours do. Streets at H, pavements 0.15 m over it with a concrete kerb; each villa's pad at the
+Levels: the blocks are graded on the plane of Tranche 1 (the 2013 contours fit it within 1.5 m there), the
+type C block and its streets out to the boundary too (client 23-10); away from them the streets follow the
+site's own ground (the terrain's height function H of 05, which blends the plane into the natural ground
+over 25 m). Streets at H, pavements 0.15 m over it with a concrete kerb; each villa's pad at the
 height of its centre, its garden flat at the pad (+0.17, lawn 3 cm under the terraces), held by its walls
 where the ground falls away. Garden walls 1.80 m in the render of the villas with their trim (at least
 1.20 m over the lawn); on the villa's street side a low stone-clad wall with its beige coping, the gate
@@ -62,9 +62,11 @@ def envelope():
 
 
 def blocks():
-    """The two blocks of villas, graded on the plane: the empty land blends into them (05 build_terrain).
-    The SPA's cell beside the northern block too (a level court); the type C villas follow the ground."""
-    return unary_union([P(T2["blocks"])] + ([P(T2["spa"]["cell"])] if "spa" in T2 else [])).buffer(0)
+    """The blocks of villas, graded on the plane: the empty land blends into them (05 build_terrain). The
+    SPA's cell beside the northern block too, and the type C block with its streets out to the boundary
+    (client 23-10: on the natural ground its streets lay up to 9 m under the gardens and their gates)."""
+    extra = ([P(T2["spa"]["cell"])] if "spa" in T2 else []) + ([P(T2["graded_c"])] if "graded_c" in T2 else [])
+    return unary_union([P(T2["blocks"])] + extra).buffer(0)
 
 
 def spa_frame():

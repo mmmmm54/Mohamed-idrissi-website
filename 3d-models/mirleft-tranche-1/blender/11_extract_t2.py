@@ -188,8 +188,8 @@ B_SOUTH = [(-309.2, 110.8), (-249.7, 73.1), (-232.6, 46.9), (-185.0, -12.0), (-1
 corridors = unary_union([LineString(B_NORTH).buffer(22.0).intersection(box(-252.0, -100.0, 0.0, 300.0)),
                          LineString(T1_WEST).buffer(24.0), LineString(B_SOUTH[:4]).buffer(15.0, cap_style=2),
                          LineString([(-205.0, 12.0)] + B_SOUTH[3:]).buffer(26.0)])
-# the type C villas' block (its lots, out to the lines of the streets round it) and the SPA's cell: in the
-# works, not graded on Tranche 1's plane (the villas follow the ground, the south road going down along them)
+# the type C villas' block (its lots, out to the lines of the streets round it) and the SPA's cell: in the works.
+# Both are graded on Tranche 1's plane (13 blocks(): 'graded_c', the SPA cell)
 blocks_c = unary_union([l["lot"] for l in lots_c]).buffer(3.5, join_style=2).intersection(boundary).difference(t1).difference(blocks)
 blocks_c = blocks_c.buffer(2.0, join_style=2).buffer(-2.0, join_style=2).intersection(boundary).difference(t1).difference(blocks)
 works = unary_union([blocks, blocks_c, spa_cell, corridors]).intersection(boundary).difference(t1)
@@ -821,6 +821,10 @@ js = {"source": "plan de masse 31-05-13 (villas type B west of Tranche 1), model
       "roads": poly_out(roads), "pavements": poly_out(pave), "verges": poly_out(verges), "parking": poly_out(parking), "greens": poly_out(greens),
       "t1_trim": poly_out(t1_trim), "villas_c": villas_c,
       "spa": {"plot": poly_out(spa_plot)[0], "cell": poly_out(spa_cell)[0]},
+      # client 23-10 ("tala3 l ard chwiya", "wssal l ard lhad mostawa bach dji m3a bab"): the type C block and its
+      # streets out to the boundary graded on Tranche 1's plane as the other blocks, not on the natural ground
+      # (it falls about 10 m from the street between the rows to the south road)
+      "graded_c": poly_out(blocks_c.buffer(16.0, join_style=2).intersection(boundary).difference(t1).buffer(0))[0],
       "stair": {"axis": [[round(x, 3), round(y, 3)] for x, y in axis.coords], "poly": poly_out(stair), "fountains": fountains},
       "bays": [poly_out(b)[0] for b in bays], "buildings": [{"name": k["name"], "poly": poly_out(k["poly"])[0]} for k in kiosks]}
 json.dump(js, open(os.path.join(ROOT, "data", "t2_site.json"), "w"))

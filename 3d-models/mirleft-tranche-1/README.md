@@ -322,8 +322,14 @@ a suggestion on the same size as on the plan" (with reference photos of a riad s
   stair mark (all 13 the mirrored model). Plots and gardens from the plan's lines as for type B (not the parking
   strip in front of the south row's fences). Gates: on the front for the villas whose front is on a street
   (C-06, C-12, C-13), else on the side, past the stair, on the street between the two rows; the path runs along
-  the front of the house to the portal. Each villa at the height of its centre (the block follows the ground,
-  not Tranche 1's plane), its lawn flat (+0.07, the pool coping +0.10, the terraces +0.20), held by its walls.
+  the front of the house to the portal. Each villa at the height of its centre, its lawn flat (+0.07, the pool
+  coping +0.10, the terraces +0.20), held by its walls.
+- **Levels (client 23-10, "tala3 l ard chwiya", "wssal l ard lhad mostawa bach dji m3a bab")**: the type C block
+  and its streets out to the boundary are graded on Tranche 1's plane like the other blocks. On the natural
+  ground the land falls about 10 m from the street between the two rows to the south road: the streets lay
+  up to 9 m under the gardens and their gates, C-13 stood on a high platform with a void beside it. Now the
+  streets come level with the gates (the plane falls about 4 % across the block) and the real terrain round
+  the site is moved to meet the boundary there.
 - **SPA** (`15_spa.py`) — a design suggestion, there is no drawing: it fills the plan's SPA cell (the one its
   "SPA" label points into, west of the northern block), its walls 0.40 m inside the cell's kerb lines (about
   50.9 x 23.2 m), in the villas' style. The portal on the Voie Publique in a block with the villas' cornice and
