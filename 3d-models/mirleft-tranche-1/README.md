@@ -7,7 +7,7 @@ This is a Blender model of the 1er TRANCHE of the Mirleft project, built from th
 - the pétanque courts and their pergola
 - the lanes, the roads and parking in beige herringbone pavers (rev 4), the pedestrian crossings, the entrance with its paved median and the fountain
 - **Tranche 2 (21-10)**: the 33 villas type B of the plan de masse 31-05-13 west of the tranche, with their pools, gardens, walls and gates, the streets round them, the parking and the Centre d'entretien (see **Tranche 2** below)
-- **Tranche 3 (23-10)**: the hotel (a design proposal, no plan; since 24-10 two storeys, one height, in the SPA's style) and the 4 villas type A of the plan de masse 31-05-13, west of the SPA and of the type C block, with their streets and parking (see **Tranche 3** below)
+- **Tranche 3 (23-10)**: the hotel (a design proposal, no plan; since 24-10 two buildings of two storeys, one height and one design, a new domed pavilion between them, the trottoir along the parking) and the 4 villas type A of the plan de masse 31-05-13, west of the SPA and of the type C block, with their streets and parking (see **Tranche 3** below)
 
 The rest of the site is empty land: the exact site boundary and the natural slope from the contours. Everything is exterior only (no interiors).
 
@@ -375,6 +375,12 @@ a suggestion on the same size as on the plan" (with reference photos of a riad s
   and C-12's fences the 0.40 m of pavement is now there (a strip of about 18 m2 was left neither street nor
   pavement when their fences were straightened).
 
+- **SPA on its ground (client 24-10, "habt bach dji 3la ard")**: the SPA stood on a flat lot set at the ground
+  of its middle, so on the low (south-west) side its paving stood up to 1.4 m over the street with a gap under its
+  edge. It is lowered 0.40 m, its paving level with the pavement in the middle of its front (the entrance path),
+  and the lot's edge (0.30 m) now runs down to the ground as a stone plinth where the street is lower and holds
+  the pavement where the street is higher (the ground falls about 2.9 m across the lot).
+
 - **Stairs closed (client 24-10, "chud hadiya 7ta hadi")**: the villas type C's outside stair is solid down to the
   ground (the void under its flight showed as a dark slot along the house); the SPA's landing has its end wall
   against the main block's parapet (it was open there, a slot between the two parapets).
@@ -417,28 +423,38 @@ the perfect one". The zone circled in blue on the plan de masse 31-05-13, west o
   and builds, in the residence's materials but in forms of its own, two buildings and a domed pavilion on a water
   garden. **Client 24-10**: the SPA is right; the hotel's buildings looked like permit drawings, ordinary, front
   and back; one height right and left, two storeys (or close), the SPA's style and spirit, keep the middle of the
-  old design, no new architects. So the gate pavilion on the crossing (the middle) is kept exactly as it was, and
-  both buildings are redone at two storeys and one height (floor +0.20, first floor +4.20, roof +7.80, parapet
+  old design, no new architects. So the gate pavilion on the crossing (the middle) was kept as it was, and
+  both buildings were redone at two storeys and one height (floor +0.20, first floor +4.20, roof +7.80, parapet
   +8.80 over each block's floor; the blocks step with the 4 % ground), with the SPA's elements: taupe stone
   pilasters, the louvred glazing, the tall windows in their double stone frames, the studded door and transom in
   its taupe alfiz, mashrabiya, domes:
-  - the main building (north cell, 14.1 x 45.5 m, stepping down 0.9 m at mid-length with the ground): on the Voie
-    Publique its gate block 1.30 m proud, rising to +10.40 with its horns, the pointed horseshoe arch (3.60 m) in a
-    taupe alfiz framed in green zellige, studded doors under a mashrabiya tympanum, steps down inside; in each half
-    a centre block 0.90 m proud on the garden and on the parking, rising to +9.40, with the SPA's studded door,
-    tall windows and a row of niches; taupe pilasters between the bays; on the garden the SPA's louvred glazing
-    (lobby, restaurant) on the stone terrace with its balustrade and flights of steps, upstairs french windows in
-    turn behind cedar mashrabiya screens and onto stone balconies with cedar railings; on the parking and at the
-    ends the SPA's tall windows; domed towers at the southern corners; on the roof terraces a dome on its drum,
-    parasols and loungers, the cedar pergola;
-  - the gate pavilion on the crossing between the two buildings: a domed qubba (7 x 7 m, dome to about +10.5 with
-    a bronze finial), pointed horseshoe arches east (from the parking) and west (onto the arm) in taupe alfiz
-    framed in zellige, blind zellige arches north and south, a fountain inside;
-  - the suites (south cell, 13.3 x 56.4 m, two storeys, as high as the main building): fourteen in four level
-    blocks (4, 3, 3, 4) stepping with the ground, taupe pilasters between the suites, the SPA's louvred glazing
-    onto each terrace on the garden behind low walls under a cedar pergola, a french window onto a stone balcony
-    upstairs, the door and tall windows on the parking side; two domed towers at the corners facing the pavilion,
-    a dome on its drum on each other block;
+  **Second review (24-10)**: the suites the same as the main building; the parking front is the principal one and
+  wants real decoration; the pavilion in the middle changed for something better; the trottoir along the
+  buildings again. So both buildings now share one design, and the pavilion is new and taller than both:
+  - each building in two halves of two storeys stepping with the ground (main building 2 x 7 bays of 3.25 m,
+    suites 2 x 9 bays of 3.13 m, both 14.1 m deep on the parking line); on the garden the SPA's louvred glazing on
+    the stone terrace with its balustrade and flights of steps, upstairs french windows in turn behind cedar
+    mashrabiya screens and onto stone balconies with cedar railings, a centre block 0.90 m proud with the SPA's
+    studded door; on the parking (the principal front) a pointed horseshoe window in each bay, glass under the
+    springing and a cedar mashrabiya in the arch, in a taupe alfiz with green zellige in its spandrels, a zellige
+    frieze under a stone string course, cedar mashrabiya oriels on stone corbels and stone balconies upstairs,
+    bronze lanterns on the taupe pilasters, a carved band under the cornice, and in each half the grand entrance:
+    a centre block 0.90 m proud rising to +10.00, the horseshoe arch (2.60 m) in its zellige alfiz, studded doors
+    under a mashrabiya tympanum, a mashrabiya window over it, a row of niches, steps down to the trottoir; tall
+    framed windows at the ends; domed towers at the corners facing the pavilion; on the roofs a dome on its drum
+    towards the step, parasols and loungers by the towers, a cedar pergola at the far ends; the main building's
+    gate block on the Voie Publique (1.30 m proud, +10.40, the horseshoe arch of 3.60 m in its zellige alfiz,
+    studded doors under a mashrabiya tympanum, steps down inside to the trottoir);
+  - the gate pavilion on the crossing, new (7 x 7 m): walls to +9.00 over its floor with the parapet and cornice,
+    monumental pointed horseshoe arches (4.00 m) east (from the parking) and west (onto the arm) in taupe alfiz
+    framed in green zellige under a row of seven niches, blind zellige arches north and south, four corner turrets
+    with their small domes, the drum (5.0 m across) with its zellige band and eight arched lights, the dome to
+    about +14 with its bronze finial; the fountain inside;
+  - the trottoir: 2.50 m along the parking front of both buildings, from the south road's pavement to the Voie
+    Publique, and along the main building's north front round the gate block (Tranche 3's pavements, 0.15 m over
+    the street, with its kerb); the plan's bays along the hotel are not painted any more (2.50 m of trottoir left
+    them too short), the parking is a paved forecourt; Tranche 2's kerbs, pavement island and strips that the
+    plan left in the street between the hotel and the SPA are street now;
   - the water garden: the long basin (7.1 x 53.7 m) in three basins stepping 0.59 m down the slope, the water
     running over two weirs, and its arm (5.0 x 15 m) on the crossing's axis, whose head under the pavilion is a
     zellige wall with three bronze spouts; green zellige, travertine decks with loungers, parasols and date palms,
@@ -486,7 +502,7 @@ Direction arrows and cars. The zebra crossings were put back as paint (15-10).
   - The front garden wall runs from the gate to 0.60 m past the house and turns back 1.5 m; the lot widths are not on the drawing.
 - **Tile and paver textures** (rev 4): drawn to look like the references (`data/textures/`), not the manufacturers' own images. In D5 the real product textures can replace them (`T18_Tile_Ardesia_Beige`, `T19_Tile_Jade_Green`, `T17_Pavers_Beige_Herringbone`).
 - **Villa type A**: the patio's glazing on its north, south and east sides and the windows of the salon and Chambre I onto the west terrace are read from the RDC plan (no façade shows them).
-- **Hotel**: a design proposal (no plan): everything about it is to confirm. Since 24-10 "le milieu" is read as the domed gate pavilion on the crossing (kept); if the client meant another part of the old design, it can be swapped.
+- **Hotel**: a design proposal (no plan): everything about it is to confirm. The bays of the plan's parking along the hotel are not painted since the trottoir (24-10).
 - **Not modelled**: interiors, the sous-sols, the other tranches (beyond Tranches 2 and 3), and the RN road outside the boundary.
 
 ## Renders

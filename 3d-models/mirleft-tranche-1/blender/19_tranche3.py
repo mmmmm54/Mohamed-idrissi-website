@@ -50,6 +50,15 @@ def envelope():
     return P(T3["env"])
 
 
+def street_fix(HO):
+    """Model coordinates of the band along the hotel's parking front, from the south road to the Voie Publique
+    (client 24-10, second review: "remove this"): Tranche 2's pavements, kerbs and verges that the plan left
+    there, between Tranche 3's street and Tranche 2's, become street (13_tranche2). HO: 17_hotel."""
+    o, U, V = HO.frame(T3["hotel"], T3["frame"])
+    q = [(12.0, -67.4), (24.3, -67.4), (24.3, 58.2), (8.0, 58.2), (8.0, 50.0), (12.0, 50.0)]
+    return Polygon([tuple(o + U * u + V * v) for u, v in q])
+
+
 def build(M, B, srcv, H):
     """B: the 05_build_scene module (load), srcv: its plant sources, H: its terrain height function. Returns the
     T3 cameras."""
@@ -102,6 +111,13 @@ def build(M, B, srcv, H):
         return max(zs) if zs else None
 
     roads, pave, parking = PL(T3["roads"]), PL(T3["pavements"]), PL(T3["parking"])
+    # client 24-10, second review ("3awet tritoire"): the trottoir along the hotel's parking front and on the
+    # Voie Publique (17_hotel.trottoir); the bays it leaves too short are not painted, the parking is paved
+    ho_o, ho_u, ho_v = HO.frame(T3["hotel"], T3["frame"])
+    trot = Polygon([tuple(ho_o + ho_u * u + ho_v * v) for u, v in HO.trottoir().exterior.coords]).buffer(0)
+    fill = unary_union([roads, parking]).buffer(0.08, join_style=2).buffer(-0.08, join_style=2)
+    roads = roads.union(fill.difference(unary_union([roads, parking]))).difference(trot)
+    parking, pave = parking.difference(trot), pave.union(trot)
     ppath, strips = PL(T3["passage_path"]), PL(T3["passage_strips"])
     public = unary_union([roads, pave, parking])
     # walls: the lots' outlines, a low wall on street 7 (the lot's side facing the plan's east), the gates
@@ -201,11 +217,7 @@ def build(M, B, srcv, H):
     mb = C.MeshBuilder()
     L.prism(mb, "t2_parking", parking, -0.65, 0.0, zf=hz)
     mb.build("T3_GROUND_PARKING", cols["T3_01_GROUND"], M)
-    mb = C.MeshBuilder()
-    for ln in T3["bays"]:
-        L.prism(mb, "paint", LineString(ln).buffer(0.03, cap_style=2), 0.004, 0.006, zf=hz, sides=False)
-    mb.build("T3_ROAD_PAINT_PARKING", cols["T3_01_GROUND"], M)
-    print(f"  T3: streets {roads.area:.0f} m2, pavements {pave.area:.0f} m2, parking {parking.area:.0f} m2 ({len(T3['bays'])} bay lines), "
+    print(f"  T3: streets {roads.area:.0f} m2, pavements {pave.area:.0f} m2 (trottoir {trot.area:.0f} m2), parking {parking.area:.0f} m2, "
           f"garden walls {high.area:.0f} m2 of plan, low walls {low.area:.0f} m2")
 
     # ---- the hotel (17_hotel, a design proposal) ------------------------------------------------------------

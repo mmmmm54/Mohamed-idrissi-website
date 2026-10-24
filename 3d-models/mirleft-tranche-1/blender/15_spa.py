@@ -48,15 +48,18 @@ Y_RW = (0.0, 1.25, 6.02, 7.46, 9.04, 10.52, 12.30, 13.51, 14.60)        # rows A
 MAIN = (-0.15, 1.10, 37.46, 14.75)           # main block, outer faces
 BLOCK = (15.155, -0.19, 22.155, 6.21)        # centre block, outer faces
 GLZ = ((1.62, 13.85), (24.05, 36.25))        # the two glazed walls on the front
+Z_LOT = 0.10                                 # the lot's paving
 Z_TR = 2.04                                  # the glazing's transom (louvres above, glass doors below)
 STAIR = (37.46, 38.81, 1.25, 7.40, 8.75)     # outside stair: x0 x1, foot, top of the flight, end of the landing
 POOLS = ((-0.70, -3.97, 15.90, -0.62), (21.34, -3.97, 38.03, -0.62))
 IPOOL = (0.30, 1.45, 14.90, 5.30)            # the indoor pool's water
+EDGE = 0.30                                  # the lot's edge (with the ground round it)
 DOMES = ((7.87, 11.41), (29.45, 11.41))      # the bassin halls' domes: base r 1.85 on the slab, top +5.30
 
 
-def build(M, col, W, Lg, name="T2_SPA"):
-    """Returns (objects, plants, lanterns) in the local frame (plants and lanterns: none on the drawing)."""
+def build(M, col, W, Lg, name="T2_SPA", zg=None):
+    """Returns (objects, plants, lanterns) in the local frame (plants and lanterns: none on the drawing). zg(x, y):
+    the ground round the lot over the SPA's base, for the lot's edge."""
     ox = (W - (LOT[3] - LOT[1])) / 2 - LOT[1]
     oy = (Lg - (LOT[2] - LOT[0])) / 2 - LOT[0]
     lc = lambda p: (p[1] + ox, p[0] + oy)                     # plan (x, y) -> local (x, y)
@@ -282,9 +285,31 @@ def build(M, col, W, Lg, name="T2_SPA"):
     lot = box(0.0, 0.0, W, Lg)
     pools = [R(*p) for p in POOLS]
     path = R(POOLS[0][2], LOT[1], POOLS[1][0], BLOCK[1])
-    pave = lot.difference(ground).difference(unary_union([p.buffer(-0.01) for p in pools])).difference(path)
-    L.prism(mb, "deck_stone", pave, -0.40, 0.10)
-    L.prism(mb, "planks", path.difference(ground), -0.40, 0.12)
+    band = lot.difference(lot.buffer(-EDGE, join_style=2)) if zg else Polygon()
+    pave = lot.difference(ground).difference(unary_union([p.buffer(-0.01) for p in pools])).difference(path).difference(band)
+    L.prism(mb, "deck_stone", pave, -0.40, Z_LOT)
+    L.prism(mb, "planks", path.difference(ground).difference(band), -0.40, 0.12)
+    if zg:
+        # client 24-10, second review: the lot's edge down to the ground where the street runs lower (a stone
+        # plinth, no gap under the paving), holding the pavement where it runs higher, rising as a low wall (up
+        # to 0.80 m) where the paving lies more than 0.30 m under it
+        rings = [[(0.0, 0.0), (W, 0.0), (W, Lg), (0.0, Lg)], [(EDGE, EDGE), (W - EDGE, EDGE), (W - EDGE, Lg - EDGE), (EDGE, Lg - EDGE)]]
+        for i in range(4):
+            (ax, ay), (bx, by) = rings[0][i], rings[0][(i + 1) % 4]
+            (cx, cy), (dx, dy) = rings[1][i], rings[1][(i + 1) % 4]
+            n = max(1, int(math.ceil(math.hypot(bx - ax, by - ay) / 0.8)))
+            pts = []
+            for j in range(n + 1):
+                t = j / n
+                po, pi = (ax + (bx - ax) * t, ay + (by - ay) * t), (cx + (dx - cx) * t, cy + (dy - cy) * t)
+                g = zg(po[0] + (by - ay) / max(1e-9, math.hypot(bx - ax, by - ay)) * 0.30,
+                       po[1] - (bx - ax) / max(1e-9, math.hypot(bx - ax, by - ay)) * 0.30)
+                top = max(Z_LOT, g + 0.155) + min(0.80, max(0.0, (g + 0.155 - Z_LOT - 0.30) * 2.0))   # a low wall over a drop
+                pts.append((po, pi, top, min(Z_LOT, g) - 0.30))
+            for (po0, pi0, t0, b0), (po1, pi1, t1, b1) in zip(pts, pts[1:]):
+                mb.poly("surround", [(*po0, b0), (*po1, b1), (*po1, t1), (*po0, t0)])
+                mb.poly("surround", [(*pi1, b1), (*pi0, b0), (*pi0, t0), (*pi1, t1)])
+                mb.poly("coping", [(*po0, t0), (*po1, t1), (*pi1, t1), (*pi0, t0)])
     for p in pools:
         w_ = p.buffer(-0.30, join_style=2)
         L.prism(mb, "coping", p.difference(w_), -0.10, 0.16)

@@ -179,6 +179,10 @@ def build(M, B, srcv, H):
     roads, pave, parking = PL(T2["roads"]), PL(T2["pavements"]), PL(T2["parking"])
     greens = PL(T2.get("greens", []))
     verges = PL(T2.get("verges", []))
+    fix = globals().get("STREET_FIX")                         # client 24-10: by the hotel, street (19_tranche3)
+    if fix is not None:
+        roads = roads.union(unary_union([pave, verges]).intersection(fix))
+        pave, verges = pave.difference(fix), verges.difference(fix)
     st = T2.get("stair")
     stair = PL(st["poly"]) if st else Polygon()
     bays = [P(b) for b in T2["bays"]]
@@ -607,10 +611,11 @@ def build(M, B, srcv, H):
     if "spa" in T2:
         SPA = B.load("15_spa.py")
         o_, u_, v_, W_, Lg_ = spa_frame()
-        c_ = o_ + u_ * W_ / 2 + v_ * Lg_ / 2
-        z_ = hz(*c_)
+        # client 24-10, second review ("habt bach dji 3la ard"): the lot's paving level with the pavement in the
+        # middle of its front, on the entrance path; its edge down to the ground, or holding the pavement up
+        z_ = hz(*(o_ + v_ * Lg_ / 2)) + PAVE_DZ - SPA.Z_LOT
         col_s = C.collection("T2_05_SPA")
-        obs, plants, lamps = SPA.build(M, col_s, W_, Lg_)
+        obs, plants, lamps = SPA.build(M, col_s, W_, Lg_, zg=lambda x, y: hz(*(o_ + u_ * x + v_ * y)) - z_)
         for ob in obs:
             ob.location = (o_[0], o_[1], z_)
             ob.rotation_euler = (0, 0, math.atan2(u_[1], u_[0]))

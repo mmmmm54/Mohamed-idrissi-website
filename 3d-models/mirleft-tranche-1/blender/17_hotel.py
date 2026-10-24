@@ -10,24 +10,27 @@ ledge / ochre band cornice, the rounded coping, the horns, quartz aluminium, ced
 in forms of its own, on a water garden.
 
 Client 24-10: the SPA is right; the hotel's two buildings were permit drawings, ordinary: one height right and
-left, two storeys, the SPA's style, keep the middle. So the gate pavilion on the crossing stays as it was and
-both buildings are redone at two storeys, their roofs at +7.80 over each block's floor:
-  the main building (north cell, 14.1 x 45.5 m): on the Voie Publique its gate block standing 1.30 proud and
-    rising to +10.40 with its horns, the pointed horseshoe arch in a taupe alfiz framed in green zellige,
-    studded doors under a mashrabiya tympanum, steps down inside; on the garden and on the parking a centre
-    block standing 0.90 proud and rising to +9.40, the SPA's studded door and transom in a taupe alfiz, tall
-    framed windows; taupe stone pilasters between the bays; on the garden the SPA's glazing with its louvred
-    transoms (lobby, restaurant) on a stone terrace with its balustrade and flights of steps, upstairs french
-    windows behind cedar mashrabiya screens or onto stone balconies with cedar railings; on the parking the
-    SPA's tall windows in their double stone frames; domed towers on the southern corners; a dome on its drum,
-    parasols and a cedar pergola on the roof terraces. It steps down 0.9 m at mid-length with the ground;
-  the gate pavilion on the crossing: a domed qubba, pointed horseshoe arches east (from the parking) and west
-    (onto the arm's head) in taupe alfiz framed in zellige, blind zellige arches north and south, a fountain
-    inside, the horns at its corners, the dome on its drum with a bronze finial;
-  the suites (south cell, 13.3 x 56.4 m, two storeys, as high as the main building): fourteen in four level
-    blocks stepping with the ground, taupe pilasters between the suites, the SPA's glazing onto each terrace
-    behind low walls under a cedar pergola, a french window onto a stone balcony upstairs, tall windows on the
-    parking; domed towers at the corners facing the pavilion, a dome on its drum on each other block;
+left, two storeys, the SPA's style. Second review the same day: the suites the same as the main building, the
+parking front is the principal one and wants real decoration, the pavilion changed for something better, the
+trottoir again. So:
+  the two buildings, one design, each in two halves of two storeys stepping with the ground (roofs +7.80 over
+    each half's floor): the main building on the north cell (2 x 7 bays of 3.25 m), the suites on the south one
+    (2 x 9 bays of 3.13 m), both 14.1 m deep on the parking line. On the garden the SPA's louvred glazing on the
+    stone terrace with its balustrade and flights, french windows upstairs behind cedar mashrabiya screens or
+    onto stone balconies, a centre block with the SPA's studded door; on the parking a pointed horseshoe window
+    in each bay (glass, a mashrabiya in the arch, the taupe frame, the alfiz with zellige spandrels), a zellige
+    frieze under a stone string course, mashrabiya oriels on corbels and stone balconies upstairs, bronze
+    lanterns on the taupe pilasters, a carved band under the cornice, and a centre block with the grand entrance
+    (the horseshoe arch in its zellige alfiz, studded doors under a mashrabiya tympanum, steps down to the
+    trottoir); domed towers at the corners facing the pavilion; on the roofs a dome on its drum, parasols and
+    loungers, a cedar pergola; the main building's gate block on the Voie Publique (+10.40, the horseshoe arch
+    in its zellige alfiz, studded doors under a mashrabiya tympanum, steps down inside);
+  the gate pavilion on the crossing, standing over both: walls to +9.00, monumental pointed horseshoe arches east
+    (from the parking) and west (onto the arm's head) in taupe alfiz framed in zellige under a row of niches,
+    blind zellige arches north and south, four corner turrets with small domes, the drum with its zellige band
+    and arched lights, the dome to about +14 with its bronze finial, a fountain inside;
+  the trottoir (TROT, trottoir()): along the parking front of both and round the gate block, built by
+    19_tranche3 with Tranche 3's pavements;
   the water garden: the long basin (7.1 x 53.7 m) in three basins stepping down the slope (the water running
     over two weirs) and its arm (5.0 x 15 m), green zellige, travertine decks with loungers, parasols and date
     palms; the arm's head under the crossing: a zellige wall with three bronze spouts; a promenade of palms
@@ -60,11 +63,13 @@ PORCH = (3.25, 42.0, 10.85, 47.3)        # the gate block, proud of the north fr
 TOWERS = ((0.0, 0.5, 5.0, 5.5), (9.1, 0.5, 14.1, 5.5))
 FL_A = (0.20, 4.20)                      # floors over each half's reference ground (client 24-10: two storeys)
 ZR_A, PAR, PW = 7.80, 0.80, 1.00         # roof terrace; parapets of the pavilion and of the two wings
-NB = 7                                   # bays per half (3.25 m)
-POD = 3.0                                # the garden terrace along the arcade
-B = (0.4, -64.8, 13.7, -8.4)             # the suites
-N_SU, FLB = 14, 4.00
-SU_BLOCKS = (4, 3, 3, 4)                 # the suites in four blocks, each level, stepping with the ground
+NB_A, NB_B = 7, 9                        # bays per half: main building (3.25 m), suites (3.13 m)
+POD = 3.0                                # the garden terrace along the garden fronts
+B = (0.0, -64.8, 14.1, -8.4)             # the suites (client 24-10: the same as the main building)
+B_N = (0.0, -36.6, 14.1, -8.4)           # their two halves
+B_S = (0.0, -64.8, 14.1, -36.6)
+TOWERS_B = ((0.0, -13.4, 5.0, -8.4), (9.1, -13.4, 14.1, -8.4))
+TROT, TROT_DZ = 2.50, 0.15               # the trottoir along the parking front and on the Voie Publique (19_tranche3)
 PAV = (3.6, -7.5, 10.6, -0.5)            # the gate pavilion on the crossing
 DECK = 2.6                               # pool decks
 W2 = 0.15                                # half the weirs' thickness
@@ -83,6 +88,14 @@ def frame(H, F):
     u = np.array([v[1], -v[0]])
     m = lambda q: q[0] * UE + q[1] * UN
     return m(p0), m(u), m(v)
+
+
+def trottoir():
+    """The trottoir in the hotel's frame (client 24-10: "3awet tritoire"): along the parking front of both
+    buildings, from the south road's pavement to the Voie Publique, and along the main building's north front
+    round the gate block; built with Tranche 3's pavements (19_tranche3), TROT_DZ over the street."""
+    band = unary_union([box(A_S[2], B[1] - 0.45, A_S[2] + TROT, A_N[3] + 4.10), box(A_N[0], A_N[3], A_S[2] + TROT, A_N[3] + 4.10)])
+    return band.difference(unary_union([box(A_N[0], B[1], A_N[2], A_N[3]), box(*PORCH)]))
 
 
 def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
@@ -310,9 +323,34 @@ def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
         D.ext(mb, "surround", box(s0 - 0.30, z0, s1 + 0.30, z1 + 0.17).difference(box(s0 - 0.20, z0, s1 + 0.20, z1 + 0.07)),
               lambda a, b, w: P3(a, b, w), -0.10, -0.06)
 
+    def f_awin(P3, h, dep):
+        """the parking front's window: a pointed horseshoe arch, glass under the springing, a cedar mashrabiya in
+        the arch, the taupe frame, the alfiz with green zellige in its spandrels, the stone sill"""
+        s0, z0, s1, z1 = h.bounds
+        w, sm = s1 - s0, (s0 + s1) / 2
+        zs = z1 - math.sqrt((w / 2 + 0.25) ** 2 - 0.0625)          # the springing (14_villa_c.arch_poly)
+        d = dep - 0.10
+        rect(P3, "interior", s0 - 0.3, s1 + 0.3, z0, z1 + 0.3, dep + 0.9)
+        for g, mat, dd in ((h.intersection(box(s0 - 1, z0 - 1, s1 + 1, zs)), "glass", d), (h.intersection(box(s0 - 1, zs, s1 + 1, z1 + 1)), "mashrabiya", d - 0.04)):
+            for q in L.as_polys(g):
+                for t in L.tri_poly(q):
+                    mb.poly(mat, [P3(s, z, dd) for s, z in t], [(s, z) for s, z in t])
+        for a0, a1, b0, b1 in ((sm - 0.03, sm + 0.03, z0, zs), (s0, s1, zs - 0.04, zs + 0.02), (s0, s1, z0, z0 + 0.06)):
+            D.pbox(mb, P3, a0, a1, b0, b1, d - 0.07, d - 0.01, "frame")
+        rect(P3, "curtain", s0 + 0.05, s0 + 0.30, z0 + 0.05, zs - 0.05, d + 0.20)
+        rect(P3, "curtain", s1 - 0.30, s1 - 0.05, z0 + 0.05, zs - 0.05, d + 0.20)
+        ring = h.buffer(0.14, join_style=2).difference(h).intersection(box(s0 - 1, z0, s1 + 1, z1 + 1))
+        D.ext(mb, "surround", ring, lambda a, b, w_: P3(a, b, w_), -0.04, 0.01)
+        spd = box(s0 - 0.20, zs, s1 + 0.20, z1 + 0.20).difference(h.buffer(0.14, join_style=2))
+        D.ext(mb, "tile_jade", spd, lambda a, b, w_: P3(a, b, w_), -0.015, 0.0)
+        alf = box(s0 - 0.32, z0, s1 + 0.32, z1 + 0.32).difference(box(s0 - 0.20, z0, s1 + 0.20, z1 + 0.20))
+        D.ext(mb, "surround", alf, lambda a, b, w_: P3(a, b, w_), -0.05, 0.0)
+        D.pbox(mb, P3, s0 - 0.32, s1 + 0.32, z0 - 0.14, z0, -0.10, 0.02, "surround")
+
     FILL = {"niche": f_niche, "blind": f_blind, "win": f_win, "fr": f_fr, "door": f_door, "arch": f_arch,
             "louv": f_louv, "tall": f_tall, "msh": f_msh, "sdoor": f_sdoor,
-            "gate": lambda P3, h, dep: gate(P3, h, dep, 2.6, 3.8),
+            "gate": lambda P3, h, dep: gate(P3, h, dep, 2.6, 3.8), "egate": lambda P3, h, dep: gate(P3, h, dep, 2.0, 2.9),
+            "awin": f_awin,
             "gdoor": lambda P3, h, dep: gate(P3, h, dep, 2.0, 2.10, alfiz=False)}
 
     def box_walls(g, z0, z1, ops={}, skip=()):
@@ -390,19 +428,27 @@ def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
     hard = []                                                 # everything that is not lawn
 
     # =========================================================================================================
-    # the main building: two halves of two storeys stepping with the ground, in the manner of the SPA (client
-    # 24-10): stone pilasters between the bays, the SPA's glazing with its louvred transoms on the garden, french
-    # windows behind mashrabiya screens or onto stone balconies upstairs, the SPA's tall framed windows on the
-    # parking side, a centre block standing proud in each half with its studded door in the taupe alfiz
-    halves = []
-    for g_, vref in ((A_S, 11.9), (A_N, 34.6)):
-        z0 = zl(7.05, vref)
-        halves.append((box(*g_), [z0 + f for f in FL_A], z0 + ZR_A))
-    (gS, fS, zrS), (gN, fN, zrN) = halves
-    porch = box(*PORCH)
-    towers = [box(*t) for t in TOWERS]
-    zbotA = min(zl(x, y) for x in (-POD - 2.5, 14.1) for y in (0.5, 47.3)) - 1.8          # below the arm's deck and the crossing too
-    bay = (A_N[3] - A_S[1]) / (2 * NB)
+    # the two buildings, one design (client 24-10, second review: the suites "ghsha dkun the same likayn f lisar",
+    # the parking front is the principal one, "chi zwa9 wa3er"): each in two halves of two storeys stepping with
+    # the ground, the roofs +7.80 over each half's floor. On the garden the SPA's louvred glazing on the stone
+    # terrace, french windows upstairs behind cedar mashrabiya screens or onto stone balconies, a centre block with
+    # the SPA's studded door. On the parking a pointed horseshoe window in each bay, its alfiz with green zellige
+    # in the spandrels, a zellige frieze under a stone string course, cedar mashrabiya oriels on stone corbels and
+    # stone balconies upstairs, bronze lanterns on the taupe pilasters, and a centre block with the grand entrance:
+    # the horseshoe arch in its zellige alfiz, studded doors under a mashrabiya tympanum, steps down to the
+    # trottoir. Domed towers at the corners facing the pavilion; domes, parasols and a cedar pergola on the roofs.
+    def horns_at(g, zt, corners):
+        """the curled horns at the chosen corners of a box: (0 | 1, 0 | 1) for its low or high u and v"""
+        us = [0.80 - 0.62 * k / 12 for k in range(13)]
+        prof = Polygon([(0.0, zt - 0.40), (0.80, zt - 0.40)] + [(u_, zt + 0.43 * ((0.80 - u_) / 0.62) ** 1.6) for u_ in us]
+                       + [(0.07, zt + 0.41), (0.0, zt + 0.34)])
+        prof_b = prof.intersection(box(0.20, -50.0, 2.0, 50.0))
+        cx0, cy0, cx1, cy1 = g.buffer(0.012, join_style=2).bounds
+        for i, j in corners:
+            xc, sx = (cx0, 1) if i == 0 else (cx1, -1)
+            yc, sy = (cy0, 1) if j == 0 else (cy1, -1)
+            D.horn(mb, prof, lambda a, b, w, xc=xc, sx=sx, yc=yc, sy=sy: (xc + sx * a, yc + sy * w, b))
+            D.horn(mb, prof_b, lambda a, b, w, xc=xc, sx=sx, yc=yc, sy=sy: (xc + sx * w, yc + sy * a, b))
 
     def pilasters(P3, ss, z0, z1, w=0.50, d=0.08):
         for s_ in ss:
@@ -423,79 +469,199 @@ def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
         for sa in (c0, c1):
             D.pbox(mb, P3, sa - 0.03, sa + 0.03, zb, zb + 1.02, -0.80, 0.0, "timber")
 
-    cbs = []
-    for k, (g, fl, zr) in enumerate(halves):
-        x0, y0, x1, y1 = g.bounds
-        zw = zr - 0.02
-        cs = [y0 + (i + 0.5) * bay for i in range(NB)]
-        mid = cs[NB // 2]
-        side = [v for v in cs if abs(v - mid) > 0.1]
-        west = [((x0, v), 2.25, fl[0], fl[0] + 3.20, "louv", 0.30) for v in side]
-        west += [((x0, v), 1.40, fl[1], fl[1] + 2.60, "msh" if i % 2 else "fr", 0.30) for i, v in enumerate(side)]
-        P3w, sw = wall((x0, y1), (x0, y0), (-1, 0), zbotA, zw, west)
-        bnd = [y0 + i * bay for i in range(NB + 1)]
-        pilasters(P3w, [sw((x0, v)) for v in bnd if abs(v - mid) > 2.0], zbotA + 0.6 + (fl[0] - zbotA - 0.8), zr)
-        for i, v in enumerate(side):
-            if i % 2 == 0:
-                balcony(P3w, sw((x0, v)), fl[1])
-        east = [((x1, v), 1.30, fl[f] + 0.70, fl[f] + 3.00, "tall", 0.30) for v in side for f in (0, 1)]
-        P3e, se = wall((x1, y0), (x1, y1), (1, 0), zbotA, zw, east)
-        pilasters(P3e, [se((x1, v)) for v in bnd if abs(v - mid) > 2.0], fl[0] - 0.20, zr)
-        if k == 0:
-            P3s, ss_ = wall((x0, y0), (x1, y0), (0, -1), zbotA, zw,
-                            [((u, y0), 1.30, fl[f] + 0.70, fl[f] + 3.00, "tall", 0.30) for u in (2.5, 7.05, 11.6) for f in (0, 1)])
-            pilasters(P3s, [ss_((u, y0)) for u in (0.0, 14.1)], fl[0] - 0.20, zr)
-        else:
-            wall((x0, y0), (x1, y0), (0, -1), zrS - 0.02, zrN - 0.02)             # the step, above the southern roof
-            for a_, b_, u in (((x1, y1), (PORCH[2], y1), 12.5), ((PORCH[0], y1), (x0, y1), 1.6)):      # either side of the gate
-                P3n, sn = wall(a_, b_, (0, 1), zbotA, zw, [((u, y1), 1.30, fl[f] + 0.70, fl[f] + 3.00, "tall", 0.30) for f in (0, 1)])
-                pilasters(P3n, [sn((x0 if u < 7 else x1, y1))], fl[0] - 0.20, zr)
-        # the centre blocks, proud of the garden front and of the parking front, to +9.40 with their horns
-        zcb = zr + 1.60
-        for xf, sg in ((x0, -1), (x1, 1)):
-            cb = box(min(xf, xf + sg * 0.90), mid - 2.55, max(xf, xf + sg * 0.90), mid + 2.55)
-            xo = xf + sg * 0.90
-            ops = [((xo, mid), 1.85, fl[0], fl[0] + 4.00, "sdoor", 0.40)]
-            ops += [((xo, mid + sv * 1.62), 0.80, fl[0] + 0.90, fl[0] + 3.70, "tall", 0.30) for sv in (-1, 1)]
-            ops += [((xo, mid + dv), 0.90, fl[1] + 0.70, fl[1] + 2.90, "tall", 0.30) for dv in (-1.55, 0.0, 1.55)]
-            ops += [((xo, mid + dv), 0.20, zcb - 0.95, zcb - 0.75, "niche", 0.10) for dv in np.linspace(-1.9, 1.9, 6)]
-            wall((xo, mid - 2.55), (xo, mid + 2.55), (sg, 0), zbotA, zcb - 0.02, ops)
-            wall((xo, mid - 2.55), (xf, mid - 2.55), (0, -1), zbotA, zcb - 0.02)
-            wall((xo, mid + 2.55), (xf, mid + 2.55), (0, 1), zbotA, zcb - 0.02)
-            wall((xf, mid - 2.55), (xf, mid + 2.55), (-sg, 0), zr - 0.02, zcb - 0.02)       # over the roof
-            cornice(cb, zcb)
-            roof(cb, zcb, zcb + PAR)
-            hard.append(cb)
-            cbs.append(box(min(xf - sg * 0.31, xo), mid - 2.56, max(xf - sg * 0.31, xo), mid + 2.56))
-        L.prism(mb, "interior_floor", g.buffer(-0.05, join_style=2), zbotA + 0.4, fl[0])
-        # the roof terrace: a dome and cantilever parasols with their loungers, as on the SPA
-        qubba((7.05, mid + (5.0 if k == 0 else -5.0)), 1.85, zr - 0.02, zr + PW + 0.20, 1.70, finial=False)
-        for dv in (-6.5, 6.5):
-            parasol(4.0, mid + dv, zr)
-            lounger(5.6, mid + dv - 0.9, 0.0, zr)
-            lounger(5.6, mid + dv + 0.9, 0.0, zr)
-    # roofs: the southern one runs to the step; towers with their domes on the southern corners, the gate block
-    # on the north
-    tw = unary_union(towers)
-    cornice(gS, zrS, box(-1.0, A_S[3], 15.1, A_S[3] + 1.0).union(tw.buffer(0.02)))
-    cbc = unary_union(cbs)                                     # no parapet against the centre blocks
-    roof(gS, zrS, zrS + PW, box(0.30, A_S[3] - 0.31, 14.1 - 0.30, A_S[3] + 0.01).union(tw.buffer(0.01)).union(cbc), horns=False)
-    cornice(gN, zrN, porch.buffer(0.02))
-    roof(gN, zrN, zrN + PW, porch.buffer(0.01).union(cbc))
-    zc = zrS + 1.50
-    for t in towers:
-        box_walls(t, zrS - 0.02, zc - 0.02)
-        cornice(t, zc)
-        roof(t, zc, zc + PAR)
-        qubba(t.centroid.coords[0], 1.45, zc - 0.02, zc + PAR + 0.15, 1.45)
-    # the rooftop pergola on the northern half
-    for vv in np.arange(26.5, 30.81, 0.60):
-        mb.box("timber", 1.8, 12.3, vv - 0.05, vv + 0.05, zrN + 2.70, zrN + 2.86)
-    for uu in (2.2, 11.9):
-        mb.box("timber", uu - 0.10, uu + 0.10, 26.3, 31.0, zrN + 2.50, zrN + 2.70)
-        for vv in (26.5, 30.8):
-            mb.box("timber", uu - 0.09, uu + 0.09, vv - 0.09, vv + 0.09, zrN, zrN + 2.50)
-    # the gate block: proud of the north front, rising to +10.40, the arch in its alfiz, six niches over it
+    def oriel(P3, s_, zb, zt, w=1.80, d=0.70):
+        """a cedar mashrabiya oriel on three stone corbels, under its cedar cap and zellige roll"""
+        a, b = s_ - w / 2, s_ + w / 2
+        D.pbox(mb, P3, a, b, zb - 0.14, zb, -d, 0.0, "surround")
+        for kk in range(3):
+            c = a + 0.30 + (w - 0.60) * kk / 2
+            D.pbox(mb, P3, c - 0.08, c + 0.08, zb - 0.60, zb - 0.14, -d + 0.20, 0.0, "surround")
+        rect(P3, "mashrabiya", a + 0.05, b - 0.05, zb, zt, -d + 0.03)
+        for sa in (a + 0.03, b - 0.03):
+            mb.poly("mashrabiya", [P3(sa, zb, -0.02), P3(sa, zb, -d + 0.05), P3(sa, zt, -d + 0.05), P3(sa, zt, -0.02)])
+        for a0, a1, d0, d1 in ((a, a + 0.06, -d, -d + 0.06), (b - 0.06, b, -d, -d + 0.06), (a, a + 0.06, -0.06, 0.0), (b - 0.06, b, -0.06, 0.0)):
+            D.pbox(mb, P3, a0, a1, zb, zt, d0, d1, "timber")
+        for zz in (zb, zb + 1.00, zt - 0.08):
+            D.pbox(mb, P3, a, b, zz, zz + 0.08, -d, -d + 0.06, "timber")
+        D.pbox(mb, P3, a - 0.10, b + 0.10, zt, zt + 0.10, -d - 0.12, 0.0, "timber")
+        D.pbox(mb, P3, a - 0.04, b + 0.04, zt + 0.10, zt + 0.22, -d - 0.06, 0.0, "tile_jade")
+
+    def lantern(P3, s_, z):
+        """a bronze wall lantern on its bracket"""
+        D.pbox(mb, P3, s_ - 0.03, s_ + 0.03, z + 0.30, z + 0.36, -0.32, -0.08, "metal_dark")
+        D.pbox(mb, P3, s_ - 0.11, s_ + 0.11, z, z + 0.04, -0.44, -0.20, "bronze")
+        D.pbox(mb, P3, s_ - 0.11, s_ + 0.11, z + 0.26, z + 0.30, -0.44, -0.20, "bronze")
+        D.pbox(mb, P3, s_ - 0.09, s_ + 0.09, z + 0.04, z + 0.26, -0.42, -0.22, "glass")
+
+    def pergola(v0, v1, zr):
+        for vv in np.arange(v0 + 0.2, v1 - 0.19, 0.60):
+            mb.box("timber", 1.8, 12.3, vv - 0.05, vv + 0.05, zr + 2.70, zr + 2.86)
+        for uu in (2.2, 11.9):
+            mb.box("timber", uu - 0.10, uu + 0.10, v0, v1, zr + 2.50, zr + 2.70)
+            for vv in (v0 + 0.2, v1 - 0.2):
+                mb.box("timber", uu - 0.09, uu + 0.09, vv - 0.09, vv + 0.09, zr, zr + 2.50)
+
+    porch = box(*PORCH)
+    WINGS = (("main", (A_S, A_N), NB_A, TOWERS, 1), ("suites", (B_N, B_S), NB_B, TOWERS_B, -1))
+    wings = {}
+    for wname, cells, nb, tws, dirv in WINGS:
+        towers = [box(*t) for t in tws]
+        zbot = min(zl(x, y) for x in (-POD - 2.5, 14.1 + TROT) for c_ in cells for y in (c_[1], c_[3])) - 1.8
+        halves = []
+        for c_ in cells:
+            z0 = zl(7.05, (c_[1] + c_[3]) / 2)
+            halves.append((box(*c_), [z0 + f for f in FL_A], z0 + ZR_A))
+        (g_in, fl_in, zr_in), (g_out, fl_out, zr_out) = halves
+        v_in = g_in.bounds[1] if dirv > 0 else g_in.bounds[3]            # the end facing the pavilion
+        v_b = g_in.bounds[3] if dirv > 0 else g_in.bounds[1]             # the step between the halves
+        v_far = g_out.bounds[3] if dirv > 0 else g_out.bounds[1]         # the far end
+        hi = 0 if zr_in > zr_out else 1                                  # the higher half
+        up = 1 if halves[hi][0].centroid.y > v_b else -1                 # from the lower half towards the higher
+        wings[wname] = (halves, zbot)
+        cbs = []
+        for k, (g, fl, zr) in enumerate(halves):
+            x0, y0, x1, y1 = g.bounds
+            zw = zr - 0.02
+            bay = (y1 - y0) / nb
+            cs = [y0 + (i + 0.5) * bay for i in range(nb)]
+            mid = cs[nb // 2]
+            side = [v for v in cs if abs(v - mid) > 0.1]
+            bnd = [y0 + i * bay for i in range(nb + 1)]
+            # the garden front
+            wl = min(2.0, bay - 1.30)
+            west = [((x0, v), wl, fl[0], fl[0] + 3.20, "louv", 0.30) for v in side]
+            west += [((x0, v), 1.40, fl[1], fl[1] + 2.60, "msh" if i % 2 else "fr", 0.30) for i, v in enumerate(side)]
+            P3w, sw = wall((x0, y1), (x0, y0), (-1, 0), zbot, zw, west)
+            pilasters(P3w, [sw((x0, v)) for v in bnd if abs(v - mid) > 2.0], fl[0] - 0.20, zr)
+            for i, v in enumerate(side):
+                if i % 2 == 0:
+                    balcony(P3w, sw((x0, v)), fl[1])
+            # the parking front, the principal one
+            east = [((x1, v), 1.50, fl[0] + 0.55, 0, "awin", 0.30, fl[0] + 2.30) for v in side]
+            east += [((x1, v), 1.30, fl[1] + 0.05, fl[1] + 2.55, "fr", 0.30) for v in side]
+            P3e, se = wall((x1, y0), (x1, y1), (1, 0), zbot, zw, east)
+            pe = [se((x1, v)) for v in bnd if abs(v - mid) > 2.0]
+            pilasters(P3e, pe, fl[0] - 0.20, zr)
+            for s_ in pe:
+                lantern(P3e, s_, fl[0] + 2.55)
+            sa_, sb_ = sorted((se((x1, y0)), se((x1, y1))))
+            D.pbox(mb, P3e, sa_, sb_, fl[1] - 0.45, fl[1] - 0.27, -0.02, 0.0, "tile_jade")
+            D.pbox(mb, P3e, sa_, sb_, fl[1] - 0.27, fl[1] - 0.15, -0.07, 0.0, "surround")
+            D.pbox(mb, P3e, sa_, sb_, zr - 0.50, zr - 0.38, -0.04, 0.0, "surround")
+            for i, v in enumerate(side):
+                if i % 2:
+                    oriel(P3e, se((x1, v)), fl[1] + 0.05, fl[1] + 2.55)
+                else:
+                    balcony(P3e, se((x1, v)), fl[1] + 0.05, 0.95)
+            # the ends: the one facing the pavilion, the step, the far end
+            for ve in ((v_in,) if k == 0 else (v_far,)):
+                out = (0, -1) if ve == y0 else (0, 1)
+                if wname == "main" and ve == v_far:                     # either side of the gate block
+                    for a_, b_, u in (((x1, ve), (PORCH[2], ve), 12.5), ((PORCH[0], ve), (x0, ve), 1.6)):
+                        P3n, sn = wall(a_, b_, out, zbot, zw, [((u, ve), 1.30, fl[f] + 0.70, fl[f] + 3.00, "tall", 0.30) for f in (0, 1)])
+                        pilasters(P3n, [sn((x0 if u < 7 else x1, ve))], fl[0] - 0.20, zr)
+                else:
+                    P3x, sx = wall((x0, ve), (x1, ve), out, zbot, zw,
+                                   [((u, ve), 1.30, fl[f] + 0.70, fl[f] + 3.00, "tall", 0.30) for u in (2.5, 7.05, 11.6) for f in (0, 1)])
+                    pilasters(P3x, [sx((u, ve)) for u in (x0, x1)], fl[0] - 0.20, zr)
+            if k == hi:                                                    # the step, above the lower roof
+                wall((x0, v_b), (x1, v_b), (0, -up), halves[1 - hi][2] - 0.02, zw)
+            # the centre blocks: the garden's with the SPA's door, the parking's with the grand entrance
+            for xf, sg in ((x0, -1), (x1, 1)):
+                hw, zcb = (1.95, zr + 1.60) if sg < 0 else (2.10, zr + 2.20)
+                xo = xf + sg * 0.90
+                cb = box(min(xf, xo), mid - hw, max(xf, xo), mid + hw)
+                if sg < 0:
+                    ops = [((xo, mid), 1.85, fl[0], fl[0] + 4.00, "sdoor", 0.40)]
+                    ops += [((xo, mid + dv), 0.75, fl[1] + 0.70, fl[1] + 2.90, "tall", 0.30) for dv in (-0.95, 0.95)]
+                else:
+                    ops = [((xo, mid), 2.60, fl[0], 0, "egate", 0.60, fl[0] + 2.90)]
+                    ops += [((xo, mid), 1.30, fl[1] + 1.05, fl[1] + 2.95, "msh", 0.30)]
+                ops += [((xo, mid + dv), 0.20, zcb - 0.95, zcb - 0.75, "niche", 0.10) for dv in np.linspace(-hw + 0.45, hw - 0.45, 5)]
+                wall((xo, mid - hw), (xo, mid + hw), (sg, 0), zbot, zcb - 0.02, ops)
+                wall((xo, mid - hw), (xf, mid - hw), (0, -1), zbot, zcb - 0.02)
+                wall((xo, mid + hw), (xf, mid + hw), (0, 1), zbot, zcb - 0.02)
+                wall((xf, mid - hw), (xf, mid + hw), (-sg, 0), zr - 0.02, zcb - 0.02)       # over the roof
+                cornice(cb, zcb)
+                roof(cb, zcb, zcb + PAR)
+                hard.append(cb)
+                cbs.append(box(min(xf - sg * 0.31, xo), mid - hw - 0.01, max(xf - sg * 0.31, xo), mid + hw + 0.01))
+                if sg > 0:                                                 # down to the trottoir
+                    steps((xo, mid - 1.6, mid + 1.6), 1, fl[0], zl(xo + 1.0, mid) + TROT_DZ)
+            L.prism(mb, "interior_floor", g.buffer(-0.05, join_style=2), zbot + 0.4, fl[0])
+            # the roof: a dome on its drum towards the step; parasols (by the towers) or the pergola (far end)
+            s_st = 1 if v_b > mid else -1
+            qubba((7.05, mid + s_st * 5.0), 1.85, zr - 0.02, zr + PW + 0.20, 1.70, finial=False)
+            if k == 0:
+                for uu, ul in ((4.0, 5.6), (10.1, 8.5)):
+                    vp = mid - s_st * 3.5
+                    parasol(uu, vp, zr)
+                    lounger(ul, vp - 0.9, 0.0, zr)
+                    lounger(ul, vp + 0.9, 0.0, zr)
+            else:
+                pa, pb = sorted((mid - s_st * 2.6, mid - s_st * 6.9))
+                pergola(pa, pb, zr)
+            # the garden terrace: its balustrade, flights down to the garden
+            pod = box(x0 - POD, y0, x0, y1)
+            L.prism(mb, "villa", pod, zbot + 0.4, fl[0] - 0.03)
+            L.prism(mb, "deck_stone", pod, fl[0] - 0.03, fl[0])
+            hard.append(pod)
+            gaps = []
+            for vf in (cs[1], cs[-2]):
+                zg = zl(x0 - POD - 1.0, vf)
+                if fl[0] - zg > 0.20:
+                    hard.append(steps((x0 - POD, vf - 1.4, vf + 1.4), -1, fl[0], zg))
+                    gaps.append(box(x0 - POD - 0.5, vf - 1.4, x0 - POD + 0.5, vf + 1.4))
+            bal = box(x0 - POD, y0, x0 - POD + 0.22, y1)
+            if k == 0:
+                bal = bal.union(box(x0 - POD, v_in - (0 if dirv > 0 else 0.22), x0, v_in + (0.22 if dirv > 0 else 0)))
+            bal = bal.difference(unary_union(gaps)) if gaps else bal
+            L.prism(mb, "villa", bal, fl[0], fl[0] + 0.86)
+            D.coping(mb, "villa", bal.buffer(0.03, join_style=2).intersection(pod.buffer(0.03, join_style=2)), fl[0] + 0.94, 0.08)
+            hard.append(g)
+        # between the two terraces: a flight on the lower one, rising to the step
+        zlo, zhi = halves[1 - hi][1][0], halves[hi][1][0]
+        nf = max(1, int(math.ceil((zhi - zlo) / 0.16)))
+        for k in range(nf):
+            a_, b_ = v_b - up * (nf - k) * 0.30, v_b - up * (nf - k - 1) * 0.30
+            L.prism(mb, "deck_stone", box(-POD + 0.22, min(a_, b_), 0.0, max(a_, b_)), zbot + 0.4, zlo + (k + 1) * (zhi - zlo) / nf)
+        # the roofs: no parapet against the step, the towers, the centre blocks or the gate block; the horns at
+        # the free corners
+        cbc = unary_union(cbs)
+        tw = unary_union(towers)
+        for k, (g, fl, zr) in enumerate(halves):
+            x0, y0, x1, y1 = g.bounds
+            cut_c, cut_r = cbc.buffer(0.01), cbc
+            if k == 0:
+                cut_c, cut_r = cut_c.union(tw.buffer(0.02)), cut_r.union(tw.buffer(0.01))
+            if k != hi:
+                cut_c = cut_c.union(box(-1.0, min(v_b, v_b + up), 15.1, max(v_b, v_b + up)))
+                cut_r = cut_r.union(box(0.30, v_b - 0.31, x1 - 0.30, v_b + 0.01) if up > 0 else box(0.30, v_b - 0.01, x1 - 0.30, v_b + 0.31))
+            if wname == "main" and k == 1:
+                cut_c, cut_r = cut_c.union(porch.buffer(0.02)), cut_r.union(porch.buffer(0.01))
+            cornice(g, zr, cut_c)
+            roof(g, zr, zr + PW, cut_r, horns=False)
+            corners = []
+            for i in (0, 1):
+                for j in (0, 1):
+                    vc = y0 if j == 0 else y1
+                    if k == 0 and abs(vc - v_in) < 1e-6:
+                        continue                                           # the towers there
+                    if k != hi and abs(vc - v_b) < 1e-6:
+                        continue                                           # under the step
+                    corners.append((i, j))
+            horns_at(g, zr + PW, corners)
+        zc = zr_in + 1.50
+        for t in towers:
+            box_walls(t, zr_in - 0.02, zc - 0.02)
+            cornice(t, zc)
+            roof(t, zc, zc + PAR)
+            qubba(t.centroid.coords[0], 1.45, zc - 0.02, zc + PAR + 0.15, 1.45)
+
+    # the gate block on the Voie Publique: proud of the main building's north front, rising to +10.40, the arch
+    # in its alfiz, six niches over it, steps down inside to the trottoir
+    halves_m, zbotA = wings["main"]
+    fS, fN, zrN = halves_m[0][1], halves_m[1][1], halves_m[1][2]
     px0, py0, px1, py1 = PORCH
     zpk = zrN + 2.60
     pc = (px0 + px1) / 2
@@ -509,68 +675,72 @@ def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
     cornice(porch, zpk)
     roof(porch, zpk, zpk + PAR)
     L.prism(mb, "deck_stone", porch, zbotA + 0.4, fN[0])
-    zst = zl(pc, py1)                                          # the street at the gate: steps down inside
+    zst = zl(pc, py1) + TROT_DZ
     for k in range(max(0, int(round((zst + 0.02 - fN[0]) / 0.15)))):
         L.prism(mb, "deck_stone", box(pc - 2.2, py1 - 0.45 - 0.30 * k, pc + 2.2, py1 - (0.45 + 0.30 * (k - 1) if k else 0.0)),
                 fN[0], zst + 0.02 - 0.15 * k)
-    # the garden terrace along the arcade, its balustrade and flights of steps
-    for k, (g, fl, zr) in enumerate(halves):
-        x0, y0, x1, y1 = g.bounds
-        pod = box(x0 - POD, y0, x0, y1)
-        L.prism(mb, "villa", pod, zbotA + 0.4, fl[0] - 0.03)
-        L.prism(mb, "deck_stone", pod, fl[0] - 0.03, fl[0])
-        hard.append(pod)
-        cs = [y0 + (i + 0.5) * bay for i in range(NB)]
-        gaps = []
-        for vf in (cs[1], cs[5]):
-            zg = zl(x0 - POD - 1.0, vf)
-            if fl[0] - zg > 0.20:
-                hard.append(steps((x0 - POD, vf - 1.4, vf + 1.4), -1, fl[0], zg))
-                gaps.append(box(x0 - POD - 0.5, vf - 1.4, x0 - POD + 0.5, vf + 1.4))
-        bal = box(x0 - POD, y0, x0 - POD + 0.22, y1)
-        if k == 0:
-            bal = bal.union(box(x0 - POD, y0, x0, y0 + 0.22))
-        bal = bal.difference(unary_union(gaps)) if gaps else bal
-        L.prism(mb, "villa", bal, fl[0], fl[0] + 0.86)
-        D.coping(mb, "villa", bal.buffer(0.03, join_style=2).intersection(pod.buffer(0.03, join_style=2)), fl[0] + 0.94, 0.08)
-    dz = fN[0] - fS[0]                                         # between the two terraces: a flight on the southern one
-    nf = max(1, int(math.ceil(dz / 0.16)))
-    for k in range(nf):
-        q = box(-POD + 0.22, A_S[3] - (nf - k) * 0.30, 0.0, A_S[3] - (nf - k - 1) * 0.30)
-        L.prism(mb, "deck_stone", q, zbotA + 0.4, fS[0] + (k + 1) * dz / nf)
-    hard += [gS, gN, porch]
+    hard.append(porch)
 
     # =========================================================================================================
-    # the gate pavilion on the crossing
+    # the gate pavilion on the crossing (client 24-10, second review: "bdel adiya bchi7aja li 7ssn"): a domed qubba
+    # standing over both buildings, its monumental pointed horseshoe arches east (from the parking) and west (onto
+    # the arm's head) in taupe alfiz framed in green zellige under a row of niches, blind zellige arches north and
+    # south, four corner turrets with their small domes, the high drum with its zellige band and arched lights,
+    # the dome with its bronze finial, the fountain inside
     zX = zl(7.05, -4.0) + 0.15
     pv = box(*PAV)
     qx0, qy0, qx1, qy1 = PAV
     qc = ((qx0 + qx1) / 2, (qy0 + qy1) / 2)
-    zpw = zX + 5.60
+    zpw = zX + 9.00
     t_ = 0.60
-    aw, azs = 3.60, zX + 2.70
+    aw, azs = 4.00, zX + 4.20
+    nz = zX + 7.75
+    nis = np.linspace(-2.4, 2.4, 7)
     box_walls(pv, zX - 0.6, zpw - 0.02,
-              {"W": [((qx0, qc[1]), aw, zX, 0, "open", t_, azs)], "E": [((qx1, qc[1]), aw, zX, 0, "open", t_, azs)],
-               "N": [((qc[0], qy1), aw, zX, 0, "blind", 0.14, azs)], "S": [((qc[0], qy0), aw, zX, 0, "blind", 0.14, azs)]})
+              {"W": [((qx0, qc[1]), aw, zX, 0, "open", t_, azs)] + [((qx0, qc[1] + d_), 0.22, nz, nz + 0.30, "niche", 0.10) for d_ in nis],
+               "E": [((qx1, qc[1]), aw, zX, 0, "open", t_, azs)] + [((qx1, qc[1] + d_), 0.22, nz, nz + 0.30, "niche", 0.10) for d_ in nis],
+               "N": [((qc[0], qy1), aw, zX, 0, "blind", 0.14, azs)] + [((qc[0] + d_, qy1), 0.22, nz, nz + 0.30, "niche", 0.10) for d_ in nis],
+               "S": [((qc[0], qy0), aw, zX, 0, "blind", 0.14, azs)] + [((qc[0] + d_, qy0), 0.22, nz, nz + 0.30, "niche", 0.10) for d_ in nis]})
     for xs, sgn in ((qx0, 1), (qx1, -1)):                     # inside faces, the arches' soffits, alfiz and zellige
         wall((xs + sgn * t_, qy0 + t_), (xs + sgn * t_, qy1 - t_), (sgn, 0), zX - 0.6, zpw - 0.02,
              [((xs + sgn * t_, qc[1]), aw, zX, 0, "open", 0.0, azs)])
         h = arch(qc[1], aw, azs, zX)
         soffit(h, zX, lambda s, z, k, xs=xs, sgn=sgn: (xs + sgn * t_ * k, s, z))
-        al = box(qc[1] - 2.55, zX, qc[1] + 2.55, azs + 2.55)
+        al = box(qc[1] - 2.70, zX, qc[1] + 2.70, azs + 2.75)
         D.ext(mb, "surround", al.difference(h), lambda a, b, w, xs=xs, sgn=sgn: (xs - sgn * w, a, b), 0.0, 0.05)
-        D.ext(mb, "tile_jade", box(qc[1] - 2.85, zX, qc[1] + 2.85, azs + 2.85).difference(al),
+        D.ext(mb, "tile_jade", box(qc[1] - 3.00, zX, qc[1] + 3.00, azs + 3.05).difference(al),
               lambda a, b, w, xs=xs, sgn=sgn: (xs - sgn * w, a, b), 0.0, 0.07)
     for ys, sgn in ((qy0, 1), (qy1, -1)):
         wall((qx0 + t_, ys + sgn * t_), (qx1 - t_, ys + sgn * t_), (0, sgn), zX - 0.6, zpw - 0.02)
     L.prism(mb, "villa", pv.buffer(-0.01, join_style=2), zpw - 0.20, zpw - 0.02, bottom=True)
-    cornice(pv, zpw)
-    roof(pv, zpw, zpw + PAR)
-    rd = 2.30
-    L.prism(mb, "villa", Point(*qc).buffer(rd, 48), zpw - 0.02, zpw + 1.50)
-    L.prism(mb, "tile_jade", Point(*qc).buffer(rd + 0.03, 48).difference(Point(*qc).buffer(rd - 0.2, 48)), zpw + 1.05, zpw + 1.30)
-    L.prism(mb, "ledge", Point(*qc).buffer(rd + 0.10, 48).difference(Point(*qc).buffer(rd - 0.2, 48)), zpw + 1.40, zpw + 1.50, bottom=True)
-    dome(qc, rd, zpw + 1.50, rd * 1.10)
+    turrets = [box(qx0, qy0, qx0 + 1.2, qy0 + 1.2), box(qx1 - 1.2, qy0, qx1, qy0 + 1.2),
+               box(qx0, qy1 - 1.2, qx0 + 1.2, qy1), box(qx1 - 1.2, qy1 - 1.2, qx1, qy1)]
+    tu = unary_union(turrets)
+    cornice(pv, zpw, tu.buffer(0.02))
+    roof(pv, zpw, zpw + PAR, tu.buffer(0.01), horns=False)
+    zt_ = zpw + 1.90
+    for t in turrets:                                          # the corner turrets and their small domes
+        box_walls(t, zpw - 0.02, zt_ - 0.02)
+        cornice(t, zt_)
+        L.prism(mb, "terrace", t.buffer(-0.005, join_style=2), zt_ - 0.02, zt_, sides=False)
+        c_ = t.centroid.coords[0]
+        qubba(c_, 0.48, zt_ - 0.02, zt_ + 0.45, 0.62, finial=False)
+        L.prism(mb, "bronze", Point(*c_).buffer(0.035, 6), zt_ + 1.02, zt_ + 1.40)
+        L.prism(mb, "bronze", Point(*c_).buffer(0.08, 10), zt_ + 1.12, zt_ + 1.26)
+    rd = 2.50
+    zd = zpw + 1.90
+    L.prism(mb, "villa", Point(*qc).buffer(rd, 48), zpw - 0.02, zd)
+    L.prism(mb, "tile_jade", Point(*qc).buffer(rd + 0.03, 48).difference(Point(*qc).buffer(rd - 0.2, 48)), zd - 0.55, zd - 0.30)
+    L.prism(mb, "ledge", Point(*qc).buffer(rd + 0.10, 48).difference(Point(*qc).buffer(rd - 0.2, 48)), zd - 0.10, zd, bottom=True)
+    for k in range(8):                                         # the drum's arched lights
+        a = 2 * math.pi * (k + 0.5) / 8
+        for r_, hw_, z0_, z1_, mat in ((rd + 0.010, 0.34, zpw + 0.45, zpw + 1.30, "surround"), (rd + 0.018, 0.24, zpw + 0.55, zpw + 1.20, "glass")):
+            da = hw_ / rd
+            p0 = (qc[0] + r_ * math.cos(a - da), qc[1] + r_ * math.sin(a - da))
+            p1 = (qc[0] + r_ * math.cos(a + da), qc[1] + r_ * math.sin(a + da))
+            top = (qc[0] + r_ * math.cos(a), qc[1] + r_ * math.sin(a), z1_ + hw_ * 0.9)
+            mb.poly(mat, [(p0[0], p0[1], z0_), (p1[0], p1[1], z0_), (p1[0], p1[1], z1_), top, (p0[0], p0[1], z1_)])
+    dome(qc, rd, zd, rd * 1.25)
     L.prism(mb, "deck_stone", pv.buffer(-0.01, join_style=2), zX - 0.6, zX)
     fo = Point(*qc).buffer(1.05, 32)                           # the fountain
     L.prism(mb, "coping", fo.difference(fo.buffer(-0.18)), zX, zX + 0.45)
@@ -580,83 +750,6 @@ def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
     L.prism(mb, "bronze", Point(*qc).buffer(0.05, 8), zX + 0.70, zX + 0.95)
     L.prism(mb, "deck_stone", cross.difference(pv), zX - 2.2, zX)       # the crossing's terrace round it
     hard += [pv, cross]
-
-    # =========================================================================================================
-    # the suites (client 24-10: as high as the main building, in the manner of the SPA): four level blocks
-    # stepping with the ground, stone pilasters between the suites, the SPA's glazing onto each terrace, a french
-    # window onto its balcony upstairs; towers with their domes at the corners facing the pavilion
-    b0u, b0v, b1u, b1v = B
-    ws = (b1v - b0v) / N_SU
-    zbotB = min(zl(x, y) for x in (b0u - 4.5, b1u) for y in (b0v, b1v)) - 0.6
-    blocks, i0 = [], 0
-    for nsu in SU_BLOCKS:
-        vb = b1v - i0 * ws
-        va = vb - nsu * ws
-        f0 = round((zl(10.0, (va + vb) / 2) + 0.15) / 0.05) * 0.05
-        blocks.append((va, vb, f0, f0 + 2 * FLB - 0.40, [vb - (i + 0.5) * ws for i in range(nsu)]))
-        i0 += nsu
-    pairs = blocks
-    for j, (va, vb, f0, zr, su) in enumerate(blocks):
-        g = box(b0u, va, b1u, vb)
-        f1 = f0 + FLB
-        west = [((b0u, v), 2.40, f0, f0 + 3.10, "louv", 0.30) for v in su] + [((b0u, v), 1.60, f1, f1 + 2.60, "fr", 0.30) for v in su]
-        east = [((b1u, v - 0.9), 1.00, f0, f0 + 2.40, "door", 0.30) for v in su] + [((b1u, v + 0.85), 0.80, f0 + 0.90, f0 + 2.70, "tall", 0.30) for v in su]
-        east += [((b1u, v), 1.00, f1 + 0.70, f1 + 2.90, "tall", 0.30) for v in su]
-        P3w, sw = wall((b0u, vb), (b0u, va), (-1, 0), zbotB, zr - 0.02, west)
-        P3e, se = wall((b1u, va), (b1u, vb), (1, 0), zbotB, zr - 0.02, east)
-        bnd = [va + i * ws for i in range(len(su))] + ([vb] if j == 0 else [])
-        pilasters(P3w, [sw((b0u, v)) for v in bnd], f0 - 0.05, zr)
-        pilasters(P3e, [se((b1u, v)) for v in bnd], f0 - 0.15, zr)
-        cut_r, cut_c = Polygon(), Polygon()
-        for jn, side, sg in ((j - 1, vb, 1), (j + 1, va, -1)):     # the steps between blocks
-            if 0 <= jn < len(blocks):
-                cut_c = cut_c.union(box(b0u - 1, side, b1u + 1, side + sg))
-                if blocks[jn][3] < zr:
-                    wall((b0u, side), (b1u, side), (0, sg), blocks[jn][3] - 0.02, zr - 0.02)
-                else:
-                    cut_r = cut_r.union(box(b0u + 0.30, min(side, side - sg * 0.31), b1u - 0.30, max(side, side - sg * 0.31)))
-            else:
-                ends = [((u, side), 1.30, f + 0.70, f + 3.00, "tall", 0.30) for u in (3.5, 10.6) for f in (f0, f1)]
-                P3x, sx = wall((b0u, side), (b1u, side), (0, sg), zbotB, zr - 0.02, ends)
-                pilasters(P3x, [sx((u, side)) for u in (b0u, b1u)], f0 - 0.15, zr)
-        tws = [box(b0u, vb - 5.0, b0u + 5.0, vb), box(b1u - 5.0, vb - 5.0, b1u, vb)] if j == 0 else []
-        cornice(g, zr, cut_c.union(unary_union(tws).buffer(0.02)) if tws else cut_c)
-        roof(g, zr, zr + PW, cut_r.union(unary_union(tws).buffer(0.01)) if tws else cut_r)
-        for t in tws:                                       # the towers facing the pavilion, with their domes
-            zt_ = zr + 1.50
-            box_walls(t, zr - 0.02, zt_ - 0.02)
-            cornice(t, zt_)
-            roof(t, zt_, zt_ + PAR)
-            qubba(t.centroid.coords[0], 1.45, zt_ - 0.02, zt_ + PAR + 0.15, 1.45)
-        if not tws:
-            qubba((7.05, (va + vb) / 2), 1.60, zr - 0.02, zr + PW + 0.20, 1.50, finial=False)
-        L.prism(mb, "interior_floor", g.buffer(-0.05, join_style=2), zbotB + 0.4, f0)
-        # each suite's terrace: walls between, a parapet with its opening and steps, the cedar pergola; balcony
-        for i, v in enumerate(su):
-            sa, sb_ = v - ws / 2, v + ws / 2
-            first = j == 0 and i == 0
-            ter = box(b0u - 3.4, sa, b0u, sb_)
-            L.prism(mb, "villa", ter, zbotB + 0.4, f0 - 0.03)
-            L.prism(mb, "terrace", ter, f0 - 0.03, f0)
-            hard.append(ter)
-            for sep in [box(b0u - 3.4, sa, b0u, sa + 0.20)] + ([box(b0u - 3.4, sb_ - 0.20, b0u, sb_)] if first else []):
-                L.prism(mb, "villa", sep, f0, f0 + 1.20)
-                D.coping(mb, "villa", sep.buffer(0.03, join_style=2), f0 + 1.28, 0.08)
-            for g2 in (box(b0u - 3.4, sa + 0.2, b0u - 3.2, v - 0.8), box(b0u - 3.4, v + 0.8, b0u - 3.2, sb_ - (0.2 if first else 0.0))):
-                L.prism(mb, "villa", g2, f0, f0 + 0.82)
-                D.coping(mb, "villa", g2.buffer(0.03, join_style=2), f0 + 0.90, 0.08)
-            zg = zl(b0u - 4.0, v)
-            if f0 - zg > 0.20:
-                hard.append(steps((b0u - 3.4, v - 0.8, v + 0.8), -1, f0, zg))
-            for kk in range(6):
-                vv = sa + 0.35 + (ws - 0.70) * kk / 5
-                mb.box("timber", b0u - 3.45, b0u - 0.10, vv - 0.04, vv + 0.04, f0 + 3.25, f0 + 3.45)
-            mb.box("timber", b0u - 3.30, b0u - 3.12, sa + 0.25, sb_ - 0.25, f0 + 3.10, f0 + 3.25)
-            for vv in (sa + 0.35, sb_ - 0.35):
-                mb.box("timber", b0u - 3.29, b0u - 3.13, vv - 0.08, vv + 0.08, f0 + 0.82, f0 + 3.10)
-            balcony(P3w, sw((b0u, v)), f1, 1.15)
-            plants.append(("shrub", b0u - 2.9, sa + 0.6, f0, 0.85))
-    hard.append(box(*B))
 
     # =========================================================================================================
     # the water garden: three basins stepping down, the arm, decks, kerbs
@@ -765,6 +858,7 @@ def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
         plants.append(("olive" if k % 3 else "date", p.x, p.y, zl(p.x, p.y) + 0.07, 0.8 if k % 3 else 0.7))
 
     obs = mb.build(name, col, M, location=(float(o[0]), float(o[1]), 0.0), rotation_z=math.atan2(U[1], U[0]))
-    print(f"  T3 hotel: north building floors {fS[0]:.2f} / {fN[0]:.2f}, pavilion {zX:.2f}, basins {zN:.2f} / {zC:.2f} / {zS:.2f}, "
-          f"suites {pairs[0][2]:.2f} .. {pairs[-1][2]:.2f}, {len(plants)} plants")
+    hs = wings["suites"][0]
+    print(f"  T3 hotel: main building floors {fS[0]:.2f} / {fN[0]:.2f}, suites {hs[0][1][0]:.2f} / {hs[1][1][0]:.2f}, pavilion {zX:.2f}, "
+          f"basins {zN:.2f} / {zC:.2f} / {zS:.2f}, {len(plants)} plants")
     return obs, plants, (o, U, V)

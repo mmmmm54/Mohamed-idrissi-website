@@ -1156,6 +1156,7 @@ def main():
                 n -= 1
 
     # ---- Tranche 2: the villas type B west of the tranche (13_tranche2), in collections of their own --
+    T2M.STREET_FIX = T3M.street_fix(load("17_hotel.py"))     # client 24-10: Tranche 2's kerbs by the hotel go
     cams_t2 = T2M.build(M, sys.modules[__name__], srcv, Hsite)
     cams_t2.update(T3M.build(M, sys.modules[__name__], srcv, Hsite))
 
