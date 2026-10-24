@@ -217,11 +217,16 @@ West of the SPA and the type C block, from the plan de masse 31-05-13 (collectio
   +6.20 with the studded portal `D02_Door_Wood_Dark` on the entrance terrace, the chimney, the outside stair to
   the roof terrace, the pool `T19_Tile_Jade_Green` under `M10_Pool_Water`; walls `T3_WALLS_GARDENS`,
   `T3_WALLS_FRONT_GATES` on street 7;
-- the hotel, **a design proposal** (no plan received), objects `T3_HOTEL_<material>`: the main building in three
-  storeys with its monumental gate on the Voie Publique (giant pointed horseshoe arch in a taupe alfiz
+- the hotel, **a design proposal** (no plan received), objects `T3_HOTEL_<material>`. Since 24-10 (client: one height
+  right and left, two storeys, the SPA's style, keep the middle) the domed gate pavilion on the crossing is kept as it
+  was, with its fountain, and both buildings are redone at two storeys, the same height (roofs +7.80 over each
+  block's floor): the main building with its gate on the Voie Publique (pointed horseshoe arch in a taupe alfiz
   `D14_Stone_Surround_Taupe` framed in green zellige `T19_Tile_Jade_Green`, studded doors `D02_Door_Wood_Dark`,
-  mashrabiya tympanum `D01_Mashrabiya_Wood`), the arcade on the garden terrace, cedar mashrabiya oriels and
-  balconies; the domed gate pavilion on the crossing with its fountain; fourteen suites with terraces and pergolas;
+  mashrabiya tympanum `D01_Mashrabiya_Wood`), a centre block on the garden and on the parking with the SPA's
+  studded door, taupe stone pilasters between the bays, the SPA's louvred glazing on the garden terrace,
+  mashrabiya screens and stone balconies upstairs, the SPA's tall framed windows, domed towers, domes, parasols
+  and a pergola on the roofs; the fourteen suites in four level blocks in the same manner, with their terraces,
+  pergolas and balconies, domed towers facing the pavilion;
   the water garden: the long basin in three basins over two weirs and its arm, `T19_Tile_Jade_Green` under
   `M10_Pool_Water` (set it to D5 Water), travertine decks `T06_Travertine_Deck`, loungers, parasols, the palm
   promenade `T17_Pavers_Beige_Herringbone` from the garden gate on street 7; lawns `T03_Lawn` (as T2's);
@@ -229,7 +234,6 @@ West of the SPA and the type C block, from the plan de masse 31-05-13 (collectio
   `GROUND_TROTTOIRS_T2`, kerbs `GROUND_KERBS_T1_T2`, paths `GROUND_PAVERS_BEIGE_T1_T2`, gardens
   `GROUND_LAWN_T1_T2`; bay lines `T3_ROAD_PAINT_PARKING`.
 Cameras `T3_CAM_01_AERIAL` to `T3_CAM_07_VILLA_A_POOL`. **Delete the old model in D5 completely before importing.**
-Delete the old model in D5 before importing this one.
 """
 
 
