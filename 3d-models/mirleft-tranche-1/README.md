@@ -62,7 +62,7 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
   - **1er étage** (54.36 m²): set back 1.36 m behind the wing (front terrace) and 3.44 m behind the rear (rear terrace). One window over the wing, one in the side part, a 2-leaf sliding door onto the rear terrace, niches under the cornice and on the side.
   - **Levels**: RDC +0.20, terraces +3.90, roof +7.10, acrotère +8.30, stair cage +9.80. Front terrace parapet +4.90 with three niches; rear terrace side parapets and piers +4.70.
   - **Cornice** (façades and reference images): grey stone ledge, ochre stone band, grey stone ledge (+7.22 to +7.62), then the acrotère with a rounded coping. The stair cage has the same cornice.
-  - **Stair cage** of the two villas over their stairs (plan TERRASSE), with its roof door on the side, a small window at the back, niches and horned corners. 'GT' ducts on the roof.
+  - **Stair cage** of the two villas over their stairs (plan TERRASSE), with its roof door on the side, a small window at the back and niches (its horned corners removed on 24-10, as on all the houses). 'GT' ducts on the roof.
   - **Rear terrace**: masonry piers with wooden geometric railings between them ('Cadre en bois').
   - **Pergolas**: timber ('Pergola en bois', 'V/Terrasse'). Over the rear terrace, 15 rafters on a beam and four posts; over the front terrace, 7 rafters.
   - **Separation between the two villas' terraces** (remark, slide 10): a wall on the joint across the front terrace and the rear terrace, up to the pergolas, as the drawing shows it on the joint, and a lower one across the roof terraces.
@@ -226,7 +226,7 @@ four façades, coupes A-A and B-B).
 - **Villa type B** (`12_villa_b.py`): the drawing's plans and levels (RDC +0.20, étage +3.90, roof +7.10, acrotère
   +8.20, stair cage +9.90 / +10.10, pool 6.40 × 4.25 m, N = -1.60), dressed like the duplexes: the sand render,
   taupe surrounds, beige aluminium, sheer curtains and the lit salon behind the recessed glazing, the rows of square
-  niches, the grey / ochre / grey cornice and rounded acrotère, the horned crown of the stair cage, mashrabiya panels
+  niches, the grey / ochre / grey cornice and rounded acrotère, the crown of the stair cage (no horns since 24-10), mashrabiya panels
   in the acrotère and parapets, timber pergolas over the étage terrace and the front terrace (the drawing's voile),
   the 'Manzah' balcony with its planter, a skylight lantern over the entrance void, jade pool tiles, a white coping
   and Roman steps.
@@ -307,10 +307,10 @@ a suggestion on the same size as on the plan" (with reference photos of a riad s
 - **Villa type C** (`14_villa_c.py`, from `PLAN_VILLA_TYPE_C.dwg`: rez-de-chaussée, terrasse, the four façades,
   coupes A-A and B-B): a single-storey kasbah house, 15.38 x 12.15 m. Four battered towers (the rooms of the two
   wings: Chambre III and the salon marocain, Chambres I and II), their walls leaning in 0.255 m over 4.31 m as the
-  façades draw them, the villas' cornice (grey ledge / ochre band / grey ledge), a crown, parapet +4.80 with horns,
+  façades draw them, the villas' cornice (grey ledge / ochre band / grey ledge), a crown, parapet +4.80 (no horns since 24-10),
   roofs at +3.70 with a door in each parapet onto the terrace over the bathroom between them; the bathrooms lower
   (plain walls, parapet +4.60); the centre (kitchen, hall, W.C., salon) to +5.50 with the rounded coping, roof
-  +4.50, four steps up to it from the bathroom terraces; the portal tower +6.70 with horns over the entrance hall:
+  +4.50, four steps up to it from the bathroom terraces; the portal tower +6.70 (no horns) over the entrance hall:
   a taupe alfiz round a pointed horseshoe arch, the studded door and its transom, a mashrabiya tympanum. Rows of
   square niches, the horizontal grooves every metre of the façades, taupe surrounds (the wide panels of the
   small windows as drawn), quartz aluminium, curtains, the salon's 4-leaf glazing set back with the lit salon
@@ -375,6 +375,14 @@ a suggestion on the same size as on the plan" (with reference photos of a riad s
   and C-12's fences the 0.40 m of pavement is now there (a strip of about 18 m2 was left neither street nor
   pavement when their fences were straightened).
 
+- **Stone by the stairs, no horns on the houses (client 24-10)**: the garden walls along the stair between the
+  blocks of Tranche 2 (the long stair down from the top to the SPA) and along the street between the two rows of
+  villas type C are clad in the stone of the street walls (`D18_Stone_Cladding_Beige`) with the same beige
+  coping, from their foot at the stair or the street to their top, as the low walls by the gates above. The
+  horns (the triangular curled crests at the corners of the parapets) are removed from all the houses, as on
+  Tranche 1's villas: the duplexes' stair cages, the villas type B, C and A. The SPA, the hotel and Tranche 1's
+  public buildings keep theirs.
+
 - **SPA on its ground (client 24-10, "habt bach dji 3la ard")**: the SPA stood on a flat lot set at the ground
   of its middle, so on the low (south-west) side its paving stood up to 1.4 m over the street with a gap under its
   edge. It is lowered 0.40 m, its paving level with the pavement in the middle of its front (the entrance path),
@@ -403,13 +411,13 @@ the perfect one". The zone circled in blue on the plan de masse 31-05-13, west o
   single-storey kasbah house round a patio, in the style of the villa type C:
   - four battered towers at the corners (salon and kitchen on the north, Chambres I and III on the south), walls
     leaning in 0.254 m over 4.06 m, grooves at 0.53 / 1.41 / 2.29 / 3.17, square niches under the cornice (grey
-    ledge / ochre band / grey ledges, 4.06 to 4.44), parapet +4.80 with the rounded coping and the horns (+5.22),
+    ledge / ochre band / grey ledges, 4.06 to 4.44), parapet +4.80 with the rounded coping (no horns since 24-10),
     roofs +3.92 with a door in each parapet onto the central roof terrace;
   - the central band (coin cheminée to the north, the hall, Chambre II to the south) with plumb walls and its
     parapet +4.70 (+4.55 on the north protrusion), its roof terrace reached by the outside stair along Chambre I
     (21 risers, solid, the local technique under its landing with its door on the south); the patio in its middle,
     a garden glazed on its four sides;
-  - over the hall the entrance block to +6.20 with its horns: on the entrance terrace (street side) the studded
+  - over the hall the entrance block to +6.20: on the entrance terrace (street side) the studded
     portal 1.85 x 3.79 with its studded panel over it, the doors onto the roof terrace on its north and south
     faces; the chimney of the coin cheminée with its rounded top and oculus (DETAIL 2);
   - on the pool side the salon's and Chambre I's 4-leaf glazing in their stepped stone surrounds, the west terrace

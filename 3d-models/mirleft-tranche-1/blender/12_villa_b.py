@@ -18,8 +18,8 @@ Openings: positions from the RDC / ETAGE plans (gaps in the wall lines), heights
 
 Tranche 1 style: the villas' sand render, taupe stone surrounds, beige aluminium frames, sheer curtains,
 the salon glazing set back in a stone reveal with the lit salon behind, rows of square niches, the
-cornice of the villas (grey ledge / ochre band / grey ledge) and the rounded acrotère coping, the horned
-crown of the stair cage, timber pergolas over the étage terraces, jade-green pool tiles with a white coping.
+cornice of the villas (grey ledge / ochre band / grey ledge) and the rounded acrotère coping, the crown of
+the stair cage (its horns gone since 24-10, as on all the houses), timber pergolas over the étage terraces, jade-green pool tiles with a white coping.
 The voile (shade sail) the drawing puts over the front terrace is a timber pergola over the étage's front
 balcony here (client 22-10: none over the ground-floor terrace).
 """
@@ -203,7 +203,7 @@ def build(M, col, name="SRC_VILLA_B", compact=False):
     for x in (SKY.bounds[0] + 0.5, 0.5 * (SKY.bounds[0] + SKY.bounds[2]), SKY.bounds[2] - 0.5):
         mb.box("bronze", x - 0.025, x + 0.025, SKY.bounds[1], SKY.bounds[3], Z2 + 0.42, Z2 + 0.46)
 
-    # ---- stair cage: cornice, parapet, horned crown (as Tranche 1) ---------------------------------
+    # ---- stair cage: cornice, parapet (client 24-10: no horns on any house, as Tranche 1) -----------
     for z0, z1, pd, mat in [(Z_CW - 0.70, Z_CW - 0.62, 0.08, "ledge"), (Z_CW - 0.62, Z_CW - 0.48, 0.07, "band"),
                             (Z_CW - 0.48, Z_CW - 0.32, 0.13, "ledge")]:
         L.prism(mb, mat, CAGE.buffer(pd, join_style=2).difference(CAGE), z0, z1, bottom=True)
@@ -211,15 +211,6 @@ def build(M, col, name="SRC_VILLA_B", compact=False):
     L.prism(mb, "villa", cring, Z_CW - 0.32, Z_CTOP - 0.08)
     D.coping(mb, "villa", cring, Z_CTOP, 0.08)
     L.prism(mb, "roof", CAGE.buffer(-0.20, join_style=2), Z_CW - 0.33, Z_CW - 0.32, sides=False)
-    cx0, cy0, cx1, cy1 = CAGE.bounds
-    us = [0.95 - 0.75 * k / 12 for k in range(13)]
-    prof = Polygon([(0.0, Z_CTOP - 0.40), (0.95, Z_CTOP - 0.40)] + [(u, Z_CTOP + 0.36 * ((0.95 - u) / 0.75) ** 1.6) for u in us]
-                   + [(0.07, Z_CTOP + 0.34), (0.0, Z_CTOP + 0.28)])
-    prof_b = prof.intersection(box(0.20, 0.0, 1.0, 20.0))
-    for xc, sx in ((cx0, 1), (cx1, -1)):
-        for yc, sy in ((cy0, 1), (cy1, -1)):
-            D.horn(mb, prof, lambda a, b, w, xc=xc, sx=sx, yc=yc, sy=sy: (xc + sx * a, yc + sy * w, b))
-            D.horn(mb, prof_b, lambda a, b, w, xc=xc, sx=sx, yc=yc, sy=sy: (xc + sx * w, yc + sy * a, b))
 
     # ---- pergolas (timber): over the étage terrace and over the étage's front balcony ---------------
     T = "timber"

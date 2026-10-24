@@ -12,12 +12,12 @@ A single-storey kasbah house round a patio, in the style of the villa type C (th
   four battered towers at the corners (the salon and the kitchen on the north, Chambres I and III on the south):
     walls leaning in 0.254 m over their 4.06 m, grooves at 0.53 / 1.41 / 2.29 / 3.17, a row of square niches
     under the cornice (grey ledge / ochre band / grey ledges, 4.06 - 4.44), parapet +4.80 with the rounded coping
-    and the horns (+5.22), roofs +3.92, a door in each parapet onto the central roof terrace;
+    (its horns gone since 24-10, as on all the houses), roofs +3.92, a door in each parapet onto the central roof terrace;
   the central band between them (coin cheminée north, the hall, Chambre II south), plumb walls, parapet +4.70
     (+4.55 on the north protrusion), its roof terrace reached by the outside stair along Chambre I (21 risers,
     solid, the local technique under it); round the patio (garden, glazed on its four sides) its walls rise to the
     parapet;
-  over the hall the entrance block, +6.20 with its horns: on the entrance terrace the studded portal (1.85 x 3.79)
+  over the hall the entrance block, +6.20: on the entrance terrace the studded portal (1.85 x 3.79)
     and its studded panel over it, the doors onto the roof terrace on its north and south faces;
   the chimney of the coin cheminée with its rounded top and oculus (DETAIL 2);
   on the pool side the salon's and Chambre I's 4-leaf glazing in their stepped stone surrounds, the west terrace
@@ -47,7 +47,7 @@ ZBOT, Z_FL = -1.00, 0.20
 ZB, TB = 4.06, 0.254                          # towers: top of the lean, inset at the top
 Z_TR, Z_TT = 3.92, 4.80                       # roofs (towers and band), tower parapets (coping)
 Z_BP, Z_BN = 4.70, 4.55                       # band parapet, its north protrusion
-Z_EW, Z_ET = 5.94, 6.00                       # entrance block: walls, coping (horns over it)
+Z_EW, Z_ET = 5.94, 6.00                       # entrance block: walls, coping
 ENTRY_R = 5.76                                # its roof (its parapet's faces over it)
 COP = 0.06
 VC.ZB, VC.TB = ZB, TB                         # the villa C's faces lean as these towers
@@ -193,7 +193,6 @@ def tower(mb, name):
     D.coping(mb, "villa", top.difference(top.buffer(-0.30, join_style=2)).difference(door), Z_TT, COP)
     L.prism(mb, "terrace", unary_union([top.buffer(-0.30, join_style=2), door.intersection(top)]), Z_TR - 0.01, Z_TR, sides=False)
     L.prism(mb, "villa", top.buffer(-0.01, join_style=2), Z_TR - 0.15, Z_TR - 0.02, bottom=True)
-    VC.horns(mb, top.buffer(0.012, join_style=2), Z_TT)
 
 
 def band(mb):
@@ -231,13 +230,12 @@ def band(mb):
     for g, zt_ in ((ring.difference(north), Z_BP), (ring.intersection(north), Z_BN)):
         L.prism(mb, "villa", g, Z_TR - 0.02, zt_ - COP, bottom=False)
         D.coping(mb, "villa", g, zt_, COP)
-    # the entrance block: its roof, parapet with the coping, horns
+    # the entrance block: its roof, parapet with the coping (client 24-10: no horns on any house)
     L.prism(mb, "villa", ENTRY.buffer(-0.01, join_style=2), ENTRY_R - 0.15, ENTRY_R - 0.02, bottom=True)
     L.prism(mb, "terrace", ENTRY.buffer(-0.25, join_style=2), ENTRY_R - 0.01, ENTRY_R, sides=False)
     er = ENTRY.difference(ENTRY.buffer(-0.25, join_style=2))
     L.prism(mb, "villa", er, ENTRY_R - 0.01, Z_EW + 0.01, bottom=False)
     D.coping(mb, "villa", er, Z_ET, COP)
-    VC.horns(mb, ENTRY.buffer(0.012, join_style=2), Z_ET - 0.07)
     L.prism(mb, "interior_floor", HOUSE.difference(PATIO).buffer(-0.02, join_style=2), ZBOT + 0.6, Z_FL - 0.01)
 
 

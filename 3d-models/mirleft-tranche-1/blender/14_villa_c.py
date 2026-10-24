@@ -11,13 +11,13 @@ natural ground (T.N), the floor is +0.20 as the drawing's levels.
 A single-storey kasbah house (from the plans and façades):
   four battered towers, the rooms of the two wings (Chambre III and the salon marocain on the west,
     Chambres I and II on the east): walls leaning in 0.255 m over their 4.31 m (the façades' slanted
-    edges), the villas' cornice (grey ledge / ochre band / grey ledge), a crown, parapet +4.80 with horns;
+    edges), the villas' cornice (grey ledge / ochre band / grey ledge), a crown, parapet +4.80 (no horns since 24-10);
     roofs at +3.70, with a door in each parapet onto the terrace over the bathroom between the two;
   the bathrooms between the towers, lower: plain walls, roof terrace +3.70 (parapet +4.60 on the east,
     the outside stair arrives over it on the west);
   the centre (kitchen, entrance hall, W.C., salon / S.A.M.): plain walls to +5.50 with the rounded coping,
     roof +4.50, four steps up to it from each bathroom terrace;
-  the portal tower over the entrance hall, +6.70 with horns, roof +5.70: a taupe alfiz round a pointed
+  the portal tower over the entrance hall, +6.70 (no horns), roof +5.70: a taupe alfiz round a pointed
     horseshoe arch, the studded wooden door and its transom, a mashrabiya tympanum.
 Rows of square niches under the cornices and parapets, horizontal grooves every metre (z 0.56 - 3.56, and
 4.51 / 5.06 on the centre), taupe stone surrounds (the wide panels of the small windows as drawn), quartz
@@ -292,7 +292,8 @@ def tower(mb, name):
             cut = [(s0, Z_TR, s1, ZB + 1.0)]
         cface(mb, p, q, shape, True, GROOVES, cut)
     door = box(gx0, gy - 0.6, gx1, gy + 0.6)
-    # cornice (grey ledge / ochre band / grey ledge), crown, parapet with the rounded coping, horns
+    # cornice (grey ledge / ochre band / grey ledge), crown, parapet with the rounded coping (client 24-10: no
+    # horns on any house, as Tranche 1's villas)
     for z0, z1, pd, mat in [(4.31, 4.38, 0.075, "ledge"), (4.38, 4.47, 0.02, "band"), (4.47, 4.54, 0.075, "ledge")]:
         L.prism(mb, mat, top.buffer(pd, join_style=2).difference(top).difference(door), z0, z1, bottom=True)
     L.prism(mb, "villa", top.buffer(0.13, join_style=2).difference(top.buffer(-0.01, join_style=2)).difference(door), 4.54, 4.67, bottom=True)
@@ -301,7 +302,6 @@ def tower(mb, name):
     L.prism(mb, "villa", ring_in, Z_TR, Z_TT - COP)
     D.coping(mb, "villa", top.difference(top.buffer(-0.30, join_style=2)).difference(door), Z_TT, COP)
     L.prism(mb, "terrace", unary_union([top.buffer(-0.30, join_style=2), door.intersection(top)]), Z_TR - 0.01, Z_TR, sides=False)
-    horns(mb, top, Z_TT, skip_side="E" if name.startswith("TW") else "W")
 
 
 def horns(mb, top, ztop, skip_side=None):
@@ -376,7 +376,7 @@ def bathrooms(mb):
 
 
 def portal(mb):
-    """The portal tower: plumb walls to +6.01, cornice, crown, parapet +6.67 with horns; on its front the
+    """The portal tower: plumb walls to +6.01, cornice, crown, parapet +6.67 (no horns); on its front the
     alfiz round the pointed horseshoe arch, the studded door and transom, the mashrabiya tympanum."""
     cx = 0.5 * (PT.bounds[0] + PT.bounds[2])
     for p, q in edges(PT):
@@ -392,7 +392,6 @@ def portal(mb):
     hatch = box(28.70, 51.92, 29.10, 52.72)                       # roof hatch (plan TERRASSE)
     L.prism(mb, "villa", hatch.buffer(0.10, join_style=2).difference(hatch), Z_PR, Z_PR + 0.30)
     L.prism(mb, "metal_dark", hatch.buffer(0.12, join_style=2), Z_PR + 0.30, Z_PR + 0.34, bottom=True)
-    horns(mb, PT, Z_PT)
 
 
 def arch_poly(cx, w, zs, k=0.25, n=14):

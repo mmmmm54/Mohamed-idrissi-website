@@ -15,7 +15,7 @@ every pair; the drawing shows one villa, its neighbour is its mirror across the 
       terrace; niches under the cornice.
   Roof +7.10, cornice = grey stone ledge / ochre stone band / grey stone ledge, acrotère to +8.30
       with a rounded coping; stair cage of the two villas over their stairs (+9.80) with the same
-      cornice, its roof door on the side, a small window at the back and horned corners; 'GT' ducts.
+      cornice, its roof door on the side, a small window at the back (no horns, client 24-10); 'GT' ducts.
   Timber pergolas over both terraces ('Pergola en bois', plan TERRASSE 'V/Terrasse').
   Remark of slide 10: the two villas' terraces are separated by a wall on the joint (front terrace,
       rear terrace and roof terrace), as the drawing shows it on the joint.
@@ -457,21 +457,13 @@ def build(M, col, variant="A"):
     L.prism(mb, "villa", sep_t, Z2, 8.12 - COP)
     coping(mb, "villa", sep_t, 8.12)
 
-    # ---- stair cage (+9.80): cornice, parapet, horned corners ------------------------------------
+    # ---- stair cage (+9.80): cornice, parapet (client 24-10: no horns on any house) -----------------
     for z0, z1, pd, mat in [(Z_CW, 9.10, 0.08, "ledge"), (9.10, 9.24, 0.07, "band"), (9.24, 9.40, 0.13, "ledge")]:
         L.prism(mb, mat, CAGE.buffer(pd, join_style=2).difference(CAGE), z0, z1, bottom=True)
     cring = CAGE.difference(CAGE.buffer(-0.20, join_style=2))
     L.prism(mb, "villa", cring, Z_CW, Z_CTOP - 0.08)
     coping(mb, "villa", cring, Z_CTOP, 0.08)
     L.prism(mb, "roof", CAGE.buffer(-0.20, join_style=2), 9.39, 9.40, sides=False)
-    us = [0.95 - 0.75 * k / 12 for k in range(13)]                         # crest: +9.80 -> about +10.15
-    prof = Polygon([(0.0, 9.70), (0.95, 9.70)] + [(u, Z_CTOP + 0.36 * ((0.95 - u) / 0.75) ** 1.6) for u in us]
-                   + [(0.07, 10.14), (0.0, 10.08)])
-    prof_b = prof.intersection(box(0.20, 9.0, 1.0, 11.0))
-    for sx in (1, -1):
-        for yc, sy in ((CY0, 1), (YRE, -1)):
-            horn(mb, prof, lambda a, b, w, sx=sx, yc=yc, sy=sy: (sx * (CX - a), yc + sy * w, b))
-            horn(mb, prof_b, lambda a, b, w, sx=sx, yc=yc, sy=sy: (sx * (CX - w), yc + sy * a, b))
 
     # ---- 'GT' ducts on the roof ------------------------------------------------------------------
     for s in (1, -1):

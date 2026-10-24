@@ -192,7 +192,7 @@ before importing** (don't replace or update it): D5 would keep the old dark road
 
 ## Villas type C and the SPA (22-10)
 - The villas type C of the plan de masse (the block south-west of the southern block): `T2_VILLA_C01` to
-  `T2_VILLA_C12` (the plan's 13th, in the corner on the south road, left out on 23-10: that corner is street), villa type C of `PLAN_VILLA_TYPE_C.dwg` (battered towers with horns, the portal tower with its
+  `T2_VILLA_C12` (the plan's 13th, in the corner on the south road, left out on 23-10: that corner is street), villa type C of `PLAN_VILLA_TYPE_C.dwg` (battered towers, the portal tower with its
   arch and studded door, the outside stair, its pool), in the same finishes as the other villas; their gardens,
   walls and gates are in the Tranche 2 objects above.
 - The SPA (collection `T2_05_SPA`, objects `T2_SPA_<material>`), since 23-10 from its permit drawing
@@ -206,7 +206,9 @@ before importing** (don't replace or update it): D5 would keep the old dark road
 - Since 24-10 the villas type C's outside stair is solid down to the ground, and the SPA's landing is closed
   against the main block's parapet. The SPA is 0.40 m lower, its paving level with the pavement on its entrance
   path, the lot's edge a stone plinth down to the street where it runs lower (no gap under the paving) and a low
-  wall where the street runs higher.
+  wall where the street runs higher. Since 24-10 too the garden walls along the stair between the blocks and
+  along the street between the two rows of villas type C are clad in stone (`D18_Stone_Cladding_Beige`, in
+  `T2_WALLS_GARDENS`), and the horns are gone from all the houses (Tranche 1's duplexes, villas B, C and A).
 - In the corner road by C-10 to C-12, three islands of grey pavement `GROUND_TROTTOIRS_T2` as the plan's two in
   front of C-08 and C-09 (23-10), and the 0.40 m pavement along the fences of C-11 and C-12 (a gap before).
 Delete the old model in D5 before importing this one.
@@ -215,7 +217,7 @@ Delete the old model in D5 before importing this one.
 West of the SPA and the type C block, from the plan de masse 31-05-13 (collections `T3_01_GROUND`, `T3_02_VILLAS`,
 `T3_03_LANDSCAPE`, `T3_04_TREES_PALMS`, `T3_05_HOTEL`):
 - villas type A `T3_VILLA_A01` to `T3_VILLA_A04` (one mesh shared), since 24-10 from `VILLA_TYPE_A.dwg`: four
-  battered towers with their niches, cornice and horns round the central band and its patio, the entrance block
+  battered towers with their niches and cornice round the central band and its patio, the entrance block
   +6.20 with the studded portal `D02_Door_Wood_Dark` on the entrance terrace, the chimney, the outside stair to
   the roof terrace, the pool `T19_Tile_Jade_Green` under `M10_Pool_Water`; walls `T3_WALLS_GARDENS`,
   `T3_WALLS_FRONT_GATES` on street 7;
