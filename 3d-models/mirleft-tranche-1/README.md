@@ -35,7 +35,7 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 | `blender/12_villa_b.py` | The villa type B of `5-VILLA_TYPE_B.DWG`, in the finishes of the duplexes, with its pool. |
 | `blender/13_tranche2.py` | Builds Tranche 2 into the scene (called by `05_build_scene.py`), in its own collections, objects and materials. |
 | `blender/14_villa_c.py`, `15_spa.py` | The villa type C of `PLAN_VILLA_TYPE_C.dwg`; the SPA of `7-SPA-A0-1.pdf`. |
-| `blender/16_villa_a.py`, `17_hotel.py` | The villa type A (from the plan de masse's drawing); the hotel (a design proposal). |
+| `blender/16_villa_a.py`, `17_hotel.py` | The villa type A of `VILLA_TYPE_A.dwg`; the hotel (a design proposal). |
 | `blender/18_extract_t3.py`, `19_tranche3.py` | Tranche 3: reads the plan de masse 31-05-13 into `data/t3_site.json`; builds it into the scene (called by `05_build_scene.py`). |
 | `blender/10_fetch_geo.py` | Downloads the heights and the satellite image round the site into `data/geo/` (run once, outside Blender; needs pyproj and rasterio). |
 | `tools/` | `dwg2json.mjs` (DWG reader), `flatten.py` (primitives with their block path), `inserts.py` (block placements). |
@@ -375,6 +375,10 @@ a suggestion on the same size as on the plan" (with reference photos of a riad s
   and C-12's fences the 0.40 m of pavement is now there (a strip of about 18 m2 was left neither street nor
   pavement when their fences were straightened).
 
+- **Stairs closed (client 24-10, "chud hadiya 7ta hadi")**: the villas type C's outside stair is solid down to the
+  ground (the void under its flight showed as a dark slot along the house); the SPA's landing has its end wall
+  against the main block's parapet (it was open there, a slot between the two parapets).
+
 ## Tranche 3: the hotel and the villas type A (23-10)
 Client 23-10: "zid db had tranche kayn fiha hotel and villa type a ... for hotel we dont have plan so i want you
 to be creative and give me proposition ... the same style we have on our residence ... not the same design ...
@@ -387,16 +391,28 @@ the perfect one". The zone circled in blue on the plan de masse 31-05-13, west o
   tooth of the plan's zigzag; the rest of the tranche is street (street 7, the Voie Publique, the south road) with
   the 0.40 m of pavement along the fences (grey, `T27_Trottoirs_Grey`, as Tranche 2's). Graded on Tranche 1's
   plane like Tranche 2 (the plane falls about 4 % along the hotel).
-- **Villa type A** (`16_villa_a.py`) from the villa's drawing on the plan de masse (block 'FGHF', the same
-  drawing four times): the outline of the house with its parapet line, the patio, the pool, the terraces and the
-  planters. **No permit drawing of the type A was received**: the heights, the openings and the finishes are the
-  residence's, to confirm. A single-storey courtyard house round a patio with its date palm: the north and south
-  wings with a raised salon over the patio (+5.30), the outer rooms lower (+4.40), the entrance hall between them
-  (+4.90) with its studded door on the entrance court, the court closed on street 7 by a wall with its arched
-  gate; on the pool side the terrace and its bay between the wings under a timber pergola, the patio opening onto
-  it through a pointed horseshoe arch; the pool 5.00 x 15.87 m (jade tiles), the planters along the south front.
-  Each villa where the plan draws it, its garden flat at the house's height, its walls as Tranche 2's (1.80 m,
-  a low stone-clad wall on street 7 with the gate pillars and timber gate on the court's axis, a paved path).
+- **Villa type A** (`16_villa_a.py`), since 24-10 from its permit drawing `VILLA_TYPE_A.dwg` (client: "sla7 villa
+  type a because machi hadchi likaynin f plan and face principal"; REZ DE CHAUSSEE, TERRASSE, PLAN MASSE, the four
+  façades, coupes A-A and B-B). It replaces the model of 23-10 read from the plan de masse's drawing. A
+  single-storey kasbah house round a patio, in the style of the villa type C:
+  - four battered towers at the corners (salon and kitchen on the north, Chambres I and III on the south), walls
+    leaning in 0.254 m over 4.06 m, grooves at 0.53 / 1.41 / 2.29 / 3.17, square niches under the cornice (grey
+    ledge / ochre band / grey ledges, 4.06 to 4.44), parapet +4.80 with the rounded coping and the horns (+5.22),
+    roofs +3.92 with a door in each parapet onto the central roof terrace;
+  - the central band (coin cheminée to the north, the hall, Chambre II to the south) with plumb walls and its
+    parapet +4.70 (+4.55 on the north protrusion), its roof terrace reached by the outside stair along Chambre I
+    (21 risers, solid, the local technique under its landing with its door on the south); the patio in its middle,
+    a garden glazed on its four sides;
+  - over the hall the entrance block to +6.20 with its horns: on the entrance terrace (street side) the studded
+    portal 1.85 x 3.79 with its studded panel over it, the doors onto the roof terrace on its north and south
+    faces; the chimney of the coin cheminée with its rounded top and oculus (DETAIL 2);
+  - on the pool side the salon's and Chambre I's 4-leaf glazing in their stepped stone surrounds, the west terrace
+    between them with its parasol and table before the patio's glazing; on the street side the entrance terrace
+    between the two towers with its benches, the planters along the east fronts and either side of the entrance;
+    the pool 5.00 x 16.47 m over its coping (water 4.00 x 15.47 m), the deck along the house.
+  The façade droite is drawn mirrored: the plans win. Each villa where the plan de masse draws it, its garden flat
+  at the house's height, its walls as Tranche 2's (1.80 m, a low stone-clad wall on street 7 with the gate pillars
+  and timber gate on the entrance terrace's axis, a paved path between the planters to it).
 - **The hotel** (`17_hotel.py`) — **a design proposal, there is no plan**. It keeps the plan's zoning of the plot
   and builds, in the residence's materials but in forms of its own, a kasbah of three storeys on a water garden:
   - the main building (north cell, 14.1 x 45.5 m, three storeys, +12.00, stepping down 0.9 m at mid-length with
@@ -458,7 +474,7 @@ Direction arrows and cars. The zebra crossings were put back as paint (15-10).
   - The terrace separation walls go up to the pergolas as the drawing draws the joint; their height is to confirm.
   - The front garden wall runs from the gate to 0.60 m past the house and turns back 1.5 m; the lot widths are not on the drawing.
 - **Tile and paver textures** (rev 4): drawn to look like the references (`data/textures/`), not the manufacturers' own images. In D5 the real product textures can replace them (`T18_Tile_Ardesia_Beige`, `T19_Tile_Jade_Green`, `T17_Pavers_Beige_Herringbone`).
-- **Villa type A**: from the plan de masse's drawing only (no permit drawing): heights, openings and finishes to confirm.
+- **Villa type A**: the patio's glazing on its north, south and east sides and the windows of the salon and Chambre I onto the west terrace are read from the RDC plan (no façade shows them).
 - **Hotel**: a design proposal (no plan): everything about it is to confirm.
 - **Not modelled**: interiors, the sous-sols, the other tranches (beyond Tranches 2 and 3), and the RN road outside the boundary.
 

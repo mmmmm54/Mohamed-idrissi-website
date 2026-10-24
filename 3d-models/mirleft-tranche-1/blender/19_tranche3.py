@@ -89,7 +89,8 @@ def build(M, B, srcv, H):
         gy = (VA.GATE_Y[0] + VA.GATE_Y[1]) / 2
         cut_ = lot_l.boundary.intersection(LineString([(-50, gy), (80, gy)]))
         xe = max(p.x for p in getattr(cut_, "geoms", [cut_]))     # the lot's edge on street 7, on the gate's axis
-        f = lambda g, w=w: Polygon([w(x, y) for x, y in g.exterior.coords])
+        f = lambda g, w=w: unary_union([Polygon([w(x, y) for x, y in q.exterior.coords], [[w(x, y) for x, y in r.coords] for r in q.interiors])
+                                        for q in L.as_polys(g)])
         vs.append({"id": v["id"], "lot": lot, "pad": pad, "zl": pad + LAWN_A, "w": w, "f": f, "ex": ex,
                    "foot": f(VA.FOOT.buffer(0.02, join_style=2)), "gate": f(box(xe - 0.6, VA.GATE_Y[0], xe + 0.6, VA.GATE_Y[1])),
                    "gate_c": w(xe, gy), "path": f(box(VA.HOUSE.bounds[2] - 0.05, VA.GATE_Y[0], xe + 0.5, VA.GATE_Y[1])), "xe": xe, "gy": gy})

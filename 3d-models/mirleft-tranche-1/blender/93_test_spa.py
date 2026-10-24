@@ -25,7 +25,7 @@ cam = bpy.data.objects.new("CAM", bpy.data.cameras.new("CAM")); sc.collection.ob
 views = {"aerial": ((W + 28, -18, 30), (W / 2, Lg / 2, 2), 26), "front": ((-14, 18.0, 2.0), (8.0, 25.0, 3.0), 22),
          "court": ((5.0, 3.0, 1.7), (5.0, 30, 1.5), 20), "rear": ((W + 16, 10.0, 2.5), (W - 2.0, 25.0, 3.0), 22),
          "roof": ((-6, 2.0, 14.0), (14.0, 24.0, 4.5), 22), "north": ((8, Lg + 10, 3.0), (14, Lg - 10, 3.0), 24),
-         "top": ((W / 2, Lg / 2, 80), (W / 2, Lg / 2 + 0.01, 0), 30)}
+         "top": ((W / 2, Lg / 2, 80), (W / 2, Lg / 2 + 0.01, 0), 30), "stairtop": ((-2, 56, 11), (13.5, 44.3, 4.5), 26)}
 for k, (p, t, lens) in views.items():
     if os.environ.get("VIEWS") and k not in os.environ["VIEWS"].split(","): continue
     cam.data.lens = lens

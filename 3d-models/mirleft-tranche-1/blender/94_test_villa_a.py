@@ -21,8 +21,9 @@ sc.render.resolution_x, sc.render.resolution_y = 1400, 900
 sc.view_settings.view_transform = "AgX"; sc.view_settings.look = "AgX - Punchy"; sc.view_settings.exposure = -0.6
 out = sys.argv[-1]; os.makedirs(out, exist_ok=True)
 cam = bpy.data.objects.new("CAM", bpy.data.cameras.new("CAM")); sc.collection.objects.link(cam); sc.camera = cam
-views = {"ne": ((32, 30, 14), (8, 9, 2), 24), "sw": ((-18, -12, 9), (6, 9, 2), 24), "east": ((30, 8.9, 2.0), (12, 8.9, 2.5), 24),
-         "west": ((-16, 9, 3), (4, 9, 2.5), 22), "top": ((5, 9, 45), (5, 9.01, 0), 30), "south": ((9, -14, 2.2), (9, 5, 2.6), 24)}
+views = {"ne": ((34, 32, 15), (8, 9, 2), 24), "sw": ((-20, -14, 10), (7, 9, 2), 24), "east": ((31, 9.3, 1.7), (12, 9.3, 3.0), 22),
+         "west": ((-17, 9.3, 2.5), (4, 9.3, 2.6), 22), "top": ((6, 9.3, 48), (6, 9.31, 0), 30), "south": ((8, -15, 2.2), (8, 5, 2.8), 22),
+         "north": ((9, 36, 3.0), (9, 14, 3.0), 22), "roof": ((24, -10, 13), (8, 9, 3.5), 24), "blk": ((22, 4, 9), (11.3, 9.3, 5.0), 30)}
 for k, (p, t, lens) in views.items():
     if os.environ.get("VIEWS") and k not in os.environ["VIEWS"].split(","): continue
     cam.data.lens = lens

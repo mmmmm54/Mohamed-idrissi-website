@@ -467,26 +467,24 @@ def front(mb, p, q, cx):
 
 def stair(mb):
     """Outside stair up the west side: 18 treads of 0.27 m, 19 risers to the landing at +3.70 over the west
-    bathroom; a thin sloping slab open underneath, a solid parapet on its outer side."""
+    bathroom; solid down to the ground (client 24-10: the void under the flight showed as a dark slot along the
+    house), a solid parapet on its outer side."""
     x0, x1, ya, yb, ye = STAIR
     ye = 49.75 + TB                                       # the landing and its end wall run into the tower's face
     n = 19
     r = Z_TR / n
-    pit = r / 0.27
-    prof = [(ya, 0.0)]
+    prof = [(ya, ZBOT)]
     for k in range(n - 1):
         prof += [(ya + 0.27 * k, r * (k + 1)), (ya + 0.27 * (k + 1), r * (k + 1))]
-    yu = yb + 0.23
-    prof += [(yb, Z_TR), (ye, Z_TR), (ye, Z_TR - 0.25), (yu, Z_TR - 0.25), (yu - (Z_TR - 0.25) / pit, 0.0)]
+    prof += [(yb, Z_TR), (ye, Z_TR), (ye, ZBOT)]
     body = Polygon(prof).buffer(0)
     D.ext(mb, "villa", body, lambda a, b, w: (w, a, b), x1 + TB, x0 + 0.15)
     for k in range(n - 1):
         mb.box("coping_beige", x0 + 0.15, x1 + 0.02, ya + 0.27 * k - 0.02, ya + 0.27 * (k + 1), r * (k + 1), r * (k + 1) + 0.03)
     mb.box("coping_beige", x0 + 0.15, x1 + TB, yb - 0.02, ye - 0.15, Z_TR, Z_TR + 0.03)
-    par = Polygon([(ya, 0.0), (yu - (Z_TR - 0.25) / pit, 0.0), (yu, Z_TR - 0.25), (ye, Z_TR - 0.25), (ye, Z_TR + 1.00),
-                   (yb, Z_TR + 1.00), (ya, r + 1.00 - 0.0)])
+    par = Polygon([(ya, ZBOT), (ye, ZBOT), (ye, Z_TR + 1.00), (yb, Z_TR + 1.00), (ya, r + 1.00)])
     D.ext(mb, "villa", par, lambda a, b, w: (w, a, b), x0, x0 + 0.15)
-    mb.box("villa", x0 + 0.15, x1 + TB, ye - 0.15, ye, Z_TR - 0.25, Z_TR + 1.00)     # the landing's end
+    mb.box("villa", x0 + 0.15, x1 + TB, ye - 0.15, ye, Z_TR, Z_TR + 1.00)             # the landing's end
     # rounded coping on the parapet: a narrower slice on its top
     top = Polygon([(ya, r + 1.00), (yb, Z_TR + 1.00), (ye, Z_TR + 1.00), (ye, Z_TR + 1.04), (yb, Z_TR + 1.04), (ya, r + 1.04)])
     D.ext(mb, "villa", top, lambda a, b, w: (w, a, b), x0 + 0.025, x0 + 0.125)

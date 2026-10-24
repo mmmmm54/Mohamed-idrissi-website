@@ -203,6 +203,8 @@ before importing** (don't replace or update it): D5 would keep the old dark road
   two bassin halls, four cantilever parasols and loungers, reached by the outside stair past axis 8; the two outdoor
   pools along the front, `M10_Pool_Water`, travertine `T06_Travertine_Deck`.
 - Cameras `T2_CAM_08_VILLA_C_FRONT`, `T2_CAM_09_TYPE_C_AERIAL`, `T2_CAM_10_SPA_ENTRANCE`, `T2_CAM_11_SPA_POOLS`.
+- Since 24-10 the villas type C's outside stair is solid down to the ground, and the SPA's landing is closed
+  against the main block's parapet.
 - In the corner road by C-10 to C-12, three islands of grey pavement `GROUND_TROTTOIRS_T2` as the plan's two in
   front of C-08 and C-09 (23-10), and the 0.40 m pavement along the fences of C-11 and C-12 (a gap before).
 Delete the old model in D5 before importing this one.
@@ -210,10 +212,10 @@ Delete the old model in D5 before importing this one.
 ## Tranche 3: the hotel and the villas type A (23-10)
 West of the SPA and the type C block, from the plan de masse 31-05-13 (collections `T3_01_GROUND`, `T3_02_VILLAS`,
 `T3_03_LANDSCAPE`, `T3_04_TREES_PALMS`, `T3_05_HOTEL`):
-- villas type A `T3_VILLA_A01` to `T3_VILLA_A04` (one mesh shared), from the villa's drawing on the plan de masse
-  (no permit drawing of the type A received: heights, openings and finishes are the residence's, to confirm): a
-  single-storey house round its patio and date palm, raised salons, the entrance court with its arched gate, the
-  pool `T19_Tile_Jade_Green` under `M10_Pool_Water`, the terrace pergola; walls `T3_WALLS_GARDENS`,
+- villas type A `T3_VILLA_A01` to `T3_VILLA_A04` (one mesh shared), since 24-10 from `VILLA_TYPE_A.dwg`: four
+  battered towers with their niches, cornice and horns round the central band and its patio, the entrance block
+  +6.20 with the studded portal `D02_Door_Wood_Dark` on the entrance terrace, the chimney, the outside stair to
+  the roof terrace, the pool `T19_Tile_Jade_Green` under `M10_Pool_Water`; walls `T3_WALLS_GARDENS`,
   `T3_WALLS_FRONT_GATES` on street 7;
 - the hotel, **a design proposal** (no plan received), objects `T3_HOTEL_<material>`: the main building in three
   storeys with its monumental gate on the Voie Publique (giant pointed horseshoe arch in a taupe alfiz

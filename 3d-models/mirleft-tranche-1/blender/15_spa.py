@@ -230,6 +230,10 @@ def build(M, col, W, Lg, name="T2_SPA"):
         L.prism(mb, "deck_stone", R(sx0, ya, sx1 - 0.15, yb), zt - 0.03, zt)
     prof = Polygon([(sy0 - 0.05, -1.0), (sy2, -1.0), (sy2, Z_PA), (sy1, Z_PA), (sy0 - 0.05, 1.0)])
     D.ext(mb, "villa", prof, lambda a, b, w: (lc((w, a))[0], lc((w, a))[1], b), sx1 - 0.15, sx1)
+    # the landing's end wall against the main block's parapet (client 24-10: "chud hadiya", the landing was open
+    # there, a slot between the two parapets)
+    L.prism(mb, "villa", R(sx0, sy2, sx1, sy2 + 0.15), Z_SL - 0.05, Z_PA - 0.06)
+    D.coping(mb, "villa", R(sx0, sy2, sx1, sy2 + 0.15), Z_PA, 0.06)
     cop = [(sy0 - 0.05, 1.0), (sy1, Z_PA), (sy2, Z_PA)]
     for (ya, za), (yb, zb) in zip(cop, cop[1:]):
         prof_c = Polygon([(ya, za), (yb, zb), (yb, zb + 0.06), (ya, za + 0.06)])
