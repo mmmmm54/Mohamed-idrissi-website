@@ -1,0 +1,7 @@
+Shot: SH05_GARDEN_REVEAL
+Blender camera: SH05_GARDEN_REVEAL (blender/15_build_cameras.py)
+Lens: 22 mm, sensor 36 mm vertical fit, 9:16 1080x1920
+Aperture: f/8 equivalent (no DOF)
+Move: slow lateral track to the right, revealing the garden facade
+Duration: 6 s
+Time of day: golden hour, sun az 257 deg / el 10 deg (LIGHTING_03_GOLDEN_HOUR)

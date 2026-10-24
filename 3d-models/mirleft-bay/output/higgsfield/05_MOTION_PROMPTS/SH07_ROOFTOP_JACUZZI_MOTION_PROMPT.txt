@@ -1,0 +1,11 @@
+PRIMARY REFERENCE: 03_HERO_FRAMES/SH07_ROOFTOP_JACUZZI.jpg (Blender hero frame, architectural truth)
+SUBJECT: Mirleft Bay resort, roof terrace, jacuzzi, horizon, contemporary southern-Moroccan architecture in sand render with timber pergolas, Atlantic coast, golden hour.
+CAMERA: vertical 9:16, 20 mm, stabilised.
+CAMERA MOVEMENT: slow arc to the left around the jacuzzi.
+SPEED: very slow, constant, cinematic; 6 seconds.
+MOTION: jacuzzi water ripples gently with light steam; palm crowns sway; the low sun glints on the water.
+LIGHT CHANGE: none; the low warm sun from the left-rear stays fixed, shadows locked.
+ATMOSPHERE: soft warm haze in the far distance only.
+OPTICAL CHARACTER: clean lens, natural contrast, no heavy grain, no chromatic aberration.
+REALISM: photoreal architectural film; motion only, no design changes.
+CONTINUITY: Preserve exact architecture. Preserve exact facade geometry. Preserve all windows. Preserve all doors. Preserve all terraces and pergolas. Preserve roof geometry and parapets. Preserve pool and lake geometry. Preserve building proportions and positions. Preserve materials and colours. Preserve the golden-hour sun direction and shadows.
