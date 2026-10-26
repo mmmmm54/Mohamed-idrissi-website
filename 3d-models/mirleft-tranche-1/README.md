@@ -484,7 +484,7 @@ the perfect one". The zone circled in blue on the plan de masse 31-05-13, west o
 ## The pool park on the cliff (client 26-10)
 "zid had partie lakhriya w pscine dira f chi chkel machi nfs chi likayn f plan because this pscine is the important
 things bghiaha dkun naaadya"; then "look at the planning ... 3awjtiha bzzaf ... ghsha dkun mostawa wa7ed ... machi
-tab9at". The last part of the site, west of Tranche 3 and the villas type A, over the Atlantic cliff (1.14 ha),
+tab9at"; then "just fix this little thing"). The last part of the site, west of Tranche 3 and the villas type A, over the Atlantic cliff (1.14 ha),
 **a design proposal on the plan de masse's layout** (`20_pool_park.py`):
 - the plan's drawing of the zone is placed on the site by its boundary marks B8, B7 and B6 (residues under 0.2 m);
   everything stands where the plan draws it;
@@ -495,7 +495,10 @@ tab9at". The last part of the site, west of Tranche 3 and the villas type A, ove
 - the pool, in the plan's pool area and along its axis but not in its shape: one sinuous lagoon pool (about
   2000 m2, its lobes 9 to 14 m from its spine), a palm island in its widest lobe, a timber bridge on stone piers
   over its waist, a sun shelf 0.35 m deep with loungers in the water along its eastern edge, travertine decks,
-  loungers and parasols; a jacuzzi and a children's pool by its southern end;
+  loungers and parasols; a jacuzzi by its southern end (the children's pool, cut by the boundary, removed 26-10);
+- the passage between the villas type A (Tranche 3) carried on to the pool (26-10): its middle paving, 6.9 m wide,
+  across the lawn to the pool's deck; the passage ends 0.8 m under the level, so 5 risers of 0.16 m (treads 0.40 m)
+  go up at its start between low stone walls;
 - the round kiosk where the plan draws it: a round timber pergola 16 m across on 16 posts, its 32 radial beams as
   the plan's drawing, the round stone bar with its stools in the middle, on the paved plaza the plan hatches;
 - the rows of palms, the big trees (olive trees) and the lawn as the plan places them; a stone parapet along the

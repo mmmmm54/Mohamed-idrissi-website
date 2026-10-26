@@ -2,7 +2,8 @@
 20_pool_park — the last part of the site, west of Tranche 3 on the cliff over the Atlantic (client 26-10: "zid had
 partie lakhriya w pscine dira f chi chkel machi nfs chi likayn f plan because this pscine is the important things
 bghiaha dkun naaadya"; then "look at the planning ... 3awjtiha bzzaf ... ghsha dkun mostawa wa7ed ... machi
-tab9at": laid out as the plan de masse lays it out, on one level).
+tab9at": laid out as the plan de masse lays it out, on one level; then "just fix this little thing": Tranche 3's
+passage between the villas type A carried on to the pool, the children's pool removed).
 
 A DESIGN PROPOSAL on the plan de masse's layout: the plan's drawing of the zone (the pool area between the
 round kiosk and the villas type A, the street along the boundary, the rows of palms) is placed on the site
@@ -13,7 +14,9 @@ level (LEVEL, between the villas type A's pads; 05 grades the ground there flat 
   the pool, the important thing, in the plan's pool area but not in its shape: one sinuous lagoon pool along
     the plan's axis (lobes 9 to 14 m from its spine), a palm island in its widest lobe, a timber bridge over its
     waist, a sun shelf with loungers in the water along its eastern edge, travertine decks, loungers and
-    parasols; a jacuzzi and a children's pool by its southern end;
+    parasols; a jacuzzi by its southern end;
+  the passage between the villas type A (Tranche 3) carried on to the pool: its middle paving, as wide, across
+    the lawn to the pool's deck, steps up from the passage (lower than the level) between low stone walls;
   the round kiosk where the plan draws it: a round timber pergola (16 m across) on its posts, its radial
     beams as the plan's drawing, the round stone bar in its middle, on the plaza the plan hatches;
   the rows of palms, the big trees and the lawn as the plan places them; a stone parapet along the cliff and
@@ -74,6 +77,15 @@ def envelope():
 def flat_area():
     """Where 05's ground is the one level LEVEL: the zone and its boundary, not Tranche 3."""
     return ZONE.buffer(0.3, join_style=2).difference(T3ENV)
+
+
+def _passage():
+    """Tranche 3's passage between the villas type A, its middle paving: its end on the zone, its direction into the
+    zone, its width"""
+    r = np.array(Polygon(T3["passage_path"][0]["ext"]).buffer(0).minimum_rotated_rectangle.exterior.coords[:4])
+    i = int(np.argmax([np.linalg.norm(r[(k + 1) % 4] - r[k]) for k in range(4)]))
+    a, b = sorted([(r[i] + r[(i + 3) % 4]) / 2, (r[(i + 1) % 4] + r[(i + 2) % 4]) / 2], key=lambda p: ZONE.distance(Point(*p)))
+    return a, (a - b) / np.linalg.norm(a - b), float(np.linalg.norm(r[(i + 2) % 4] - r[(i + 1) % 4]))
 
 
 def _ppoly(pts):
@@ -207,23 +219,15 @@ def build(M, B, srcv, H):
             for sg in (-1, 1):
                 L.prism(mb, "stone", Point(q.x + d[0] * sg * 1.2, q.y + d[1] * sg * 1.2).buffer(0.25, 8), z0 - POOL_D, z0 + 0.25)
 
-    # the jacuzzi and the children's pool by the southern end
+    # the jacuzzi by the southern end (client 26-10: the children's pool, cut by the boundary, removed)
     jac = Point(*PLAN(560, 498)).buffer(1.8, 32)
     if not (ZONE.buffer(-3).contains(jac) and not jac.intersects(pool.buffer(2.0))):
         jac = Polygon()
-    kid = unary_union([Point(*PLAN(582 + 9 * k, 566 - 4 * k)).buffer(3.2 - 0.35 * abs(k - 1), 24) for k in range(-1, 4)])
-    kid = kid.intersection(ZONE.buffer(-4.0)).difference(pool.buffer(3.0)).difference(jac.buffer(2.0))
-    kid = max(L.as_polys(kid), key=lambda g: g.area) if not kid.is_empty else Polygon()
     if not jac.is_empty:
         L.prism(mb, "coping", jac.buffer(0.30).difference(jac), z0 - 0.30, z0 + 0.45)
         L.prism(mp, "tile_jade", jac, z0 - 0.55, z0 - 0.50, sides=False)
         L.prism(mp, "tile_jade", jac.difference(jac.buffer(-0.02)), z0 - 0.50, z0 + 0.30)
         L.prism(mp, "pool_water", jac.buffer(-0.02), z0 + 0.30, z0 + 0.32, sides=False)
-    if not kid.is_empty:
-        L.prism(mp, "pool_tile", kid, z0 - 0.55, z0 - 0.50, sides=False)
-        L.prism(mp, "pool_tile", kid.buffer(0.01).difference(kid.buffer(-0.01)), z0 - 0.50, z0 - 0.06)
-        L.prism(mp, "pool_water", kid.buffer(-0.01), z0 - 0.10, z0 - 0.08, sides=False)
-        L.prism(mb, "coping", kid.buffer(0.30).difference(kid), z0 - 0.30, z0 + 0.03)
 
     # ---- the round kiosk where the plan draws it, on the plaza it hatches -------------------------------------
     kc = np.array(PLAN(530, 380))
@@ -249,19 +253,40 @@ def build(M, B, srcv, H):
         L.prism(mb, "planks", Point(*pc).buffer(0.20, 12), z0 + 0.72, z0 + 0.78)
 
     # ---- the ground: decks round the pools and on the plaza, the path from the crossing, lawn ------------------
-    blocked = unary_union([pool, kid, jac, island])
+    blocked = unary_union([pool, jac, island])
     path = LineString([PLAN(520, 118), PLAN(518, 248)]).buffer(1.3, cap_style=2)
-    deck = unary_union([pool.buffer(4.0, join_style=1), kid.buffer(2.5, join_style=1) if not kid.is_empty else Polygon(),
-                        jac.buffer(2.0) if not jac.is_empty else Polygon(), plaza, path])
+    core = pool.buffer(4.0, join_style=1)
+    deck = unary_union([core, jac.buffer(2.0) if not jac.is_empty else Polygon(), plaza, path])
     deck = deck.intersection(ZONE).difference(road_all).difference(blocked)
-    lawn = ZONE.difference(road_all).difference(deck).difference(blocked)
+
+    # Tranche 3's passage carried on to the pool (client 26-10, the red lines): its middle paving as wide, from the
+    # boundary to the deck, the steps up from the passage at its start between low stone walls
+    pa, pd, pw = _passage()
+    pn = np.array([-pd[1], pd[0]])
+    band = lambda s0, s1, h=pw / 2: Polygon([tuple(pa + pd * s0 - pn * h), tuple(pa + pd * s1 - pn * h),
+                                             tuple(pa + pd * s1 + pn * h), tuple(pa + pd * s0 + pn * h)])
+    cross = lambda s: LineString([tuple(pa + pd * s - pn * pw / 2), tuple(pa + pd * s + pn * pw / 2)])
+    s_end = next((s for s in np.arange(0.0, 80.0, 0.25) if core.contains(cross(s))), 80.0)
+    alley = band(-0.05, s_end).difference(core).intersection(ZONE.buffer(0.3)).difference(blocked)
+    zb = float(B.hz(*pa)) + 0.15                                # the passage's paving at its end (Tranche 3)
+    nst = max(0, int(round((z0 - zb) / 0.16)))
+    s_st = 0.40 * max(0, nst - 1)                               # treads 0.40, the last riser up to the level
+    if nst:
+        for k in range(nst - 1):
+            L.prism(mb, "t2_path", band(0.40 * k - 0.05 * (k == 0), 0.40 * (k + 1)), zb - 0.60, zb + (k + 1) * (z0 - zb) / nst)
+        for sg in (-1, 1):                                      # the low walls along the steps
+            ln = LineString([tuple(pa + pn * sg * pw / 2 - pd * 0.05), tuple(pa + pn * sg * pw / 2 + pd * (s_st + 0.35))])
+            _strip_wall(mb, ln, lambda x, y: z0 + 0.45, zb - 0.60, ZONE.buffer(1.0).difference(band(-1.0, s_end)))
+    L.prism(mb, "t2_path", alley.difference(band(-1.0, s_st)), z0 - 0.40, z0 + 0.02, sides=False)
+    deck = deck.difference(alley)
+    lawn = ZONE.difference(road_all).difference(deck).difference(blocked).difference(alley).difference(band(-1.0, s_st + 0.35, pw / 2 + 0.35))
     lawn = unary_union([q for q in L.as_polys(lawn) if q.area > 0.5])
     L.prism(mb, "deck_stone", deck, z0 - 0.40, z0, sides=False)
     L.prism(mb, "lawn", lawn, z0 - 0.40, z0 + 0.04, sides=False)
 
     # ---- the parapet along the cliff and the southern boundary; the step against Tranche 3 --------------------
     inner = ZONE.difference(road_all)
-    e = ZONE.boundary.difference(NORTH.buffer(0.4)).difference(road_all.buffer(0.2))
+    e = ZONE.boundary.difference(NORTH.buffer(0.4)).difference(road_all.buffer(0.2)).difference(band(-1.0, 1.0) if nst else Polygon())
     for g in getattr(e, "geoms", [e]):
         if g.geom_type != "LineString" or g.length < 0.3:
             continue
@@ -288,7 +313,7 @@ def build(M, B, srcv, H):
             mb.poly("canvas", [rim[(k + 1) % 8], rim[k], (x, y, z + 2.78)])
 
     free = deck.buffer(-0.9)
-    nogo = unary_union([plaza.buffer(0.5), bridge.buffer(1.5), path.buffer(0.5)])
+    nogo = unary_union([plaza.buffer(0.5), bridge.buffer(1.5), path.buffer(0.5), alley.buffer(0.8)])
     ring = pool.exterior
     for k, s in enumerate(np.arange(1.5, ring.length, 3.4)):
         p, q = ring.interpolate(s), ring.interpolate(min(ring.length, s + 0.5))
@@ -312,8 +337,8 @@ def build(M, B, srcv, H):
     rows = [(x, y) for x in (712.0, 742.0) for y in np.arange(185, 600, 24)]
     rows += [(x, y) for x in np.arange(392, 462, 23) for y in np.arange(318, 500, 24)]
     rows += [(x, y) for x in np.arange(630, 728, 24) for y in np.arange(538, 610, 24)]
-    keep_off = unary_union([pool.buffer(2.5), road_all.buffer(2.0), Point(*kc).buffer(R + 1.0), kid.buffer(2.0),
-                            jac.buffer(2.0), bridge.buffer(2.0), path])
+    keep_off = unary_union([pool.buffer(2.5), road_all.buffer(2.0), Point(*kc).buffer(R + 1.0), jac.buffer(2.0),
+                            bridge.buffer(2.0), path, alley.buffer(1.2), band(-1.0, s_st + 1.0, pw / 2 + 1.2)])
     for x, y in rows:
         p = Point(*PLAN(x, y))
         if ZONE.buffer(-1.5).contains(p) and not keep_off.contains(p):
@@ -335,7 +360,7 @@ def build(M, B, srcv, H):
     mb.build("T4_GROUND", cols["T4_01_GROUND"], M)
     mp.build("T4_POOLS", cols["T4_02_POOLS"], M)
     print(f"  T4: pool park at {z0:.1f}: pool {pool.area:.0f} m2, island {island.area:.0f} m2, bridge {bridge.area:.0f} m2, "
-          f"street {road_all.area:.0f} m2, {nveg[0]} plants")
+          f"street {road_all.area:.0f} m2, passage {alley.area:.0f} m2 with {max(0, nst - 1)} steps up {z0 - zb:.2f} m, {nveg[0]} plants")
     return cameras(pool, kc, z0)
 
 

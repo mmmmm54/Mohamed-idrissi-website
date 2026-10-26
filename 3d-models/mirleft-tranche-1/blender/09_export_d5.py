@@ -248,9 +248,10 @@ The last part of the site, west of Tranche 3 over the Atlantic, **a design propo
 (the plan's drawing placed by its boundary marks), on **one level**: collections `T4_01_GROUND`, `T4_02_POOLS`,
 `T4_03_LANDSCAPE`, `T4_04_TREES_PALMS`, objects `T4_GROUND_<material>` and `T4_POOLS_<material>`. The street along
 the northern boundary `t2_road` / `t2_pave`, the sinuous lagoon pool with its palm island, timber bridge and sun
-shelf (`M10_Pool_Water`, set it to D5 Water), a jacuzzi and a children's pool, the round kiosk (timber pergola and
+shelf (`M10_Pool_Water`, set it to D5 Water), a jacuzzi, the round kiosk (timber pergola and
 stone bar) on its plaza, decks `T06_Travertine_Deck`, lawn `T03_Lawn`, stone parapet `M04_Stone_Rubble` on the
-cliff. Cameras `T4_CAM_01_POOL_PARK_AERIAL`, `T4_CAM_02_POOL_TO_OCEAN`, `T4_CAM_03_KIOSK`. **Delete the old model in
+cliff. Since the second 26-10 review the passage between the villas type A goes on to the pool (its paving, steps
+up at its start) and the children's pool is gone. Cameras `T4_CAM_01_POOL_PARK_AERIAL`, `T4_CAM_02_POOL_TO_OCEAN`, `T4_CAM_03_KIOSK`. **Delete the old model in
 D5 completely before importing.**
 """
 
@@ -259,7 +260,8 @@ D5 completely before importing.**
 # so D5 can neither show them apart nor give them two material instances
 JOIN = {"GROUND_ROADS_BEIGE_T1_T2": ("GROUND_ROADS_VILLAS_asphalt", "T2_GROUND_ROADS_t2_road", "T2_GROUND_PARKING_t2_parking",
                                      "T3_GROUND_ROADS_t2_road", "T3_GROUND_PARKING_t2_parking", "T4_GROUND_t2_road"),
-        "GROUND_PAVERS_BEIGE_T1_T2": ("DUPLEX_ENTRANCE_PATHS_pave_beige", "T2_GROUND_ENTRANCE_PATHS_t2_path", "T3_GROUND_PATHS_t2_path"),
+        "GROUND_PAVERS_BEIGE_T1_T2": ("DUPLEX_ENTRANCE_PATHS_pave_beige", "T2_GROUND_ENTRANCE_PATHS_t2_path", "T3_GROUND_PATHS_t2_path",
+                                      "T4_GROUND_t2_path"),
         "GROUND_KERBS_T1_T2": ("GROUND_PAVEMENTS_VILLAS_kerb_paving", "T2_GROUND_KERBS_t2_kerb", "T3_GROUND_KERBS_t2_kerb"),
         "GROUND_LAWN_T1_T2": ("GROUND_LAWN_lawn", "T2_GROUND_GARDENS_LAWN_t2_lawn", "T2_GROUND_VERGES_t2_verge",
                               "T2_GROUND_LAWN_BY_TRANCHE_1_t2_verge", "T3_GROUND_GARDENS_LAWN_t2_lawn", "T3_GROUND_VERGES_t2_verge"),
