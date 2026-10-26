@@ -10,11 +10,17 @@ metres, Y up, so the parts fall into place when they are layered in After Effect
 Writes Mirleft_AE_PARTS.zip: Mirleft_AE_<PART>.glb (0.3 to 4 MB each) and Mirleft_AE_ALL_LIGHT.glb (every part
 in one file, 27 MB).
     python 22_export_ae_parts.py
+--zoning (client 26-10: "file wa7ed fih residence kamla, ghir ta9ssim, b colors"): the whole residence in ONE file,
+lighter still, each zone in one flat colour (villas duplex, restaurant and commerces, villas type B, type C, SPA,
+services, villas type A, hotel), the ground in three (paving and walls, green, water), no surroundings, no plants;
+writes Mirleft_AE_ZONING.glb and its legend Mirleft_AE_ZONING_LEGEND.png.
+    python 22_export_ae_parts.py --zoning
 """
 import importlib.util
 import math
 import os
 import random
+import sys
 import zipfile
 
 import bpy  # noqa: I001  (bpy before bmesh)
@@ -38,6 +44,7 @@ PARTS = {
     "T2_VILLAS_B": (("T2_02_VILLAS",), "T2_VILLA_B", 60000),
     "T2_VILLAS_C": (("T2_02_VILLAS",), "T2_VILLA_C", 30000),
     "T2_SPA": (("T2_05_SPA",), None, 12000),
+    "T2_SERVICES": (("T2_01_GROUND",), "T2_BUILDINGS_CENTRE", 6000),
     "T2_GROUND_STAIR": (("T2_01_GROUND", "T2_03_LANDSCAPE"), None, 50000),
     "T3_VILLAS_A": (("T3_02_VILLAS",), None, 20000),
     "T3_HOTEL": (("T3_05_HOTEL",), None, 45000),
@@ -45,6 +52,22 @@ PARTS = {
     "T4_POOL_PARK": (("T4_01_GROUND", "T4_02_POOLS", "T4_03_LANDSCAPE"), None, 25000),
     "SURROUNDINGS": (("00_SURROUNDINGS",), None, 40000),
 }
+ZONING = "--zoning" in sys.argv
+ZONES = {   # the zoning file: part -> (flat colour, legend)
+    "T1_VILLAS_DUPLEX": ("#E4602A", "Villas duplex (Tranche 1)"),
+    "T1_RESTAURANT_COMMERCES": ("#D7263D", "Restaurant, commerces, petanque (Tranche 1)"),
+    "T2_VILLAS_B": ("#F6D63C", "Villas type B"),
+    "T2_VILLAS_C": ("#8E5CC9", "Villas type C"),
+    "T2_SPA": ("#E85A9C", "SPA"),
+    "T2_SERVICES": ("#7D7D7D", "Services (centre d'entretien, office)"),
+    "T3_VILLAS_A": ("#2D7DD2", "Villas type A"),
+    "T3_HOTEL": ("#1B998B", "Hotel"),
+}
+ZBUDGET = {"T1_VILLAS_DUPLEX": 32000, "T1_RESTAURANT_COMMERCES": 14000, "T1_POOL_COURT": 6000, "T1_GROUND": 16000,
+           "T2_GROUND_STAIR": 22000, "T3_VILLAS_A": 15000, "T3_HOTEL": 32000, "T4_POOL_PARK": 12000}   # the zoning file
+GROUND_ZONES = (("#9FCB7B", "Espaces verts", ("Lawn", "lawn", "Verge", "Turf", "Gravel", "Planter_Soil")),
+                ("#6EC6F0", "Eau, piscines", ("Water", "Pool_Mosaic", "Pool_Tile", "Jade")),
+                ("#E6E1D8", "Voiries, parvis, murs, jardins", ()))
 DROP_MATS = ("Parasol_Canvas", "Lounger", "Cushion", "Sofa", "Curtain", "Interior", "Lamp_Warm", "Mashrabiya")
 DROP_OBS = ("LOUNGER_", "CABANA_")
 HEX = {   # plain colours of the procedural materials (the others: the mean colour of their texture, or 08's FLAT)
@@ -132,16 +155,24 @@ def simplify(ob, budget):
     bmesh.ops.triangulate(bm, faces=bm.faces)
     bm.to_mesh(me)
     bm.free()
-    n = len(me.polygons)
+    n = sum(len(p.vertices) - 2 for p in me.polygons)
     if n > budget:
         mod = ob.modifiers.new("dec", "DECIMATE")
         mod.ratio = budget / n
         mod.use_collapse_triangulate = True
-        with bpy.context.temp_override(object=ob, active_object=ob):
-            bpy.ops.object.modifier_apply(modifier=mod.name)
-    for p in ob.data.polygons:
-        p.use_smooth = False
-    return len(ob.data.polygons)
+        dg = bpy.context.evaluated_depsgraph_get()
+        new = bpy.data.meshes.new_from_object(ob.evaluated_get(dg))
+        ob.modifiers.remove(mod)
+        old, ob.data = ob.data, new
+        new.name = old.name
+        bpy.data.meshes.remove(old)
+    if ZONING:                                       # the flat faces share their vertices (a lighter file), sharp edges
+        ob.data.shade_smooth()
+        ob.data.set_sharp_from_angle(angle=math.radians(30.0))
+    else:
+        for p in ob.data.polygons:
+            p.use_smooth = False
+    return sum(len(p.vertices) - 2 for p in ob.data.polygons)
 
 
 def join(name, obs):
@@ -203,6 +234,56 @@ def proxy_mesh(kind):
     return V, F, Mi
 
 
+_ZM = {}
+
+
+def zmat(hexcol, name):
+    if name not in _ZM:
+        m = bpy.data.materials.new(name)
+        m.use_nodes = True
+        b = m.node_tree.nodes["Principled BSDF"]
+        b.inputs["Base Color"].default_value = (*G.lin(hexcol), 1.0)
+        b.inputs["Roughness"].default_value = 0.8
+        m.diffuse_color = (*G.lin(hexcol), 1.0)
+        _ZM[name] = m
+    return _ZM[name]
+
+
+def zone_paint(me, part):
+    """the zoning file's colours: a building zone in its one colour; the ground in green, water or paving"""
+    if part in ZONES:
+        hexcol, label = ZONES[part]
+        me.materials.clear()
+        me.materials.append(zmat(hexcol, "ZONE_" + part))
+        me.polygons.foreach_set("material_index", [0] * len(me.polygons))
+        return
+    for i, m in enumerate(list(me.materials)):
+        if m is None:
+            continue
+        hexcol, label, keys = next(z for z in GROUND_ZONES if not z[2] or any(k in m.name for k in z[2]))
+        me.materials[i] = zmat(hexcol, "ZONE_" + label.split(",")[0].replace(" ", "_").upper())
+
+
+def legend(path):
+    from PIL import ImageDraw, ImageFont
+    rows = [(h, t) for h, t in ZONES.values()] + [(h, t) for h, t, _ in GROUND_ZONES]
+    W, H = 900, 70 + 58 * len(rows)
+    im = Image.new("RGB", (W, H), (250, 248, 244))
+    d = ImageDraw.Draw(im)
+    try:
+        f1 = ImageFont.truetype("DejaVuSans-Bold.ttf", 30)
+        f2 = ImageFont.truetype("DejaVuSans.ttf", 26)
+    except OSError:
+        f1 = f2 = ImageFont.load_default()
+    d.text((30, 18), "Mirleft - zoning", fill=(40, 40, 40), font=f1)
+    for k, (h, t) in enumerate(rows):
+        y = 70 + 58 * k
+        c = tuple(int(h[i:i + 2], 16) for i in (1, 3, 5))
+        d.rectangle([30, y, 90, y + 40], fill=c, outline=(90, 90, 90))
+        d.text((110, y + 5), t, fill=(40, 40, 40), font=f2)
+    im.save(path)
+
+
 def main():
     bpy.ops.wm.open_mainfile(filepath=os.path.join(ROOT, "Mirleft_Tranche_1.blend"))
     vl = bpy.context.view_layer
@@ -233,8 +314,10 @@ def main():
     built = {}
     for part, (_, _, budget) in PARTS.items():
         obs = [o for o in bpy.data.objects if o.name in vl.objects and o.type == "MESH" and part_of(o) == part]
-        if not obs:
+        if not obs or (ZONING and part == "SURROUNDINGS"):
             continue
+        if ZONING:
+            budget = ZBUDGET.get(part, budget)
         ob = join("MIRLEFT_" + part, obs)
         me = ob.data
         # furniture and interiors out, plain colours in
@@ -245,10 +328,11 @@ def main():
             bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.material_index in drop], context="FACES")
             bm.to_mesh(me)
             bm.free()
-        keep_uv = any(m is not None and m.name.startswith("GEO_") for m in me.materials)
-        for i, m in enumerate(list(me.materials)):
-            if m is not None:
-                me.materials[i] = plain(m)
+        keep_uv = any(m is not None and m.name.startswith("GEO_") for m in me.materials) and not ZONING
+        if not ZONING:
+            for i, m in enumerate(list(me.materials)):
+                if m is not None:
+                    me.materials[i] = plain(m)
         if not keep_uv:
             while me.uv_layers:
                 me.uv_layers.remove(me.uv_layers[0])
@@ -259,8 +343,20 @@ def main():
                 pass
         me.transform(__import__("mathutils").Matrix.Translation((-cx, -cy, -cz)))
         n = simplify(ob, budget)
+        if ZONING:                                  # coloured after the decimation, which keeps to the materials
+            zone_paint(ob.data, part)
         built[part] = ob
         print(f"PART {part:26s} {len(obs):5d} objects -> {n:7d} triangles", flush=True)
+    if ZONING:
+        bpy.ops.object.select_all(action="DESELECT")
+        for o in built.values():
+            o.select_set(True)
+        p = os.path.join(ROOT, "Mirleft_AE_ZONING.glb")
+        bpy.ops.export_scene.gltf(filepath=p, export_format="GLB", use_selection=True, export_yup=True, export_apply=True,
+                                  export_cameras=False, export_lights=False, export_materials="EXPORT", export_draco_mesh_compression_enable=False)
+        print(f"GLB {os.path.basename(p)} {os.path.getsize(p) / 2 ** 20:.1f} MiB", flush=True)
+        legend(os.path.join(ROOT, "Mirleft_AE_ZONING_LEGEND.png"))
+        return
     # the plants as simple volumes, one mesh
     from mathutils import Matrix, Vector
     mats = [bpy.data.materials.new(n) for n in ("AE_Trunk", "AE_Palm_Leaves", "AE_Tree_Leaves")]
