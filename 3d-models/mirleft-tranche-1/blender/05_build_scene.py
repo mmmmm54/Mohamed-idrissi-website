@@ -1164,6 +1164,7 @@ def main():
 
     # ---- Tranche 2: the villas type B west of the tranche (13_tranche2), in collections of their own --
     T2M.STREET_FIX = T3M.street_fix(load("17_hotel.py"))     # client 24-10: Tranche 2's kerbs by the hotel go
+    T3M.PASSAGE_ZF = T4M.passage_zf                           # client 26-10: the villas A passage flush with the park
     cams_t2 = T2M.build(M, sys.modules[__name__], srcv, Hsite)
     cams_t2.update(T3M.build(M, sys.modules[__name__], srcv, Hsite))
     cams_t2.update(T4M.build(M, sys.modules[__name__], srcv, Hsite))

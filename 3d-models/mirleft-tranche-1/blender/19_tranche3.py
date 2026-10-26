@@ -122,6 +122,9 @@ def build(M, B, srcv, H):
     # southern paving planted as the strip on its other side
     ppath = P(T3["passage_path"][0])
     strips = unary_union([PL(T3["passage_strips"]), PL(T3["passage_path"][1:])])
+    # client 26-10 ("machi darori droj khaliha mstawya"): the passage rises evenly to the pool park's level at its
+    # western end, flush with its path on to the pool (20_pool_park.passage_zf, set by 05)
+    pz = globals()["PASSAGE_ZF"](hz) if globals().get("PASSAGE_ZF") else hz
     public = unary_union([roads, pave, parking])
     # walls: the lots' outlines, a low wall on street 7 (the lot's side facing the plan's east), the gates
     ring = unary_union([v["lot"].boundary.buffer(0.10, cap_style=2, join_style=2) for v in vs])
@@ -191,11 +194,11 @@ def build(M, B, srcv, H):
             if lawn.buffer(-0.4).contains(q) and q.distance(Point(v["gate_c"])) > 2.0:
                 put("shrub", (q.x, q.y), v["zl"], RNG.uniform(0.8, 1.0))
     # the passage between the second and the third lot: a paved footpath between two planted strips (on to the pool, 20)
-    L.prism(mb_p, "t2_path", ppath, -0.65, PAVE_DZ, zf=hz)
+    L.prism(mb_p, "t2_path", ppath, -1.60, PAVE_DZ, zf=pz)
     mb_l.build("T3_GROUND_GARDENS_LAWN", cols["T3_01_GROUND"], M)
     mb_p.build("T3_GROUND_PATHS", cols["T3_01_GROUND"], M)
     mb = C.MeshBuilder()
-    L.prism(mb, "t2_verge", strips, -0.65, 0.12, zf=hz)
+    L.prism(mb, "t2_verge", strips, -1.60, PAVE_DZ + 0.02, zf=pz)      # level with the pool park's lawn at its end
     mb.build("T3_GROUND_VERGES", cols["T3_01_GROUND"], M)
     for g in L.as_polys(strips):                             # shrubs along each strip's axis, every 3.5 m
         r = np.array(g.minimum_rotated_rectangle.exterior.coords[:4])
@@ -205,7 +208,7 @@ def build(M, B, srcv, H):
         for k in range(n):
             p = Point(*(m0 + (m1 - m0) * (k + 0.5) / n))
             if g.buffer(-0.3).contains(p):
-                put("shrub", (p.x, p.y), hz(p.x, p.y) + 0.12, RNG.uniform(0.8, 1.0))
+                put("shrub", (p.x, p.y), pz(p.x, p.y) + PAVE_DZ + 0.02, RNG.uniform(0.8, 1.0))
 
     # ---- streets, pavements, kerbs, parking --------------------------------------------------------------
     kerb = pave.intersection(roads.union(parking).buffer(0.16, join_style=2))

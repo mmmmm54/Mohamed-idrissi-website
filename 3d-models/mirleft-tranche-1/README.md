@@ -495,11 +495,11 @@ tab9at"; then "just fix this little thing"). The last part of the site, west of 
   and the pedestrian crossing, rising over its last 18 m to Tranche 3's street;
 - the pool, in the plan's pool area and along its axis but not in its shape: one sinuous lagoon pool (about
   2000 m2, its lobes 9 to 14 m from its spine), a palm island in its widest lobe, a timber bridge on stone piers
-  over its waist, a sun shelf 0.35 m deep with loungers in the water along its eastern edge, travertine decks,
+  over its waist (its deck level with the pool's deck since 26-10, no step), a sun shelf 0.35 m deep with loungers in the water along its eastern edge, travertine decks,
   loungers and parasols; a jacuzzi by its southern end (the children's pool, cut by the boundary, removed 26-10);
 - the passage between the villas type A (Tranche 3) carried on to the pool (26-10): its middle paving, 6.9 m wide,
-  across the lawn to the pool's deck; the passage ends 0.8 m under the level, so 5 risers of 0.16 m (treads 0.40 m)
-  go up at its start between low stone walls;
+  across the lawn to the pool's deck, flush, no steps: the passage itself (which ended 0.8 m under the level)
+  rises evenly from street 7 to the level, its paving and its planted strips with it;
 - the round kiosk where the plan draws it: a round timber pergola 16 m across on 16 posts, its 32 radial beams as
   the plan's drawing, the round stone bar with its stools in the middle, on the paved plaza the plan hatches;
 - the rows of palms, the big trees (olive trees) and the lawn as the plan places them; a stone parapet along the
