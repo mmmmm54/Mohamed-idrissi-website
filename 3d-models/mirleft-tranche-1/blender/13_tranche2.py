@@ -282,14 +282,25 @@ def build(M, B, srcv, H):
     lz = unary_union(low_zone).intersection(public.buffer(0.4))
     low = ring.intersection(lz).difference(houses).difference(unary_union(openings))
     high = ring.difference(lz).difference(houses).difference(unary_union(openings))
-    # client 24-10 ("la pierre ... le côté escalier"): the garden walls along the stair between the blocks and
-    # along the street between the two rows of villas type C are clad in stone as the street walls, with the
-    # same coping
+    # client 24-10 / 26-10 ("la pierre ... le côté escalier", "ghir f had tijah"): the garden walls along the
+    # stair between the blocks and along the lane parallel to it (between the two rows of villas type C and on
+    # between the rows of villas type B beyond) are clad in stone as the street walls, with the same coping;
+    # no other wall
     gc_ = [v.garden for v in vs if v.t == "C"]
     lanes = [stair]
     if gc_:
-        cs_ = unary_union(gc_).convex_hull.difference(unary_union(gc_))
-        lanes += [q for q in L.as_polys(cs_) if q.area > 50.0]
+        cs_ = roads.intersection(unary_union(gc_).convex_hull)            # the street between the two rows
+        for q in L.as_polys(cs_):
+            if q.area > 50.0:
+                rr = list(q.minimum_rotated_rectangle.exterior.coords)[:4]
+                e = [np.array(rr[(k + 1) % 4]) - np.array(rr[k]) for k in range(4)]
+                k = int(np.argmax([np.linalg.norm(x) for x in e]))
+                ax = e[k] / np.linalg.norm(e[k])
+                c0 = np.array(q.minimum_rotated_rectangle.centroid.coords[0])
+                wv = np.linalg.norm(e[(k + 1) % 4]) / 2
+                nv_ = np.array([-ax[1], ax[0]])
+                lane = Polygon([tuple(c0 + ax * t + nv_ * w_) for t, w_ in ((-400, -wv), (400, -wv), (400, wv), (-400, wv))])
+                lanes.append(lane.intersection(public))
     stone_zone = unary_union(lanes).buffer(0.45, join_style=2)
     high_s = high.intersection(stone_zone)
     high_r = high.difference(high_s)
@@ -330,7 +341,7 @@ def build(M, B, srcv, H):
         for zz in (0.30, gh - 0.20):
             L.prism(mb, "door_wood", v.f(gate_box(axis, c, a + 0.02, b - 0.02, 0.02)), zz, zz + 0.08, zf=flat)
     mb.build("T2_WALLS_FRONT_GATES", cols["T2_01_GROUND"], M)
-    print(f"  T2: garden walls {high.area:.0f} m2 of plan ({high_s.area:.0f} in stone by the stair and the type C street), "
+    print(f"  T2: garden walls {high.area:.0f} m2 of plan ({high_s.area:.0f} in stone by the stair and the lane along it), "
           f"low street walls {low.area:.0f} m2, {len(gates)} gates")
 
     # ---- gardens: lawn, path from the gate to the door, slab under the house -----------------------

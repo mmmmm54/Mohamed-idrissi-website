@@ -11,7 +11,7 @@ Models: 16_villa_a (from the plan de masse's drawing of the villa), 17_hotel (a 
 Levels as Tranche 2: the tranche is graded on the plane of Tranche 1 (05 build_terrain blends the site's
 empty land into it); streets on it, pavements 0.15 m over them with their kerb; each villa's garden flat at
 its pad (the height of the house's centre, lawn +0.07), held by its walls: 1.80 m in the villas' render with
-the trim, a low stone-clad wall with its beige coping on street 7, the gate pillars and timber gate of the
+the trim, a low wall in the same render on street 7 (stone-clad until 26-10), the gate pillars and timber gate of the
 residence on the axis of the house's entrance court, a paved path to it.
 """
 import json
@@ -144,8 +144,9 @@ def build(M, B, srcv, H):
     zf_low = lambda x, y: max(hz(x, y) + PAVE_DZ, level(x, y, 0.4) or -1e9)
     for g in L.as_polys(low):
         if g.area > 0.02:
-            L.prism(mb, "cladding", g, -1.20, W_FRONT, zf=zf_low)
-            L.prism(mb, "coping_beige", g.buffer(0.04, join_style=2).intersection(low.buffer(0.04, join_style=2)), W_FRONT, W_FRONT + 0.08, zf=zf_low)
+            # client 26-10: stone only along the stairs; the low wall on street 7 in the villas' render
+            L.prism(mb, "render", g, -1.20, W_FRONT, zf=zf_low)
+            L.prism(mb, "trim", g.buffer(0.03, join_style=2).intersection(low.buffer(0.03, join_style=2)), W_FRONT, W_FRONT + 0.05, zf=zf_low)
     for v in vs:                                              # pillars and the timber gate, across the lot's edge
         z = max(hz(*v["gate_c"]) + PAVE_DZ, v["zl"])
         flat = lambda x, y, z=z: z

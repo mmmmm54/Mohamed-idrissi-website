@@ -37,6 +37,7 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 | `blender/14_villa_c.py`, `15_spa.py` | The villa type C of `PLAN_VILLA_TYPE_C.dwg`; the SPA of `7-SPA-A0-1.pdf`. |
 | `blender/16_villa_a.py`, `17_hotel.py` | The villa type A of `VILLA_TYPE_A.dwg`; the hotel (a design proposal). |
 | `blender/18_extract_t3.py`, `19_tranche3.py` | Tranche 3: reads the plan de masse 31-05-13 into `data/t3_site.json`; builds it into the scene (called by `05_build_scene.py`). |
+| `blender/20_pool_park.py`, `96_test_pool.py` | The pool park on the cliff (a design proposal), built into the scene by `05_build_scene.py`; its quick test. |
 | `blender/10_fetch_geo.py` | Downloads the heights and the satellite image round the site into `data/geo/` (run once, outside Blender; needs pyproj and rasterio). |
 | `tools/` | `dwg2json.mjs` (DWG reader), `flatten.py` (primitives with their block path), `inserts.py` (block placements). |
 
@@ -382,6 +383,9 @@ a suggestion on the same size as on the plan" (with reference photos of a riad s
   horns (the triangular curled crests at the corners of the parapets) are removed from all the houses, as on
   Tranche 1's villas: the duplexes' stair cages, the villas type B, C and A. The SPA, the hotel and Tranche 1's
   public buildings keep theirs.
+  **26-10** ("ghir f had tijah"): stone only along the stair and the lane parallel to it (the street between the
+  two rows of villas type C, and on between the rows of villas type B beyond it); every other wall in render,
+  the villas type A's low walls on street 7 too (they were stone-clad).
 
 - **SPA on its ground (client 24-10, "habt bach dji 3la ard")**: the SPA stood on a flat lot set at the ground
   of its middle, so on the low (south-west) side its paving stood up to 1.4 m over the street with a gap under its
@@ -471,6 +475,31 @@ the perfect one". The zone circled in blue on the plan de masse 31-05-13, west o
     horns) on the arm's axis; olive trees and date palms in the lawns; walls (2.00 m) on the streets.
   Collections `T3_01_GROUND`, `T3_02_VILLAS`, `T3_03_LANDSCAPE`, `T3_04_TREES_PALMS`, `T3_05_HOTEL`
   (`19_tranche3.py`); the ground joins Tranche 1 and 2's objects in the D5 package.
+- **No domes on the hotel (client 26-10: "other see like mosquee")**: the domes on the roofs, on the towers and the
+  pavilion's dome with its drum and turret domes are gone. In their place square roof lanterns with a cedar
+  mashrabiya window on each face, the cornice and the parapet with its horns; the towers end flat with their
+  parapets; over the pavilion a lantern 4.4 m square, its four corner turrets flat.
+
+## The pool park on the cliff (client 26-10)
+"zid had partie lakhriya w pscine dira f chi chkel machi nfs chi likayn f plan because this pscine is the important
+things bghiaha dkun naaadya": the last part of the site, west of Tranche 3 and the villas type A, over the Atlantic
+cliff (1.14 ha). **A design proposal**, not the plan's three round basins and kiosk (`20_pool_park.py`):
+- the ground is graded on the plane as Tranche 3 (client 26-10: "ard ... machi dji ghr9a, drja3 nfs mostawa dyal
+  akhrin": on the natural slope it lay up to 30 m under its neighbours), and steps down to the cliff in four
+  terraces (-3.8, -6.0, -8.6, -9.0) held by rubble stone walls with their coping and a parapet;
+- the arrival terrace by Tranche 3: the pool bar (a flat-roofed block in the residence's render, its cornice and a
+  mashrabiya window, the counter onto the view) under a cedar pergola, loungers along the parapet;
+- the main pool: a long sinuous infinity pool (about 1000 m2, its lobes 6.5 to 12.5 m deep from the edge) whose
+  water runs over a green zellige wall in one sheet (85 m long) into the lagoon 2.6 m below; a palm island in its
+  widest lobe, a sun shelf 0.35 m deep along its inner edge with loungers in the water, travertine decks, loungers,
+  parasols and palms;
+- the lagoon at the foot of the waterfall (about 650 m2), its decks, loungers and palms;
+- the lower terrace: two round jacuzzis, a children's pool, three cabanas (daybeds under timber and canvas) facing
+  the sunset, lawn and olive trees; the planted tip with the belvedere (a stone platform with its parapet, a
+  timber pergola and benches) over the cliff;
+- stairs alongside the walls between the terraces.
+Collections `T4_01_GROUND`, `T4_02_POOLS`, `T4_03_LANDSCAPE`, `T4_04_TREES_PALMS`. Cameras `T4_CAM_01_POOL_PARK_AERIAL`,
+`T4_CAM_02_INFINITY_POOL`, `T4_CAM_03_CASCADE`.
 
 ## Removed (client, 13-10)
 Direction arrows and cars. The zebra crossings were put back as paint (15-10).
@@ -547,5 +576,8 @@ Direction arrows and cars. The zebra crossings were put back as paint (15-10).
 | T3_CAM_05_HOTEL_SUITES | The suites and their terraces on the garden |
 | T3_CAM_06_VILLA_A_STREET | A villa type A from street 7 (A-02) |
 | T3_CAM_07_VILLA_A_POOL | Its pool and terrace |
+| T4_CAM_01_POOL_PARK_AERIAL | The pool park on the cliff from above |
+| T4_CAM_02_INFINITY_POOL | Across the infinity pool to the ocean |
+| T4_CAM_03_CASCADE | The waterfall into the lagoon |
 
 **Lighting**: the sun at 10:15 on 15 October, at the site's latitude and longitude, through a Nishita sky. The view transform is AgX Punchy.

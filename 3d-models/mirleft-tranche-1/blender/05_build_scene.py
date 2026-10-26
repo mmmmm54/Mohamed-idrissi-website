@@ -831,8 +831,10 @@ def main():
     # blends into them; its streets follow that ground, the land stops at them
     T2M = load("13_tranche2.py")
     T3M = load("19_tranche3.py")              # Tranche 3 (client 23-10, 19_tranche3): the hotel and the villas type A, graded too
-    graded = unary_union([t1, T2M.blocks(), T3M.envelope()])
-    Hsite = build_terrain(M, cols["01_TERRAIN"], site, graded, geo=geo, cut=unary_union([t1, T2M.envelope(), T3M.envelope()]))
+    T4M = load("20_pool_park.py")             # the pool park on the cliff (client 26-10, 20_pool_park), graded on the plane
+    graded = unary_union([t1, T2M.blocks(), T3M.envelope(), T4M.envelope()])   # client 26-10: the pool park graded too, not sunk
+    Hsite = build_terrain(M, cols["01_TERRAIN"], site, graded, geo=geo,
+                          cut=unary_union([t1, T2M.envelope(), T3M.envelope(), T4M.envelope()]))
     if geo:                                   # the real terrain and the ocean round the site (10_fetch_geo)
         build_surroundings(M, cols["00_SURROUNDINGS"], site, t1, Hsite)
 
@@ -1159,6 +1161,7 @@ def main():
     T2M.STREET_FIX = T3M.street_fix(load("17_hotel.py"))     # client 24-10: Tranche 2's kerbs by the hotel go
     cams_t2 = T2M.build(M, sys.modules[__name__], srcv, Hsite)
     cams_t2.update(T3M.build(M, sys.modules[__name__], srcv, Hsite))
+    cams_t2.update(T4M.build(M, sys.modules[__name__], srcv, Hsite))
 
     # ---- light, cameras, render settings --------------------------------------------------------
     lt_ = L.bay("14_build_lighting.py")

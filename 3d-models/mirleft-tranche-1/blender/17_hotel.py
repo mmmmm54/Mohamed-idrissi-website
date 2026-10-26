@@ -22,13 +22,13 @@ trottoir again. So:
     frieze under a stone string course, mashrabiya oriels on corbels and stone balconies upstairs, bronze
     lanterns on the taupe pilasters, a carved band under the cornice, and a centre block with the grand entrance
     (the horseshoe arch in its zellige alfiz, studded doors under a mashrabiya tympanum, steps down to the
-    trottoir); domed towers at the corners facing the pavilion; on the roofs a dome on its drum, parasols and
+    trottoir); towers at the corners facing the pavilion; on the roofs a mashrabiya lantern, parasols and
     loungers, a cedar pergola; the main building's gate block on the Voie Publique (+10.40, the horseshoe arch
     in its zellige alfiz, studded doors under a mashrabiya tympanum, steps down inside);
   the gate pavilion on the crossing, standing over both: walls to +9.00, monumental pointed horseshoe arches east
     (from the parking) and west (onto the arm's head) in taupe alfiz framed in zellige under a row of niches,
-    blind zellige arches north and south, four corner turrets with small domes, the drum with its zellige band
-    and arched lights, the dome to about +14 with its bronze finial, a fountain inside;
+    blind zellige arches north and south, four flat corner turrets, a square lantern with mashrabiya windows
+    over the hall (client 26-10: no domes, they read as a mosque), a fountain inside;
   the trottoir (TROT, trottoir()): along the parking front of both and round the gate block, built by
     19_tranche3 with Tranche 3's pavements;
   the water garden: the long basin (7.1 x 53.7 m) in three basins stepping down the slope (the water running
@@ -401,29 +401,17 @@ def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
             mb.poly("canvas", [rim[k], rim[(k + 1) % 8], (x, y, z + 2.80)])
             mb.poly("canvas", [rim[(k + 1) % 8], rim[k], (x, y, z + 2.78)])
 
-    def dome(c, r, z0, h, n=40, nr=10, finial=True):
-        for k in range(nr):
-            a0, a1 = (math.pi / 2) * k / nr, (math.pi / 2) * (k + 1) / nr
-            r0, r1 = r * math.cos(a0), r * math.cos(a1)
-            z0_, z1_ = z0 + h * math.sin(a0), z0 + h * math.sin(a1)
-            for j in range(n):
-                t0, t1 = 2 * math.pi * j / n, 2 * math.pi * (j + 1) / n
-                q = [(c[0] + r0 * math.cos(t0), c[1] + r0 * math.sin(t0), z0_), (c[0] + r0 * math.cos(t1), c[1] + r0 * math.sin(t1), z0_),
-                     (c[0] + r1 * math.cos(t1), c[1] + r1 * math.sin(t1), z1_), (c[0] + r1 * math.cos(t0), c[1] + r1 * math.sin(t0), z1_)]
-                mb.poly("villa", q if k < nr - 1 else q[:3])
+    def roof_lantern(c, hw, z0, h, win):
+        """a square roof lantern (client 26-10: no domes, they read as a mosque): plumb walls with a cedar
+        mashrabiya window on each face, the cornice, the parapet with its coping and horns"""
+        g = box(c[0] - hw, c[1] - hw, c[0] + hw, c[1] + hw)
         zt = z0 + h
-        if not finial:
-            return
-        L.prism(mb, "bronze", Point(*c).buffer(0.10, 10), zt - 0.05, zt + 0.15)
-        L.prism(mb, "bronze", Point(*c).buffer(0.03, 6), zt, zt + 1.0)
-        for r_, zz in ((0.17, 0.45), (0.12, 0.78)):
-            L.prism(mb, "bronze", Point(*c).buffer(r_, 12), zt + zz - r_ * 0.8, zt + zz + r_ * 0.8)
-
-    def qubba(c, r, z0, zd, h, finial=True):
-        """a dome on its drum, the ledge round the drum's head"""
-        L.prism(mb, "villa", Point(*c).buffer(r, 40), z0, zd)
-        L.prism(mb, "ledge", Point(*c).buffer(r + 0.08, 40).difference(Point(*c).buffer(r - 0.2, 40)), zd - 0.10, zd, bottom=True)
-        dome(c, r, zd, h, finial=finial)
+        ops = {k: [(q, win, z0 + 0.55, zt - 0.45, "msh", 0.25)] for k, q in
+               (("W", (c[0] - hw, c[1])), ("E", (c[0] + hw, c[1])), ("S", (c[0], c[1] - hw)), ("N", (c[0], c[1] + hw)))}
+        box_walls(g, z0, zt - 0.02, ops)
+        L.prism(mb, "villa", g.buffer(-0.01, join_style=2), zt - 0.20, zt - 0.02, bottom=True)
+        cornice(g, zt)
+        roof(g, zt, zt + 0.60)
 
     hard = []                                                 # everything that is not lawn
 
@@ -436,7 +424,7 @@ def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
     # in the spandrels, a zellige frieze under a stone string course, cedar mashrabiya oriels on stone corbels and
     # stone balconies upstairs, bronze lanterns on the taupe pilasters, and a centre block with the grand entrance:
     # the horseshoe arch in its zellige alfiz, studded doors under a mashrabiya tympanum, steps down to the
-    # trottoir. Domed towers at the corners facing the pavilion; domes, parasols and a cedar pergola on the roofs.
+    # trottoir. Towers at the corners facing the pavilion; lanterns, parasols and a cedar pergola on the roofs.
     def horns_at(g, zt, corners):
         """the curled horns at the chosen corners of a box: (0 | 1, 0 | 1) for its low or high u and v"""
         us = [0.80 - 0.62 * k / 12 for k in range(13)]
@@ -589,9 +577,9 @@ def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
                 if sg > 0:                                                 # down to the trottoir
                     steps((xo, mid - 1.6, mid + 1.6), 1, fl[0], zl(xo + 1.0, mid) + TROT_DZ)
             L.prism(mb, "interior_floor", g.buffer(-0.05, join_style=2), zbot + 0.4, fl[0])
-            # the roof: a dome on its drum towards the step; parasols (by the towers) or the pergola (far end)
+            # the roof: a mashrabiya lantern towards the step; parasols (by the towers) or the pergola (far end)
             s_st = 1 if v_b > mid else -1
-            qubba((7.05, mid + s_st * 5.0), 1.85, zr - 0.02, zr + PW + 0.20, 1.70, finial=False)
+            roof_lantern((7.05, mid + s_st * 5.0), 1.60, zr - 0.02, PW + 1.40, 1.20)
             if k == 0:
                 for uu, ul in ((4.0, 5.6), (10.1, 8.5)):
                     vp = mid - s_st * 3.5
@@ -656,7 +644,6 @@ def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
             box_walls(t, zr_in - 0.02, zc - 0.02)
             cornice(t, zc)
             roof(t, zc, zc + PAR)
-            qubba(t.centroid.coords[0], 1.45, zc - 0.02, zc + PAR + 0.15, 1.45)
 
     # the gate block on the Voie Publique: proud of the main building's north front, rising to +10.40, the arch
     # in its alfiz, six niches over it, steps down inside to the trottoir
@@ -682,11 +669,11 @@ def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
     hard.append(porch)
 
     # =========================================================================================================
-    # the gate pavilion on the crossing (client 24-10, second review: "bdel adiya bchi7aja li 7ssn"): a domed qubba
+    # the gate pavilion on the crossing (client 24-10, second review: "bdel adiya bchi7aja li 7ssn"): a hall
     # standing over both buildings, its monumental pointed horseshoe arches east (from the parking) and west (onto
     # the arm's head) in taupe alfiz framed in green zellige under a row of niches, blind zellige arches north and
-    # south, four corner turrets with their small domes, the high drum with its zellige band and arched lights,
-    # the dome with its bronze finial, the fountain inside
+    # south, four flat corner turrets, a square lantern with mashrabiya windows over it (client 26-10: no domes,
+    # they read as a mosque), the fountain inside
     zX = zl(7.05, -4.0) + 0.15
     pv = box(*PAV)
     qx0, qy0, qx1, qy1 = PAV
@@ -719,28 +706,11 @@ def build(M, col, H, F, zf, name="T3_HOTEL", lawn="lawn"):
     cornice(pv, zpw, tu.buffer(0.02))
     roof(pv, zpw, zpw + PAR, tu.buffer(0.01), horns=False)
     zt_ = zpw + 1.90
-    for t in turrets:                                          # the corner turrets and their small domes
+    for t in turrets:                                          # the corner turrets, flat with their parapets
         box_walls(t, zpw - 0.02, zt_ - 0.02)
         cornice(t, zt_)
-        L.prism(mb, "terrace", t.buffer(-0.005, join_style=2), zt_ - 0.02, zt_, sides=False)
-        c_ = t.centroid.coords[0]
-        qubba(c_, 0.48, zt_ - 0.02, zt_ + 0.45, 0.62, finial=False)
-        L.prism(mb, "bronze", Point(*c_).buffer(0.035, 6), zt_ + 1.02, zt_ + 1.40)
-        L.prism(mb, "bronze", Point(*c_).buffer(0.08, 10), zt_ + 1.12, zt_ + 1.26)
-    rd = 2.50
-    zd = zpw + 1.90
-    L.prism(mb, "villa", Point(*qc).buffer(rd, 48), zpw - 0.02, zd)
-    L.prism(mb, "tile_jade", Point(*qc).buffer(rd + 0.03, 48).difference(Point(*qc).buffer(rd - 0.2, 48)), zd - 0.55, zd - 0.30)
-    L.prism(mb, "ledge", Point(*qc).buffer(rd + 0.10, 48).difference(Point(*qc).buffer(rd - 0.2, 48)), zd - 0.10, zd, bottom=True)
-    for k in range(8):                                         # the drum's arched lights
-        a = 2 * math.pi * (k + 0.5) / 8
-        for r_, hw_, z0_, z1_, mat in ((rd + 0.010, 0.34, zpw + 0.45, zpw + 1.30, "surround"), (rd + 0.018, 0.24, zpw + 0.55, zpw + 1.20, "glass")):
-            da = hw_ / rd
-            p0 = (qc[0] + r_ * math.cos(a - da), qc[1] + r_ * math.sin(a - da))
-            p1 = (qc[0] + r_ * math.cos(a + da), qc[1] + r_ * math.sin(a + da))
-            top = (qc[0] + r_ * math.cos(a), qc[1] + r_ * math.sin(a), z1_ + hw_ * 0.9)
-            mb.poly(mat, [(p0[0], p0[1], z0_), (p1[0], p1[1], z0_), (p1[0], p1[1], z1_), top, (p0[0], p0[1], z1_)])
-    dome(qc, rd, zd, rd * 1.25)
+        roof(t, zt_, zt_ + 0.50)
+    roof_lantern(qc, 2.20, zpw - 0.02, 2.80, 1.60)                # the lantern over the hall (client 26-10: no dome)
     L.prism(mb, "deck_stone", pv.buffer(-0.01, join_style=2), zX - 0.6, zX)
     fo = Point(*qc).buffer(1.05, 32)                           # the fountain
     L.prism(mb, "coping", fo.difference(fo.buffer(-0.18)), zX, zX + 0.45)

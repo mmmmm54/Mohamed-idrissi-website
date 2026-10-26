@@ -91,8 +91,10 @@ before importing** (don't replace or update it): D5 would keep the old dark road
   against the main block's parapet. The SPA is 0.40 m lower, its paving level with the pavement on its entrance
   path, the lot's edge a stone plinth down to the street where it runs lower (no gap under the paving) and a low
   wall where the street runs higher. Since 24-10 too the garden walls along the stair between the blocks and
-  along the street between the two rows of villas type C are clad in stone (`D18_Stone_Cladding_Beige`, in
-  `T2_WALLS_GARDENS`), and the horns are gone from all the houses (Tranche 1's duplexes, villas B, C and A).
+  along the lane parallel to it (between the two rows of villas type C and on between the villas type B) are
+  clad in stone (`D18_Stone_Cladding_Beige`, in `T2_WALLS_GARDENS`), no other wall (since 26-10 the villas type
+  A's low walls on street 7 are in render), and the horns are gone from all the houses (Tranche 1's duplexes,
+  villas B, C and A).
 - In the corner road by C-10 to C-12, three islands of grey pavement `GROUND_TROTTOIRS_T2` as the plan's two in
   front of C-08 and C-09 (23-10), and the 0.40 m pavement along the fences of C-11 and C-12 (a gap before).
 Delete the old model in D5 before importing this one.
@@ -122,4 +124,15 @@ West of the SPA and the type C block, from the plan de masse 31-05-13 (collectio
   kerbs `GROUND_KERBS_T1_T2`, paths `GROUND_PAVERS_BEIGE_T1_T2`, gardens `GROUND_LAWN_T1_T2`; the parking along the
   hotel is a paved forecourt (no bay lines since the trottoir), Tranche 2's kerbs and island left in that street
   are gone.
-Cameras `T3_CAM_01_AERIAL` to `T3_CAM_07_VILLA_A_POOL`. **Delete the old model in D5 completely before importing.**
+Cameras `T3_CAM_01_AERIAL` to `T3_CAM_07_VILLA_A_POOL`. Since 26-10 the hotel has no domes (they read as a
+mosque): square roof lanterns with mashrabiya windows, flat towers, a lantern over the pavilion.
+
+## The pool park on the cliff (26-10)
+The last part of the site, west of Tranche 3 over the Atlantic, **a design proposal** (not the plan's basins):
+collections `T4_01_GROUND`, `T4_02_POOLS`, `T4_03_LANDSCAPE`, `T4_04_TREES_PALMS`, objects `T4_GROUND_<material>`
+and `T4_POOLS_<material>`. Four terraces held by stone walls `M04_Stone_Rubble` with their coping, decks
+`T06_Travertine_Deck`, lawns `T03_Lawn`; the main infinity pool on the second terrace (its sheet of water over the
+green zellige wall `T19_Tile_Jade_Green` into the lagoon below), the lagoon, two jacuzzis, a children's pool,
+`M10_Pool_Water` (set it to D5 Water; the waterfall is a thin vertical sheet of it), cabanas, the pool bar under its
+pergola, the belvedere on the tip. Cameras `T4_CAM_01_POOL_PARK_AERIAL`, `T4_CAM_02_INFINITY_POOL`,
+`T4_CAM_03_CASCADE`. **Delete the old model in D5 completely before importing.**
