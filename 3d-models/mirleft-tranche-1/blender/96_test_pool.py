@@ -20,7 +20,9 @@ def H(xy):
     xy = np.atleast_2d(xy)
     d = shapely.distance(shapely.points(xy), graded)
     w = np.clip(d / 25.0, 0, 1); w = w * w * (3 - 2 * w)
-    return (1 - w) * np.array([B.hz(x, y) for x, y in xy]) + w * Hn(xy)
+    out = (1 - w) * np.array([B.hz(x, y) for x, y in xy]) + w * Hn(xy)
+    out[shapely.contains_xy(PP.flat_area(), xy[:, 0], xy[:, 1])] = PP.LEVEL
+    return out
 cols = {k: L.C.collection(k) for k in ("07_CAMERAS", "SRC", "GROUND_AROUND")}
 src = {}
 for k in ("olive", "date", "wash", "shrub", "shrub_pink", "agave"):

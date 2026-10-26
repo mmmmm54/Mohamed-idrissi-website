@@ -150,12 +150,13 @@ def natural_terrain(bounds):
     return RegularGridInterpolator((xs, ys), Z, bounds_error=False, fill_value=None)
 
 
-def build_terrain(M, col, site, t1, geo=False, cut=None):
+def build_terrain(M, col, site, t1, geo=False, cut=None, flat=()):
     """The site's empty land (natural terrain of the contours, blended into the graded tranche over 25 m),
     the cut faces at its edge and the boundary posts; returns H. With geo the real terrain round the site
     (build_surroundings) meets it EDGE lower at the boundary, so the land of the project stands out on
     it with its own soil and a short cut face along its limits. cut (default t1): the built ground the land
-    stops at, when it reaches past the graded areas (Tranche 2's streets, which follow H)."""
+    stops at, when it reaches past the graded areas (Tranche 2's streets, which follow H). flat: (area, level)
+    pairs where H is one level (the pool park, client 26-10: "mostawa wa7ed")."""
     import shapely
     Hn = natural_terrain(site.bounds)
     cut = t1 if cut is None else cut
@@ -169,7 +170,10 @@ def build_terrain(M, col, site, t1, geo=False, cut=None):
         d = shapely.distance(shapely.points(xy), t1)
         w = np.clip(d / 25.0, 0, 1)
         w = w * w * (3 - 2 * w)
-        return (1 - w) * np.array([hz(x, y) for x, y in xy]) + w * Hn(xy)
+        out = (1 - w) * np.array([hz(x, y) for x, y in xy]) + w * Hn(xy)
+        for area, lev in flat:
+            out[shapely.contains_xy(area, xy[:, 0], xy[:, 1])] = lev
+        return out
 
     from shapely.prepared import prep
     pl = prep(land)
@@ -834,7 +838,8 @@ def main():
     T4M = load("20_pool_park.py")             # the pool park on the cliff (client 26-10, 20_pool_park), graded on the plane
     graded = unary_union([t1, T2M.blocks(), T3M.envelope(), T4M.envelope()])   # client 26-10: the pool park graded too, not sunk
     Hsite = build_terrain(M, cols["01_TERRAIN"], site, graded, geo=geo,
-                          cut=unary_union([t1, T2M.envelope(), T3M.envelope(), T4M.envelope()]))
+                          cut=unary_union([t1, T2M.envelope(), T3M.envelope(), T4M.envelope()]),
+                          flat=[(T4M.flat_area(), T4M.LEVEL)])
     if geo:                                   # the real terrain and the ocean round the site (10_fetch_geo)
         build_surroundings(M, cols["00_SURROUNDINGS"], site, t1, Hsite)
 

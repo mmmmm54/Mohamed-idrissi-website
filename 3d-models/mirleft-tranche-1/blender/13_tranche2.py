@@ -319,7 +319,15 @@ def build(M, B, srcv, H):
     mb.build("T2_WALLS_GARDENS", cols["T2_01_GROUND"], M)
     mb = C.MeshBuilder()
     zf_low = lambda x, y: max(hz(x, y) + PAVE_DZ, level(x, y, 0.4) or -1e9)
-    for g in L.as_polys(low):
+    # client 26-10 ("had dl7jar remove ... khali ghir tijah dyal drooj"): the low walls on the streets in the
+    # villas' render with its trim; in stone only along the stair and the lane parallel to it
+    low_s = low.intersection(stone_zone)
+    for g in L.as_polys(low.difference(low_s)):
+        if g.area < 0.02:
+            continue
+        L.prism(mb, "render", g, -1.20, W_FRONT, zf=zf_low)
+        L.prism(mb, "trim", g.buffer(0.03, join_style=2).intersection(low.buffer(0.03, join_style=2)), W_FRONT, W_FRONT + 0.05, zf=zf_low)
+    for g in L.as_polys(low_s):
         if g.area < 0.02:
             continue
         L.prism(mb, "cladding", g, -1.20, W_FRONT, zf=zf_low)
