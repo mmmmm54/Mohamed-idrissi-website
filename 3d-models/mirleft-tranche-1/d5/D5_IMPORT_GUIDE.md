@@ -135,5 +135,5 @@ the northern boundary `t2_road` / `t2_pave`, the sinuous lagoon pool with its pa
 shelf (`M10_Pool_Water`, set it to D5 Water), a jacuzzi, the round kiosk (timber pergola and
 stone bar) on its plaza, decks `T06_Travertine_Deck`, lawn `T03_Lawn`, stone parapet `M04_Stone_Rubble` on the
 cliff. Since the second 26-10 review the passage between the villas type A goes on to the pool (its paving, steps
-up at its start) and the children's pool is gone. Cameras `T4_CAM_01_POOL_PARK_AERIAL`, `T4_CAM_02_POOL_TO_OCEAN`, `T4_CAM_03_KIOSK`. **Delete the old model in
+up at its start), its southern side planted like its northern strip, and the children's pool is gone. Cameras `T4_CAM_01_POOL_PARK_AERIAL`, `T4_CAM_02_POOL_TO_OCEAN`, `T4_CAM_03_KIOSK`. **Delete the old model in
 D5 completely before importing.**

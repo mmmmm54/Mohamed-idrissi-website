@@ -118,7 +118,10 @@ def build(M, B, srcv, H):
     fill = unary_union([roads, parking]).buffer(0.08, join_style=2).buffer(-0.08, join_style=2)
     roads = roads.union(fill.difference(unary_union([roads, parking]))).difference(trot)
     parking, pave = parking.difference(trot), pave.union(trot)
-    ppath, strips = PL(T3["passage_path"]), PL(T3["passage_strips"])
+    # client 26-10 ("zid ghir grass f jiha chmal bach dji f7al okhra"): the passage paved in its middle only, its
+    # southern paving planted as the strip on its other side
+    ppath = P(T3["passage_path"][0])
+    strips = unary_union([PL(T3["passage_strips"]), PL(T3["passage_path"][1:])])
     public = unary_union([roads, pave, parking])
     # walls: the lots' outlines, a low wall on street 7 (the lot's side facing the plan's east), the gates
     ring = unary_union([v["lot"].boundary.buffer(0.10, cap_style=2, join_style=2) for v in vs])
@@ -187,7 +190,7 @@ def build(M, B, srcv, H):
             q = Point(v["w"](v["xe"] - 1.0, -2.0 + 24.0 * t))
             if lawn.buffer(-0.4).contains(q) and q.distance(Point(v["gate_c"])) > 2.0:
                 put("shrub", (q.x, q.y), v["zl"], RNG.uniform(0.8, 1.0))
-    # the passage between the second and the third lot: a paved footpath between two planted strips
+    # the passage between the second and the third lot: a paved footpath between two planted strips (on to the pool, 20)
     L.prism(mb_p, "t2_path", ppath, -0.65, PAVE_DZ, zf=hz)
     mb_l.build("T3_GROUND_GARDENS_LAWN", cols["T3_01_GROUND"], M)
     mb_p.build("T3_GROUND_PATHS", cols["T3_01_GROUND"], M)

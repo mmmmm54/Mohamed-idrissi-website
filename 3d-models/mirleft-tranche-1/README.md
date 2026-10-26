@@ -404,7 +404,8 @@ to be creative and give me proposition ... the same style we have on our residen
 the perfect one". The zone circled in blue on the plan de masse 31-05-13, west of the SPA and of the type C block.
 - **Data** (`18_extract_t3.py` -> `data/t3_site.json`): the plan's 'zoning' and '012' lines polygonised in the
   plan's own frame: the four lots of the villas type A west of street 7 (826 to 887 m2) and the passage between
-  the second and the third (a footpath between two planted strips); the hotel's plot between street 7 and the
+  the second and the third (a footpath between two planted strips; since 26-10 its paving on the southern side is
+  lawn with shrubs like the northern strip); the hotel's plot between street 7 and the
   parking (4,939 m2: the two buildings' cells, the crossing between them, the long basin with its arm, the strip
   along the basin with its inlet from street 7, the garden); the parking along the hotel's east side, one bay per
   tooth of the plan's zigzag; the rest of the tranche is street (street 7, the Voie Publique, the south road) with
