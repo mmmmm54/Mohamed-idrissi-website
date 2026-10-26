@@ -147,7 +147,7 @@ def build(M, B, srcv, H):
         ob.location = (float(xy[0]), float(xy[1]), z)
         ob.rotation_euler = (0, 0, RNG.uniform(0, 6.283))
         ob.scale = (s, s, s)
-        (cols["T4_03_LANDSCAPE"] if key.startswith(("shrub", "agave", "grass")) else cols["T4_04_TREES_PALMS"]).objects.link(ob)
+        (cols["T4_03_LANDSCAPE"] if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora")) else cols["T4_04_TREES_PALMS"]).objects.link(ob)
         nveg[0] += 1
 
     mb = C.MeshBuilder()           # ground, walls, furniture
@@ -353,10 +353,12 @@ def build(M, B, srcv, H):
     rows += [(x, y) for x in np.arange(630, 728, 24) for y in np.arange(538, 610, 24)]
     keep_off = unary_union([pool.buffer(2.5), road_all.buffer(2.0), Point(*kc).buffer(R + 1.0), jac.buffer(2.0),
                             bridge.buffer(2.0), path, alley.buffer(1.2)])
+    trees = []
     for x, y in rows:
         p = Point(*PLAN(x, y))
         if ZONE.buffer(-1.5).contains(p) and not keep_off.contains(p):
             put("date" if RNG.random() < 0.6 else "wash", (p.x, p.y), z0, RNG.uniform(0.8, 0.95))
+            trees.append(p)
     for x, y in ((513, 167), (481, 240), (757, 219), (753, 443), (753, 577)):
         p = Point(*PLAN(x, y))
         if ZONE.buffer(-2.0).contains(p) and not keep_off.contains(p):
@@ -370,6 +372,46 @@ def build(M, B, srcv, H):
         p = Point(*PLAN(x, y))
         if lawn.buffer(-1.0).contains(p):
             put("shrub", (p.x, p.y), z0, 1.0)
+
+    # ---- the client's notes on the landscape (26-10): beds along the parapet as the pool reference, stone planters
+    # with agaves on the deck, jars by the kiosk, lavender along the path from the villas -------------------------
+    PL = B.PL
+    zl = z0 + 0.04
+    edge = ZONE.boundary.difference(NORTH.buffer(0.4)).difference(T3ENV.buffer(0.6))
+    bed = inner.intersection(edge.buffer(1.6, cap_style=2, join_style=2)).difference(deck.buffer(0.6)).difference(alley.buffer(0.6))
+    bed = PL.clean(bed.difference(road_all.buffer(1.5)).difference(unary_union([t.buffer(1.2) for t in trees] + [Point(0, 0).buffer(0.01)])),
+                   min_area=2.0)
+    n_b = 0
+    for q in L.as_polys(bed):
+        PL.bed_surface(mb, q, zl)
+        n_b += PL.bed_plants(q, zl, put, RNG, jar_every=9.0)
+    lawn_ok = lawn.buffer(-0.2)
+    n_pl = 0
+    ring3 = pool.buffer(3.45, join_style=1).exterior
+    for s_ in np.arange(6.0, ring3.length, 15.0):
+        p, q_ = ring3.interpolate(s_), ring3.interpolate(min(ring3.length, s_ + 0.5))
+        d = np.array([q_.x - p.x, q_.y - p.y]); d = d / max(1e-9, np.linalg.norm(d))
+        nv2 = np.array([-d[1], d[0]])
+        sq = Polygon([tuple(np.array([p.x, p.y]) + d * a + nv2 * b) for a, b in ((-0.55, -0.55), (0.55, -0.55), (0.55, 0.55), (-0.55, 0.55))])
+        if not deck.buffer(0.05).contains(sq) or sq.intersects(unary_union([plaza, bridge.buffer(1.0), path, alley.buffer(0.5)])):
+            continue
+        zs = PL.planter_box(mb, sq, z0, h=0.42)
+        put("agave", (p.x, p.y), zs, RNG.uniform(0.55, 0.7))
+        n_pl += 1
+    for a in (0.15, 0.45, 0.8):                                 # jars by the kiosk's plaza
+        c_ = plaza.exterior.interpolate(a, normalized=True)
+        for k in range(3 if a != 0.45 else 2):
+            p = Point(c_.x + RNG.uniform(-0.8, 0.8), c_.y + RNG.uniform(-0.8, 0.8))
+            if lawn_ok.contains(p) or deck.contains(p):
+                put("jar" if k % 2 == 0 else "amphora", (p.x, p.y), z0 + (0.04 if lawn_ok.contains(p) else 0.0), RNG.uniform(0.8, 1.05))
+    pa_, pd_, pw_, _ = _passage()                               # lavender along the path from the villas
+    pn_ = np.array([-pd_[1], pd_[0]])
+    for sgn in (-1, 1):
+        for s_ in np.arange(1.5, 40.0, 0.75):
+            p = Point(*(pa_ + pd_ * s_ + pn_ * sgn * (pw_ / 2 + 0.55)))
+            if lawn_ok.contains(p) and not deck.buffer(0.8).contains(p):
+                put("lavender", (p.x, p.y), zl, RNG.uniform(0.85, 1.05))
+    print(f"  T4: beds along the parapet {n_b} plants, {n_pl} stone planters with agaves on the deck")
 
     mb.build("T4_GROUND", cols["T4_01_GROUND"], M)
     mp.build("T4_POOLS", cols["T4_02_POOLS"], M)

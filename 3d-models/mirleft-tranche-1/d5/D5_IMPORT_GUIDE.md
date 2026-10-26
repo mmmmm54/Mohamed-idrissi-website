@@ -138,3 +138,11 @@ cliff. Since the second 26-10 review the passage between the villas type A goes 
 the passage rises to the park's level, no steps), its southern side planted like its northern strip, the bridge
 is level with the pool's deck, and the children's pool is gone. Cameras `T4_CAM_01_POOL_PARK_AERIAL`, `T4_CAM_02_POOL_TO_OCEAN`, `T4_CAM_03_KIOSK`. **Delete the old model in
 D5 completely before importing.**
+
+## The landscape (26-10)
+New plant library (`21_plants.py`): detailed date palms, Washingtonias and olive trees (not in the NO_PALMS_TREES
+file: place D5's own palms there, or use the FULL file / the GLB), fountain grass, agaves, lavender and terracotta
+jars (in both files, `*_03_LANDSCAPE`). Gravel beds edged in stone along the villas' garden walls
+(`GARDEN_BEDS_T1`, `T2_GARDEN_BEDS`, `T3_GARDEN_BEDS`, material `V2_Gravel_Mulch`), one smaller olive tree per
+garden, raised stone planters on the big stair (`T2_STAIR_BETWEEN_BLOCKS`), beds and planters in the pool park.
+**Delete the old model in D5 completely before importing.**

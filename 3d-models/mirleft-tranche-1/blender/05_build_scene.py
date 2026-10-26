@@ -88,6 +88,9 @@ def load(fname):
     return mod
 
 
+PL = load("21_plants.py")   # client 26-10: the detailed plant library, the beds and planters (21_plants)
+
+
 def hg(x, y):
     return PLANE[0] * x + PLANE[1] * y + PLANE[2]
 
@@ -1076,6 +1079,19 @@ def main():
         "agave_b": LS.make_source("AGAVE_SMALL", POOL.agave(8, n=14, length=0.45), M, cols["SRC"]),
         "grass": LS.make_source("ORNAMENTAL_GRASS", LS.grass_clump(5), M, cols["SRC"]),
     }
+    # client 26-10 ("pour nkhal mabghitch had model ... not realistic"): the palms, the olive trees, the grasses and
+    # the agaves from the detailed library, lavender and the terracotta jars with them (21_plants)
+    PLS = PL.build_sources(M, cols["SRC"])
+    for k, o in PLS.items():
+        if k.endswith("_v"):
+            continue
+        if k in srcv:
+            old = srcv[k]
+            me = old.data
+            bpy.data.objects.remove(old, do_unlink=True)
+            if me.users == 0:
+                bpy.data.meshes.remove(me)
+        srcv[k] = o
     veg = cols["06_LANDSCAPE"]
     nveg = [0]
 
@@ -1086,7 +1102,7 @@ def main():
         ob.location = (xy[0], xy[1], lawn_top(*xy) if z is None else z)
         ob.rotation_euler = (0, 0, RNG.uniform(0, 6.283))
         ob.scale = (s, s, s if sz is None else sz)
-        (veg if key.startswith(("shrub", "agave", "grass")) else cols["06_TREES_PALMS"]).objects.link(ob)
+        (veg if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora")) else cols["06_TREES_PALMS"]).objects.link(ob)
         nveg[0] += 1
 
     court = to_world(POOL.COURT, pc["c"], pc["rot_deg"])
@@ -1121,6 +1137,19 @@ def main():
         for s in (1, -1):
             for x in np.arange(5.75, 8.50, 0.70):
                 plant("shrub", fd(s * x, -6.80), RNG.uniform(0.75, 0.95))
+    # client 26-10 (the client's notes on the landscape): beds along the villas' garden walls as the pool reference:
+    # gravel edged in stone, drifts of grasses, lavender and agaves, a terracotta jar now and then
+    mb = C.MeshBuilder()
+    n_bed = 0
+    tree_pts = unary_union([Point(t["c"]).buffer(1.3) for t in SITE["trees"]])
+    hard_t1 = unary_union([bld.buffer(0.9)] + [g.buffer(0.6) for g, _ in terraces] + [e.buffer(0.7) for e in entries])
+    for gp, zg_ in GARDENS:
+        bed = gp.intersection(walls_g.buffer(1.0, join_style=2)).difference(walls_g.buffer(0.03)).difference(hard_t1)
+        for q in L.as_polys(PL.clean(bed, min_area=1.2)):
+            PL.bed_surface(mb, q, zg_)
+            n_bed += PL.bed_plants(q, zg_, lambda k, xy, zz, s_: plant(k, xy, s_, zz), RNG, avoid=tree_pts)
+    mb.build("GARDEN_BEDS_T1", cols["06_LANDSCAPE"], M)
+    print("  villas' garden beds along the walls:", n_bed, "plants")
     for u, v, z, kind, s in spots:                                   # pool court beds (reference images)
         plant(RNG.choice(("agave", "agave_b")) if kind == "agave" else kind, fw(u, v), s, z_deck + z)
     print("  pool court plants:", len(spots))
@@ -1168,6 +1197,16 @@ def main():
     cams_t2 = T2M.build(M, sys.modules[__name__], srcv, Hsite)
     cams_t2.update(T3M.build(M, sys.modules[__name__], srcv, Hsite))
     cams_t2.update(T4M.build(M, sys.modules[__name__], srcv, Hsite))
+    # every palm and olive tree on one of its variants, a third of the shrub mounds as lavender (21_plants)
+    n_var = PL.vary(PLS)
+    rng_l = random.Random(2610)
+    lav, sh = PLS["lavender"].data, srcv["shrub"].data
+    n_lav = 0
+    for ob in bpy.data.objects:
+        if ob.type == "MESH" and ob.data == sh and not ob.name.startswith("SRC_") and rng_l.random() < 0.35:
+            ob.data = lav
+            n_lav += 1
+    print(f"  plant library: {n_var} palms and olive trees on their variants, {n_lav} shrubs as lavender")
 
     # ---- light, cameras, render settings --------------------------------------------------------
     lt_ = L.bay("14_build_lighting.py")
@@ -1180,6 +1219,7 @@ def main():
     sc.cycles.samples = samples
     sc.cycles.use_denoising = True
     sc.cycles.max_bounces = 6
+    sc.cycles.transparent_max_bounces = 32       # the olive trees' and the grasses' leaf sprays
     sc.render.resolution_x, sc.render.resolution_y = 1920, 1080
     sc.render.resolution_percentage = pct
     sc.view_settings.view_transform = "AgX"

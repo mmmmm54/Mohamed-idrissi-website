@@ -18,8 +18,8 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 | `Mirleft_Tranche_1_PACKED_2K.blend` | The scene with every texture packed inside at 2K (25 MB): the light copy to send or open anywhere. |
 | `Mirleft_Tranche_1_PACKED.blend` | The same scene with full-size textures packed inside (68 MB). |
 | `Mirleft_Tranche_1.blend` | The scene with textures linked from `../mirleft-bay/assets/textures` and `data/textures` (11 MB): keep the folders side by side. |
-| `Mirleft_Tranche_1.glb` | GLB with JPEG textures and colours (44 MB with the surroundings; shared meshes; no cameras or lights). Metres, Y up. `blender/08_export_glb.py` |
-| `Mirleft_Tranche_1_AE_SAFE.glb` | The most compatible version for After Effects (95 MB, with Tranche 2): the two tranches only, one mesh, centred with its ground at 0, JPEG only, no alpha, no trees. `08_export_glb.py --ae-safe` |
+| `Mirleft_Tranche_1.glb` | GLB with JPEG textures and colours (84 MB with the surroundings and the detailed plants of 26-10; shared meshes; no cameras or lights). Metres, Y up. `blender/08_export_glb.py` |
+| `Mirleft_Tranche_1_AE_SAFE.glb` | The most compatible version for After Effects (95 MB, with Tranche 2): the two tranches only, one mesh, centred with its ground at 0, JPEG only, no alpha, no trees. `08_export_glb.py --ae-safe`. Not rebuilt since 26-10 (it predates Tranches 3 and 4 and the plant library). |
 | `Mirleft_Tranche_1_OBJ.zip` | The same single mesh as OBJ + MTL + JPEG textures (31 MB), written by the same command. |
 | `d5/` | D5 Render package: `Mirleft_Tranche_1_D5_FULL.fbx` (everything, the 20 cameras, textures embedded), `Mirleft_Tranche_1_D5_NO_PALMS_TREES.fbx` (without the palms and trees, the agaves, grasses and shrubs kept, to place D5's own), `textures/` and `D5_IMPORT_GUIDE.md`. `blender/09_export_d5.py` |
 | `renders/` | 20 views at 1920 × 1080 (see the list below). |
@@ -38,6 +38,7 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 | `blender/16_villa_a.py`, `17_hotel.py` | The villa type A of `VILLA_TYPE_A.dwg`; the hotel (a design proposal). |
 | `blender/18_extract_t3.py`, `19_tranche3.py` | Tranche 3: reads the plan de masse 31-05-13 into `data/t3_site.json`; builds it into the scene (called by `05_build_scene.py`). |
 | `blender/20_pool_park.py`, `96_test_pool.py` | The pool park on the cliff (a design proposal), built into the scene by `05_build_scene.py`; its quick test. |
+| `blender/21_plants.py`, `97_test_plants.py` | The detailed plant library (palms, olive trees, grasses, agaves, lavender, jars) with its textures (`data/textures/TEX_V2_*`), the beds and planters; its quick test (`RETEX=1` redraws the textures). |
 | `blender/10_fetch_geo.py` | Downloads the heights and the satellite image round the site into `data/geo/` (run once, outside Blender; needs pyproj and rasterio). |
 | `tools/` | `dwg2json.mjs` (DWG reader), `flatten.py` (primitives with their block path), `inserts.py` (block placements). |
 
@@ -506,6 +507,29 @@ tab9at"; then "just fix this little thing"). The last part of the site, west of 
   cliff and the southern boundary, the step against Tranche 3 closed in stone.
 Collections `T4_01_GROUND`, `T4_02_POOLS`, `T4_03_LANDSCAPE`, `T4_04_TREES_PALMS`. Cameras `T4_CAM_01_POOL_PARK_AERIAL`,
 `T4_CAM_02_POOL_TO_OCEAN`, `T4_CAM_03_KIOSK`.
+
+## The landscape and the plant library (client 26-10)
+The client's notes: the landscaping (the jars, the plants, everything of the gardens) is the point to think through,
+in the villas and the common spaces; the two small trees of each villa did not come out well (one smaller, or the
+planting along the walls as the pool reference, and in the big stairs going down); the palms too simple.
+- **Plant library** (`21_plants.py`, all real geometry, one generated image per material, `data/textures/TEX_V2_*`):
+  - date palm (*Phoenix dactylifera*), three variants: a trunk of diamond leaf bases (relief and texture on one
+    lattice), the crown bulb, 38 to 48 arching fronds of folded leaflets in the palm's V, spines on the petioles,
+    yellowing old fronds, hanging dead ones, date bunches;
+  - Washingtonia robusta, three variants: a slender ringed trunk flaring at its foot, the criss-cross leaf bases
+    under the crown, about 28 pleated costapalmate fans drooping at their split tips on spiny petioles, spear
+    leaves, a skirt of dead fronds (two variants) or a trimmed head;
+  - olive tree, two variants: a short gnarled trunk, three twisted leaders, branches and twigs, sprays of leaves;
+  - fountain grass, Agave americana (two sizes), lavender, terracotta jars (khabia and amphora).
+  Every palm and olive tree of the site stands on one of its variants; a third of the shrub mounds are lavender.
+- **Villas**: the trees of each garden (two to four, olive and date) give way to **one smaller olive tree**, and
+  beds go along the garden walls as the pool reference: beige gravel edged in stone, drifts of grasses, lavender
+  and agaves, a terracotta jar now and then (the villas type B, C and A; Tranche 1's villa gardens keep the plan's
+  trees and get the beds along their walls).
+- **The big stair between the blocks**: a raised stone planter (stone faces, beige coping) against each fence on
+  every tread but the fountains', planted with the same drifts, a small olive tree every sixth planter.
+- **Pool park**: beds along the parapet, stone planters with agaves on the deck, jars by the kiosk, lavender along
+  the path from the villas.
 
 ## Removed (client, 13-10)
 Direction arrows and cars. The zebra crossings were put back as paint (15-10).

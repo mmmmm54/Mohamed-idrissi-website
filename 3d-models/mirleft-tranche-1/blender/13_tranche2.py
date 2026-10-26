@@ -445,6 +445,7 @@ def build(M, B, srcv, H):
     # ---- the stair between the two blocks (client 22-10): level treads in the beige pavers, fence to fence,
     # each riser (about 15 cm) with a stone nosing; two square fountains on treads of their own, a raised
     # stone rim, tiled basin and a bronze spout on a stone pedestal ----------------------------------------
+    stair_beds = []
     if st:
         A, Bv = np.array(st["axis"][0]), np.array(st["axis"][-1])
         Lst = float(np.linalg.norm(Bv - A))
@@ -481,6 +482,23 @@ def build(M, B, srcv, H):
             L.prism(mb, "coping", ped, 0.0, 0.70, zf=flat)
             L.prism(mb, "coping", ped.buffer(0.08, join_style=2), 0.70, 0.78, zf=flat)
             L.prism(mb, "bronze", Point(*c).buffer(0.05, 8), 0.78, 1.05, zf=flat)
+        # client 26-10 (the client's notes: the planting "even in the big stairs going down", as the pool
+        # reference): a raised stone planter against each fence on every tread but the fountains', planted below
+        offs = [float(np.dot(np.array(c_) - A, nv)) for q in L.as_polys(stair) for c_ in q.exterior.coords]
+        fts = [float(np.dot(np.array(f_) - A, dv)) for f_ in st["fountains"]]
+        for k in range(n_r + 1):
+            t0, t1 = k * Lt + 0.25, (k + 1) * Lt - 0.25
+            if t1 - t0 < 0.9 or any(abs((t0 + t1) / 2 - tf) < Lt for tf in fts):
+                continue
+            z = zA - k * rise
+            for e_ in (max(offs), min(offs)):
+                e0 = e_ - math.copysign(0.95, e_)
+                q = Polygon([tuple(A + dv * t0 + nv * e0), tuple(A + dv * t1 + nv * e0), tuple(A + dv * t1 + nv * e_),
+                             tuple(A + dv * t0 + nv * e_)]).intersection(stair)
+                q = max(L.as_polys(q), key=lambda g: g.area) if not q.is_empty else q
+                if q.is_empty or q.area < 0.6:
+                    continue
+                stair_beds.append((q.buffer(-0.14, join_style=2), B.PL.planter_box(mb, q, z), k, e_ > 0))
         mb.build("T2_STAIR_BETWEEN_BLOCKS", cols["T2_01_GROUND"], M)
         print(f"  T2: stair between the blocks: {Lst:.0f} m, {n_r} risers of {rise:.3f} m on treads of {Lt:.2f} m, "
               f"{len(st['fountains'])} fountains")
@@ -537,29 +555,48 @@ def build(M, B, srcv, H):
         ob.location = (xy[0], xy[1], z)
         ob.rotation_euler = (0, 0, RNG.uniform(0, 6.283))
         ob.scale = (s, s, s)
-        (cols["T2_03_LANDSCAPE"] if key.startswith(("shrub", "agave", "grass")) else cols["T2_04_TREES_PALMS"]).objects.link(ob)
+        (cols["T2_03_LANDSCAPE"] if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora")) else cols["T2_04_TREES_PALMS"]).objects.link(ob)
         nveg[0] += 1
 
     path_all = unary_union(paths)
+    # client 26-10 (the client's notes on the landscape): the two trees of each garden ("ma jawch zwinin bzaf") give
+    # way to one smaller olive tree in the lawn, and the planting goes along the garden walls as the pool reference:
+    # gravel beds edged in stone, drifts of grasses, lavender and agaves, a terracotta jar now and then
+    PLB = B.PL                                                 # the plant library (21_plants)
+    mb_b = C.MeshBuilder()
+    n_bed = 0
+    gate_zone = unary_union([v.f(gate_box(axis, c, a - 1.0, b + 1.0, 1.8)) for v, axis, c, a, b, kind in gates])
     for v in vs:
         foot = v.g(VB.FOOT.union(deck[v.c])) if v.t == "B" else v.g(VC.FOOT.union(VC.HARD))
-        lawn = v.garden.difference(hard_of(v)).difference(walls).difference(path_all).buffer(-1.3)
+        hd = hard_of(v)
+        bed = v.garden.intersection(high.buffer(1.0, join_style=2)).difference(high.buffer(0.03))
+        bed = PLB.clean(bed.difference(hd.buffer(0.6)).difference(foot.buffer(0.9)).difference(path_all.buffer(0.5))
+                       .difference(low.buffer(0.9)).difference(gate_zone), min_area=1.2)
+        for q in L.as_polys(bed):
+            PLB.bed_surface(mb_b, q, v.zl)
+            n_bed += PLB.bed_plants(q, v.zl, put, RNG)
+        lawn = v.garden.difference(hd).difference(walls).difference(path_all).difference(bed.buffer(0.8)).buffer(-1.3)
         if lawn.is_empty:
             continue
-        n = min(4, 1 + int(lawn.area / 45.0))
         x0, y0, x1, y1 = lawn.bounds
-        spots = []
-        for _ in range(200):
+        best = None
+        for _ in range(160):
             p = Point(RNG.uniform(x0, x1), RNG.uniform(y0, y1))
-            if lawn.contains(p) and foot.distance(p) > 1.6 and all(p.distance(q) > 4.0 for q in spots):
-                spots.append(p)
-            if len(spots) >= n:
-                break
-        for k, p in enumerate(spots):
-            if k % 2 == 0:
-                put("olive", (p.x, p.y), v.zl, RNG.uniform(0.70, 0.95))
-            else:
-                put("date", (p.x, p.y), v.zl, RNG.uniform(0.55, 0.75))
+            if lawn.contains(p):
+                d = min(foot.distance(p), 4.5) + 0.3 * min(lawn.boundary.distance(p), 2.0)
+                if best is None or d > best[0]:
+                    best = (d, p)
+        if best is not None:
+            put("olive", (best[1].x, best[1].y), v.zl, RNG.uniform(0.5, 0.6))
+    mb_b.build("T2_GARDEN_BEDS", cols["T2_03_LANDSCAPE"], M)
+    n_st = 0
+    for q, zs, k, side in stair_beds:                          # the stair's planters
+        if (k + 2 * side) % 6 == 0:
+            c_ = q.centroid
+            put("olive", (c_.x, c_.y), zs, 0.42)
+        else:
+            n_st += PLB.bed_plants(q, zs, put, RNG, jar_every=0, density=1.4, spacing=0.45)
+    print(f"  T2: garden beds {n_bed} plants, one small olive tree per garden; stair planters {len(stair_beds)} ({n_st} plants)")
     # shrubs behind the low walls, inside the gardens
     bed = low.buffer(0.75, join_style=2).intersection(gardens).difference(low.buffer(0.15)).difference(houses.buffer(0.3))
     bed = bed.difference(path_all.buffer(0.3)).difference(unary_union([hard_of(v) for v in vs]))

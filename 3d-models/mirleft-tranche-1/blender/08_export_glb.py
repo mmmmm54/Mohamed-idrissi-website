@@ -6,7 +6,9 @@ glTF only carries image textures and plain colours, so every procedural material
 swapped for a Principled BSDF with
   * a tileable colour image (JPEG, 1024 px max, tint baked in) and box-projected UVs at true size, or
   * a plain colour (glass, aluminium, water, courts, foliage stems...).
-Leaf cards, palm fans and the mashrabiya keep their PNG with alpha (alphaMode MASK).
+Leaf cards, palm fans and the mashrabiya keep their PNG with alpha (alphaMode MASK). The plant library (21_plants,
+client 26-10: the detailed palms, olive trees, grasses, agaves, lavender, the jars and the beds' gravel) keeps its
+own images on its own UVs.
 The 12 duplex pairs (two variants), the loungers and the trees share their meshes, so the file
 stays small. No cameras or lights. Units metres, +Y up (glTF). Writes Mirleft_Tranche_1.glb next to
 the .blend.
@@ -175,6 +177,22 @@ def new_mat(old):
         t = nt.nodes.new("ShaderNodeTexImage")
         t.image = bpy.data.images.load(path, check_existing=True)
         nt.links.new(t.outputs["Color"], b.inputs["Base Color"])
+    elif name.startswith("V2_"):                  # client 26-10: the plant library keeps its own image on its own UVs
+        src = next((n.image for n in old.node_tree.nodes if n.type == "TEX_IMAGE" and n.image), None)
+        if src is not None:
+            alpha = src.filepath.lower().endswith(".png")
+            im = Image.open(bpy.path.abspath(src.filepath)).convert("RGBA" if alpha else "RGB")
+            im.thumbnail((SIZE, SIZE), Image.LANCZOS)
+            p = os.path.join(TMP, name + (".png" if alpha else ".jpg"))
+            im.save(p) if alpha else im.save(p, quality=88)
+            t = nt.nodes.new("ShaderNodeTexImage")
+            t.image = bpy.data.images.load(p, check_existing=True)
+            nt.links.new(t.outputs["Color"], b.inputs["Base Color"])
+            if alpha:
+                nt.links.new(t.outputs["Alpha"], b.inputs["Alpha"])
+                m.blend_method = "CLIP"
+            ob_ = next((n for n in old.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+            b.inputs["Roughness"].default_value = ob_.inputs["Roughness"].default_value if ob_ else 0.7
     elif name in ALPHA:
         src = next((n.image for n in old.node_tree.nodes if n.type == "TEX_IMAGE" and n.image), None)
         if src is not None:
