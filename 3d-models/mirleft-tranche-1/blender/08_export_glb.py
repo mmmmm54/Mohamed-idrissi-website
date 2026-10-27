@@ -5,8 +5,9 @@ web viewers, D5...).   python 08_export_glb.py [--ae | --ae-safe | --residence] 
 the ocean round the site (00_SURROUNDINGS): Mirleft_Tranche_1_RESIDENCE.glb.
 --light (client 27-10: the residence GLB "compressed ... under 16 mb", smooth in After Effects): every plant on its
 light version (21_plants.build_lod: the same plant, materials and textures, about 25 times fewer triangles), the other
-meshes welded so their flat faces share their vertices and decimated where they stay heavy, no UVs on the plain
-colours, the images at half size (512 px). Plain glTF, no Draco: Mirleft_Tranche_1_RESIDENCE_LIGHT.glb.
+meshes welded so their flat faces share their vertices, their hidden faces dropped (inside another solid) and the
+heavy ones decimated (the buildings to 40 % at the most, the flat ground never), no UVs on the plain colours, the
+images at half size (512 px), the nodes' transforms rounded. Plain glTF, no Draco: Mirleft_Tranche_1_RESIDENCE_LIGHT.glb.
 
 glTF only carries image textures and plain colours, so every procedural material of the scene is
 swapped for a Principled BSDF with
@@ -56,7 +57,7 @@ def tinted(src, name, tint_from=None, tint_to=None, size=SIZE):
         a = np.where(a > 0.0031308, 1.055 * a ** (1 / 2.4) - 0.055, a * 12.92)
         im = Image.fromarray((a * 255).astype(np.uint8))
     p = os.path.join(TMP, name + ".jpg")
-    im.save(p, quality=85)
+    im.save(p, quality=80 if LIGHT else 85)
     return p
 
 
@@ -90,7 +91,7 @@ def gen_tiles(name, cols, rows, c1, c2, mortar, period_px=512, stagger=True, dia
     if LIGHT:
         im = im.resize((N // 2, N // 2), Image.LANCZOS)
     p = os.path.join(TMP, name + ".jpg")
-    im.save(p, quality=88)
+    im.save(p, quality=80 if LIGHT else 88)
     return p
 
 
@@ -195,7 +196,7 @@ def new_mat(old):
             im = Image.open(bpy.path.abspath(src.filepath)).convert("RGBA" if alpha else "RGB")
             im.thumbnail((SIZE, SIZE), Image.LANCZOS)
             p = os.path.join(TMP, name + (".png" if alpha else ".jpg"))
-            im.save(p) if alpha else im.save(p, quality=88)
+            im.save(p) if alpha else im.save(p, quality=80 if LIGHT else 88)
             t = nt.nodes.new("ShaderNodeTexImage")
             t.image = bpy.data.images.load(p, check_existing=True)
             nt.links.new(t.outputs["Color"], b.inputs["Base Color"])
@@ -309,19 +310,105 @@ def main():
     bpy.ops.export_scene.gltf(filepath=out, export_format="GLB", use_visible=True, export_cameras=False,
                               export_lights=False, export_apply=True, export_image_format="JPEG" if "--ae-safe" in sys.argv else "AUTO",
                               export_materials="EXPORT", export_yup=True, export_draco_mesh_compression_enable=False)
+    if LIGHT:
+        round_nodes(out)
     print("GLB", round(os.path.getsize(out) / 2 ** 20, 1), "MiB", "materials", len(swapped), "meshes", len(done))
     if "--ae-safe" in sys.argv:
         export_obj(out)
 
 
-HEAVY = 1200        # --light: triangles a mesh keeps before it is decimated (down to RMIN of itself at the most)
-RMIN = 0.25
+def round_nodes(path):
+    """--light: the 5000 nodes' transforms rounded (0.1 mm, 1e-6) and their names dropped (the meshes keep theirs), a
+    JSON chunk half as heavy; the binary chunk as it is"""
+    import json
+    import struct
+    b = open(path, "rb").read()
+    jl = struct.unpack("<I", b[12:16])[0]
+    J = json.loads(b[20:20 + jl])
+    for n in J["nodes"]:
+        n.pop("name", None)
+        for k, d in (("translation", 4), ("rotation", 6), ("scale", 5)):
+            if k in n:
+                n[k] = [round(v, d) for v in n[k]]
+    js = json.dumps(J, separators=(",", ":")).encode()
+    js += b" " * (-len(js) % 4)
+    rest = b[20 + jl:]
+    open(path, "wb").write(struct.pack("<IIII", 0x46546C67, 2, 20 + len(js) + len(rest), len(js)) + b"JSON" + js + rest)
+
+
+HEAVY = 1500        # --light: triangles a mesh keeps before it is decimated, down to RMIN of itself at the most for
+RMIN = (0.4, 0.2)   # the buildings (named with one of BUILDINGS) and for the rest (beds' edging, kerbs, playground...)
+BUILDINGS = ("SRC_", "HOTEL", "SPA", "RESTAURANT", "COMMERCE", "VILLA", "DUPLEX", "LOCAL", "TOILETTE", "WALLS")
+SEE = ("M06_Glass", "M10_Pool_Water", "D01_Mashrabiya", "A07_Curtain", "V0", "V2_", "H04")   # hide nothing behind them
+
+
+def weld(me, bld=False):
+    """weld the builder's loose faces; True for a flat mesh but a building (the ground's lawns and paving: nine tenths
+    of its area facing up or down), only merged where flat, never decimated (it would open holes)"""
+    import bmesh
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0005)
+    area = sum(f.calc_area() for f in bm.faces) or 1.0
+    flat = sum(f.calc_area() for f in bm.faces if abs(f.normal.z) > 0.9) / area > 0.9 and not bld
+    if flat:
+        bmesh.ops.dissolve_limit(bm, angle_limit=math.radians(1.0), verts=bm.verts, edges=bm.edges, delimit={"MATERIAL", "UV"})
+    bm.to_mesh(me)
+    bm.free()
+    return flat
+
+
+def cull_hidden(users):
+    """--light: the faces no one sees, inside another solid (where two boxes meet, a wall's top under its coping, a
+    window's reveal under its surround, the gravel under the beds' edging...): every ray out of the face, from its
+    centre and from near each corner, meets the inside of a face within 0.6 m, in every instance of its mesh"""
+    import bmesh
+    from mathutils.bvhtree import BVHTree
+    V, P = [], []
+    for name, obs in users.items():
+        me = bpy.data.meshes[name]
+        co = np.empty(len(me.vertices) * 3, np.float32)
+        me.vertices.foreach_get("co", co)
+        co = co.reshape(-1, 3)
+        see = {i for i, m in enumerate(me.materials) if m is None or any(k in m.name for k in SEE)}
+        polys = [p.vertices[:] for p in me.polygons if p.material_index not in see]
+        for o in obs:
+            mw = np.array(o.matrix_world)
+            base = len(V)
+            V.extend(map(tuple, co @ mw[:3, :3].T + mw[:3, 3]))
+            P.extend(tuple(base + i for i in pv) for pv in polys)
+    bvh = BVHTree.FromPolygons(V, P)
+
+    def inside(q, n):
+        loc, hn, idx, d = bvh.ray_cast(q + n * 0.001, n, 0.6)
+        return loc is not None and hn.dot(n) > 0
+    gone = 0
+    for name, obs in users.items():
+        me = bpy.data.meshes[name]
+        inst = [(o.matrix_world.copy(), o.matrix_world.to_3x3().inverted().transposed()) for o in obs]
+        co = [v.co.copy() for v in me.vertices]
+        hidden = []
+        for p in me.polygons:
+            if p.normal.length < 0.5:
+                continue
+            pts = [p.center] + [p.center.lerp(co[i], 0.95) for i in p.vertices]
+            if all(all(inside(M @ q, (N @ p.normal).normalized()) for q in pts) for M, N in inst):
+                hidden.append(p.index)
+        if hidden:
+            gone += sum(len(me.polygons[i].vertices) - 2 for i in hidden)
+            bm = bmesh.new()
+            bm.from_mesh(me)
+            bm.faces.ensure_lookup_table()
+            bmesh.ops.delete(bm, geom=[bm.faces[i] for i in hidden], context="FACES")
+            bm.to_mesh(me)
+            bm.free()
+    print("LIGHT hidden triangles dropped", gone)
 
 
 def lighten(vl):
     """--light: the plants on their light versions, every other mesh welded (its flat faces then share their vertices,
-    smooth shading with sharp edges over 25 degrees) and decimated over HEAVY triangles"""
-    import bmesh
+    smooth shading with sharp edges over 25 degrees), its hidden faces dropped and, over HEAVY triangles, decimated
+    unless flat"""
     sys.path.insert(0, HERE)
     import lib as L
     spec = importlib.util.spec_from_file_location("t1_21", os.path.join(HERE, "21_plants.py"))
@@ -335,25 +422,19 @@ def lighten(vl):
     for o in bpy.data.objects:
         if o.name in vl.objects and o.type == "MESH" and not o.hide_render and col not in o.users_collection:
             users.setdefault(o.data.name, []).append(o)
-    t0 = t1 = 0
+    tris = lambda me: sum(len(p.vertices) - 2 for p in me.polygons)
+    t0 = sum(tris(bpy.data.meshes[name]) * len(obs) for name, obs in users.items())
+    for name in [k for k in users if k in lod]:
+        for o in users.pop(name):
+            o.data = lod[name].data
+    flat = {name: weld(bpy.data.meshes[name], any(k in name for k in BUILDINGS)) for name in users}
+    cull_hidden(users)
     for name, obs in users.items():
-        tris = lambda me: sum(len(p.vertices) - 2 for p in me.polygons)
-        n0 = tris(bpy.data.meshes[name]) * len(obs)
-        if name in lod:
-            for o in obs:
-                o.data = lod[name].data
-            t0, t1 = t0 + n0, t1 + tris(lod[name].data) * len(obs)
-            continue
         me = bpy.data.meshes[name]
-        bm = bmesh.new()
-        bm.from_mesh(me)
-        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0005)
-        bm.to_mesh(me)
-        bm.free()
         n = tris(me)
-        if n > HEAVY and not any(o.modifiers for o in obs):
+        if n > HEAVY and not flat[name] and not any(o.modifiers for o in obs):
             mod = obs[0].modifiers.new("dec", "DECIMATE")
-            mod.ratio = max(RMIN, HEAVY / n)
+            mod.ratio = max(RMIN[0] if any(k in name for k in BUILDINGS) else RMIN[1], HEAVY / n)
             mod.use_collapse_triangulate = True
             new = bpy.data.meshes.new_from_object(obs[0].evaluated_get(bpy.context.evaluated_depsgraph_get()))
             obs[0].modifiers.remove(mod)
@@ -364,7 +445,7 @@ def lighten(vl):
             me = new
         me.shade_smooth()
         me.set_sharp_from_angle(angle=math.radians(25.0))
-        t0, t1 = t0 + n0, t1 + tris(me) * len(obs)
+    t1 = sum(tris(o.data) for o in bpy.data.objects if o.name in vl.objects and o.type == "MESH" and not o.hide_render)
     print("LIGHT triangles drawn", t0, "->", t1)
 
 
