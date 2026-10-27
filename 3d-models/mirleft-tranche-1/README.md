@@ -41,6 +41,7 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 | `blender/16_villa_a.py`, `17_hotel.py` | The villa type A of `VILLA_TYPE_A.dwg`; the hotel (a design proposal). |
 | `blender/18_extract_t3.py`, `19_tranche3.py` | Tranche 3: reads the plan de masse 31-05-13 into `data/t3_site.json`; builds it into the scene (called by `05_build_scene.py`). |
 | `blender/20_pool_park.py`, `96_test_pool.py` | The pool park on the cliff (a design proposal), built into the scene by `05_build_scene.py`; its quick test. |
+| `blender/23_playground.py` | The children's playground on the tiled court by the restaurant (a design proposal), built into the scene by `05_build_scene.py`. |
 | `blender/22_export_ae_parts.py` | The light GLBs for After Effects, one per part (`Mirleft_AE_PARTS.zip`); with `--zoning` the whole residence in one file, a colour per zone (`Mirleft_AE_ZONING.glb`). |
 | `blender/21_plants.py`, `97_test_plants.py` | The detailed plant library (palms, olive trees, grasses, agaves, lavender, jars) with its textures (`data/textures/TEX_V2_*`), the beds and planters; its quick test (`RETEX=1` redraws the textures). |
 | `blender/10_fetch_geo.py` | Downloads the heights and the satellite image round the site into `data/geo/` (run once, outside Blender; needs pyproj and rasterio). |
@@ -534,6 +535,21 @@ planting along the walls as the pool reference, and in the big stairs going down
   every tread but the fountains', planted with the same drifts, a small olive tree every sixth planter.
 - **Pool park**: beds along the parapet, stone planters with agaves on the deck, jars by the kiosk, lavender along
   the path from the villas.
+- **Tranche 1's villas (27-10)**: the plan's palms and trees drawn in the strip outside a villa's garden wall are
+  planted inside its garden, 1 m from the wall (27 of them); the trees inside a garden are smaller; the shade and
+  street trees of the plan are olive trees from the library, so every tree of the site is a detailed one.
+
+## The children's playground (client 27-10)
+"We want to add a park for kids like this or even something different, with colours": on the tiled court between
+the pool court, the restaurant and the road (the ground the plan draws as the playground), **a design proposal**
+(`23_playground.py`, collection `08_PLAYGROUND`, object `KIDS_PARK_<material>`), on coloured rubber (EPDM) surfaces:
+- the main play structure: two towers with pyramid roofs (decks at 1.20 and 1.60 m), a rope bridge, a wavy slide, an
+  open spiral slide round its post, a climbing net, a climbing wall with its holds, a ladder, a fireman's pole;
+- a swing frame (a nest swing and two seats), a roundabout, a seesaw;
+- the toddlers' corner: a sandpit in its timber edge, three spring riders;
+- benches, bins, three shade sails over the seats, olive trees at the corners (the fence along the road and its
+  planting removed at the client's request, 27-10).
+Cameras `CAM_14_KIDS_PARK`, `CAM_15_KIDS_PARK_AERIAL`.
 
 ## Removed (client, 13-10)
 Direction arrows and cars. The zebra crossings were put back as paint (15-10).

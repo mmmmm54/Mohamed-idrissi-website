@@ -1108,6 +1108,44 @@ def main():
     court = to_world(POOL.COURT, pc["c"], pc["rot_deg"])
     bld = unary_union([to_world(DPX.FOOT, d["c"], d["rot_deg"]) for d in SITE["duplexes"]])   # villa N°09 + rear terrace
     n_skip = 0
+    # client 27-10 ("dont do this error, should be inside"): the plan's palms and trees in the strip outside a villa's
+    # garden wall are planted inside its garden, 1 m from the wall
+    houses_c = [Point(d["c"]) for d in SITE["duplexes"]]
+    hard_in = unary_union([bld.buffer(0.8)] + [g.buffer(0.5) for g, _ in terraces] + [e.buffer(0.5) for e in entries])
+    moved = []
+
+    def inside(xy):
+        p = Point(xy)
+        hc = min(houses_c, key=lambda h: h.distance(p))
+        if hc.distance(p) > 25.0 or not LineString([xy, (hc.x, hc.y)]).intersects(walls_g):
+            return xy                                            # in its villa's lot already, or no villa by it
+        from shapely.ops import nearest_points
+        q = nearest_points(walls_g, p)[0]
+        d = np.array([q.x - p.x, q.y - p.y])
+        n = float(np.linalg.norm(d))
+        if n < 1e-6 or n > 1.6:
+            return xy
+        d /= n
+        t = LineString([(q.x, q.y), (q.x + d[0] * 1.5, q.y + d[1] * 1.5)]).intersection(walls_g.buffer(0.01)).length
+        for off in (1.0, 1.4, 0.8, 1.8, 2.3, 0.6):
+            new = Point(q.x + d[0] * (t + off), q.y + d[1] * (t + off))
+            hn = min(houses_c, key=lambda h: h.distance(new))   # in a villa's lot: no wall between it and its house
+            if not hard_in.contains(new) and not LineString([(new.x, new.y), (hn.x, hn.y)]).intersects(walls_g):
+                moved.append(new)
+                return (new.x, new.y)
+        # at a wall's corner: across the wall on the way to the house
+        d2 = np.array([hc.x - p.x, hc.y - p.y])
+        L2 = float(np.linalg.norm(d2))
+        d2 /= L2
+        cut = LineString([xy, (hc.x, hc.y)]).intersection(walls_g)
+        s1 = min(max(float(np.dot(np.array(c_) - np.array(xy), d2)) for c_ in g_.coords) for g_ in getattr(cut, "geoms", [cut]))
+        for off in (1.0, 1.5, 2.0, 2.6):
+            new = Point(p.x + d2[0] * (s1 + off), p.y + d2[1] * (s1 + off))
+            hn = min(houses_c, key=lambda h: h.distance(new))
+            if not bld.buffer(0.6).contains(new) and not LineString([(new.x, new.y), (hn.x, hn.y)]).intersects(walls_g):
+                moved.append(new)
+                return (new.x, new.y)
+        return xy
     for i_t, t in enumerate(SITE["trees"]):
         if i_t in gone:
             continue
@@ -1118,19 +1156,23 @@ def main():
             n_skip += 1                                          # in its bassins, pergolas or against its walls
             continue
         z = z_deck + POOL.BAC_SOIL if court.buffer(0.5).contains(Point(xy)) else None
+        if z is None and t["kind"] in ("palm", "olive", "washingtonia", "shade"):
+            xy = inside(xy)
+        small = 0.65 if garden_level(*xy) is not None else 1.0  # the client's notes: the trees in a garden smaller
+        # client 27-10: every tree from the detailed library (the shade and street trees as olive trees)
         if t["kind"] == "palm":                                 # symbol 0.23-0.68 m radius on the plan: young palms
             plant("date", xy, 0.38 + 0.45 * min(t["r"], 0.7), z)
         elif t["kind"] == "olive":
-            plant("olive", xy, 0.45 + 0.55 * min(t["r"], 0.85), z)
+            plant("olive", xy, (0.45 + 0.55 * min(t["r"], 0.85)) * small, z)
         elif t["kind"] == "washingtonia":
             plant("wash", xy, RNG.uniform(0.9, 1.05), z)
         elif t["kind"] == "shade":
-            plant("green", xy, RNG.uniform(0.85, 1.0), z)
+            plant("olive", xy, RNG.uniform(0.95, 1.1) * small, z)
         elif bld.distance(Point(xy)) < 1.5:                    # pits drawn against a façade
-            plant("standard", xy, min(0.5, 0.5 * (bld.distance(Point(xy)) - 0.02) / 0.59), hz(*xy) + 0.09, sz=1.0)
+            plant("olive", xy, 0.45, hz(*xy) + 0.09)
         else:
-            plant("pit", xy, RNG.uniform(0.85, 1.0), hz(*xy) + 0.09)
-    print("  trees of the 12-10 layout left out on the pavilion:", n_skip)
+            plant("olive", xy, RNG.uniform(0.75, 0.9), hz(*xy) + 0.09)
+    print("  trees of the 12-10 layout left out on the pavilion:", n_skip, "; moved inside a villa's garden wall:", len(moved))
     # rev 4: a low planted strip behind each villa's stone front wall (front reference image)
     for d in SITE["duplexes"]:
         fd = frame(d["c"], d["rot_deg"])
@@ -1141,7 +1183,7 @@ def main():
     # gravel edged in stone, drifts of grasses, lavender and agaves, a terracotta jar now and then
     mb = C.MeshBuilder()
     n_bed = 0
-    tree_pts = unary_union([Point(t["c"]).buffer(1.3) for t in SITE["trees"]])
+    tree_pts = unary_union([Point(t["c"]).buffer(1.3) for t in SITE["trees"]] + [p.buffer(1.0) for p in moved])
     hard_t1 = unary_union([bld.buffer(0.9)] + [g.buffer(0.6) for g, _ in terraces] + [e.buffer(0.7) for e in entries])
     for gp, zg_ in GARDENS:
         bed = gp.intersection(walls_g.buffer(1.0, join_style=2)).difference(walls_g.buffer(0.03)).difference(hard_t1)
@@ -1191,6 +1233,12 @@ def main():
                 plant("shrub", (q.x, q.y), RNG.uniform(0.8, 1.2), hz(q.x, q.y) + 0.38)
                 n -= 1
 
+    # ---- the children's playground on the tiled court by the restaurant (client 27-10, 23_playground) -----------
+    PG = load("23_playground.py")
+    PG.PLM = PL
+    cams_pg = PG.build(M, C.collection("08_PLAYGROUND"), srcv, hz, plant)
+    print("  children's playground on the court by the restaurant")
+
     # ---- Tranche 2: the villas type B west of the tranche (13_tranche2), in collections of their own --
     T2M.STREET_FIX = T3M.street_fix(load("17_hotel.py"))     # client 24-10: Tranche 2's kerbs by the hotel go
     T3M.PASSAGE_ZF = T4M.passage_zf                           # client 26-10: the villas A passage flush with the park
@@ -1227,6 +1275,7 @@ def main():
     sc.view_settings.exposure = -0.7
     cams = make_cameras(cols["07_CAMERAS"], z_deck)
     cams.update(cams_t2)
+    cams.update(cams_pg)
     bpy.context.view_layer.layer_collection.children["SRC"].exclude = True
     sc.camera = cams["CAM_01_AERIAL_T1"]
     if "--no-save" not in args:

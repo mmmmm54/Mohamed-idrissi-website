@@ -216,7 +216,13 @@ def new_mat(old):
         if name == "D01_Mashrabiya_Wood":
             tile = 0.5
     else:
-        hexcol, rough, metal = FLAT.get(name, ("#B0A090", 0.85, 0.0))
+        pb = next((n for n in (old.node_tree.nodes if old.node_tree else []) if n.type == "BSDF_PRINCIPLED"), None)
+        if name not in FLAT and pb is not None and not pb.inputs["Base Color"].is_linked:   # (27-10: its own colour, the
+            c = pb.inputs["Base Color"].default_value                                         #  playground's paints)
+            to_s = lambda v: 1.055 * v ** (1 / 2.4) - 0.055 if v > 0.0031308 else v * 12.92
+            hexcol, rough, metal = "#%02X%02X%02X" % tuple(int(255 * min(1.0, to_s(v))) for v in c[:3]), pb.inputs["Roughness"].default_value, 0.0
+        else:
+            hexcol, rough, metal = FLAT.get(name, ("#B0A090", 0.85, 0.0))
         b.inputs["Base Color"].default_value = (*lin(hexcol), 1.0)
         b.inputs["Roughness"].default_value = rough
         b.inputs["Metallic"].default_value = metal

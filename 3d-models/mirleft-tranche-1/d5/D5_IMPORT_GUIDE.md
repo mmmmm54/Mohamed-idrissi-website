@@ -146,3 +146,9 @@ jars (in both files, `*_03_LANDSCAPE`). Gravel beds edged in stone along the vil
 (`GARDEN_BEDS_T1`, `T2_GARDEN_BEDS`, `T3_GARDEN_BEDS`, material `V2_Gravel_Mulch`), one smaller olive tree per
 garden, raised stone planters on the big stair (`T2_STAIR_BETWEEN_BLOCKS`), beds and planters in the pool park.
 **Delete the old model in D5 completely before importing.**
+
+## The children's playground (27-10)
+On the tiled court by the restaurant: object `KIDS_PARK_<material>` in `08_PLAYGROUND` (play structure, slides,
+swings, roundabout, seesaw, sandpit, spring riders, benches, shade sails), on coloured rubber surfaces
+(`P09`-`P12_EPDM_*`), its paints `P01`-`P08`. Tranche 1's palms that stood outside the villas' garden walls are
+inside the gardens now. **Delete the old model in D5 completely before importing.**

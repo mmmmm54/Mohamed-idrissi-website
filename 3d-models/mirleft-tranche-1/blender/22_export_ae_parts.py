@@ -41,6 +41,7 @@ PARTS = {
     "T1_RESTAURANT_COMMERCES": (("04_PUBLIC",), None, 20000),
     "T1_POOL_COURT": (("05_POOL",), None, 12000),
     "T1_GROUND": (("01_TERRAIN", "02_GROUND", "06_LANDSCAPE"), None, 40000),
+    "T1_PLAYGROUND": (("08_PLAYGROUND",), None, 20000),
     "T2_VILLAS_B": (("T2_02_VILLAS",), "T2_VILLA_B", 60000),
     "T2_VILLAS_C": (("T2_02_VILLAS",), "T2_VILLA_C", 30000),
     "T2_SPA": (("T2_05_SPA",), None, 12000),
@@ -62,6 +63,7 @@ ZONES = {   # the zoning file: part -> (flat colour, legend)
     "T2_SERVICES": ("#7D7D7D", "Services (centre d'entretien, office)"),
     "T3_VILLAS_A": ("#2D7DD2", "Villas type A"),
     "T3_HOTEL": ("#1B998B", "Hotel"),
+    "T1_PLAYGROUND": ("#12B5CB", "Aire de jeux"),
 }
 ZBUDGET = {"T1_VILLAS_DUPLEX": 32000, "T1_RESTAURANT_COMMERCES": 14000, "T1_POOL_COURT": 6000, "T1_GROUND": 16000,
            "T2_GROUND_STAIR": 22000, "T3_VILLAS_A": 15000, "T3_HOTEL": 32000, "T4_POOL_PARK": 12000}   # the zoning file
