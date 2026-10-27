@@ -383,6 +383,19 @@ def _leaf(mb, mat, base, d, up, length, width, fold=0.35, droop=0.12, prof=(0.45
             mb.poly(mat, [_P(m0), _P(r0), _P(m1)], [(0.5, v0), (1, v0), (0.5, v1)])
 
 
+def _leaf_lo(mb, mat, base, d, up, length, width, fold=0.35, droop=0.12):
+    """the light leaflet (lo=True): two triangles folded along the midrib, widest at 40 %"""
+    d = _n(d)
+    w_ax = _n(np.cross(up, d))
+    nrm = np.cross(d, w_ax)
+    mid = base + d * length * 0.4 - Z * droop * length * 0.16
+    tip = base + d * length - Z * droop * length
+    hw = width / 2
+    lft, rgt = mid - w_ax * hw + nrm * fold * hw, mid + w_ax * hw + nrm * fold * hw
+    mb.poly(mat, [_P(base), _P(lft), _P(tip)], [(0.5, 0.0), (0.0, 0.4), (0.5, 1.0)])
+    mb.poly(mat, [_P(base), _P(tip), _P(rgt)], [(0.5, 0.0), (0.5, 1.0), (1.0, 0.4)])
+
+
 def finish(ob, angle=55.0):
     """weld the builder's loose faces, smooth shading with sharp edges over angle"""
     import bmesh
@@ -447,9 +460,9 @@ def _trunk_lattice(mb, mat, centre, radius, z0, z1, n_boot, pz, amp, seg_per=6, 
     _grid(mb, mat, rows, uvs, close=True)
 
 
-def _pinnate_frond(mb, r, base, az, el, droop, length, age, mats, nleaf=62, spread=1.0):
+def _pinnate_frond(mb, r, base, az, el, droop, length, age, mats, nleaf=62, spread=1.0, lo=False):
     """a date palm frond: rachis from base (azimuth az, elevation el, bending down by droop), spines on its petiole,
-    leaflets in two planes along it"""
+    leaflets in two planes along it (lo: a lighter rachis, no spines, wider two-triangle leaflets)"""
     leaf_mat, rachis_mat = mats
     hd = np.array([math.cos(az), math.sin(az), 0.0])
     twist = r.uniform(-0.15, 0.15)
@@ -464,14 +477,17 @@ def _pinnate_frond(mb, r, base, az, el, droop, length, age, mats, nleaf=62, spre
         pts.append(pts[-1] + d * length / ns)
     pts = np.array(pts)
     radii = [0.036 * (1 - 0.9 * (k / ns)) ** 1.2 + 0.004 for k in range(ns + 1)]
-    _tube(mb, rachis_mat, list(pts), radii, seg=4, v_scale=0.5)
+    if lo:
+        _tube(mb, rachis_mat, list(pts[::2]), radii[::2], seg=3, v_scale=0.5)
+    else:
+        _tube(mb, rachis_mat, list(pts), radii, seg=4, v_scale=0.5)
 
     def at(t):
         f = t * ns
         k = min(ns - 1, int(f))
         return pts[k] + (pts[k + 1] - pts[k]) * (f - k), dirs[k]
     # spines on the petiole
-    for k in range(9):
+    for k in range(0 if lo else 9):
         t = 0.04 + 0.14 * k / 9
         p, d = at(t)
         d, s, u = _frame(d)
@@ -496,12 +512,16 @@ def _pinnate_frond(mb, r, base, az, el, droop, length, age, mats, nleaf=62, spre
             ld = d * math.cos(fwd) + s * sg * math.sin(fwd)
             ld = _n(ld * math.cos(elev) + u * math.sin(elev))
             b = p + s * sg * 0.02
+            if lo:
+                _leaf_lo(mb, leaf_mat, b, ld, u + Z * 0.3, ll, ll * r.uniform(0.13, 0.16), fold=0.6, droop=0.12 + 0.25 * age)
+                continue
             _leaf(mb, leaf_mat, b, ld, u + Z * 0.3, ll, ll * r.uniform(0.060, 0.075), fold=0.6, droop=0.12 + 0.25 * age,
                   curl=r.uniform(-0.05, 0.05))
 
 
-def date_palm(seed, height, n_fronds=48, dates=True, M=None):
-    """Phoenix dactylifera, trunk `height` m to the crown (local coords, foot at the origin)"""
+def date_palm(seed, height, n_fronds=48, dates=True, M=None, lo=False):
+    """Phoenix dactylifera, trunk `height` m to the crown (local coords, foot at the origin); lo: the light version
+    (build_lod)"""
     r = random.Random(seed)
     mb = C.MeshBuilder()
     lean = np.array([r.uniform(-1, 1), r.uniform(-1, 1), 0.0])
@@ -516,16 +536,20 @@ def date_palm(seed, height, n_fronds=48, dates=True, M=None):
         t = z / height
         flare = 0.30 * math.exp(-z / 0.35)                      # the root plate
         return 0.27 * (1.0 - 0.10 * t) + flare + 0.05 * max(0.0, (t - 0.9) / 0.1) ** 2
-    _trunk_lattice(mb, "v2_date_trunk", centre, radius, 0.0, height, n_boot=10, pz=0.15, amp=0.11)
+    if lo:
+        _trunk_lattice(mb, "v2_date_trunk", centre, radius, 0.0, height, n_boot=10, pz=0.15, amp=0.0, seg_per=1, rings_per=0.5)
+    else:
+        _trunk_lattice(mb, "v2_date_trunk", centre, radius, 0.0, height, n_boot=10, pz=0.15, amp=0.11)
     top = centre(height)
     # the crown bulb: rings of leaf bases closing over the top
     rows, uvs = [], []
-    for j in range(7):
-        t = j / 6
+    nj, na = (4, 10) if lo else (7, 28)
+    for j in range(nj):
+        t = j / (nj - 1)
         rr = (0.33 + 0.12 * math.sin(math.pi * t * 0.9)) * (1 - t ** 3)
         zz = height + 0.75 * t
-        rows.append([top + np.array([math.cos(a) * rr, math.sin(a) * rr, zz - height]) for a in np.linspace(0, 2 * math.pi, 28, endpoint=False)])
-        uvs.append([(9 * k / 28, 6 + t * 4) for k in range(28)])
+        rows.append([top + np.array([math.cos(a) * rr, math.sin(a) * rr, zz - height]) for a in np.linspace(0, 2 * math.pi, na, endpoint=False)])
+        uvs.append([(9 * k / na, 6 + t * 4) for k in range(na)])
     _grid(mb, "v2_date_trunk", rows, uvs, close=True)
     # fronds: golden angle, young ones upright in the centre, old ones low and drooping
     for i in range(n_fronds):
@@ -537,13 +561,13 @@ def date_palm(seed, height, n_fronds=48, dates=True, M=None):
         rb = 0.18 + 0.12 * age
         base = top + np.array([math.cos(az) * rb, math.sin(az) * rb, 0.72 - 0.75 * age])
         mats = ("v2_date_old" if age > 0.86 and r.random() < 0.6 else "v2_date_leaf", "v2_rachis")
-        _pinnate_frond(mb, r, base, az, el, droop, Lf, age, mats, nleaf=82, spread=1.0 if age > 0.08 else 0.45)
+        _pinnate_frond(mb, r, base, az, el, droop, Lf, age, mats, nleaf=30 if lo else 82, spread=1.0 if age > 0.08 else 0.45, lo=lo)
     for k in range(r.randint(2, 3)):                            # dead fronds hanging under the crown
         az = r.uniform(0, 2 * math.pi)
         base = top + np.array([math.cos(az) * 0.3, math.sin(az) * 0.3, 0.05])
         _pinnate_frond(mb, r, base, az, math.radians(-62), math.radians(25), r.uniform(2.6, 3.2), 1.0, ("v2_dead", "v2_dead"),
-                       nleaf=40, spread=0.5)
-    if dates:                                                   # date bunches under the crown, orange
+                       nleaf=10 if lo else 40, spread=0.5, lo=lo)
+    if dates and not lo:                                                   # date bunches under the crown, orange
         for k in range(r.randint(3, 5)):
             az = r.uniform(0, 2 * math.pi)
             p0 = top + np.array([math.cos(az) * 0.35, math.sin(az) * 0.35, 0.25])
@@ -563,13 +587,13 @@ def date_palm(seed, height, n_fronds=48, dates=True, M=None):
 
 
 # ---- Washingtonia robusta -------------------------------------------------------------------------------------
-def _fan(mb, r, hast, f, R, mat, nseg=48, open_deg=115, droop=1.0, fold=0.35, dead=False):
+def _fan(mb, r, hast, f, R, mat, nseg=48, open_deg=115, droop=1.0, fold=0.35, dead=False, lo=False):
     """a costapalmate fan at the hastula hast, facing along f (unit): pleated segments, joined to 55 % of the radius,
     free beyond and drooping to their tips"""
     f, s, n = _frame(f)
     if dead:
         n = -n
-    st = (0.03, 0.18, 0.36, 0.55, 0.70, 0.85, 1.0)
+    st = (0.03, 0.55, 0.8, 1.0) if lo else (0.03, 0.18, 0.36, 0.55, 0.70, 0.85, 1.0)
     dphi = math.radians(2 * open_deg) / nseg
     for k in range(nseg):
         phi_c = -math.radians(open_deg) + dphi * (k + 0.5)
@@ -598,8 +622,9 @@ def _fan(mb, r, hast, f, R, mat, nseg=48, open_deg=115, droop=1.0, fold=0.35, de
                 mb.poly(mat, [_P(a[i]), _P(a[i + 1]), _P(b[i + 1]), _P(b[i])], [ua[i], ua[i + 1], ub[i + 1], ub[i]])
 
 
-def washingtonia(seed, height, skirt=True, n_fronds=28):
-    """Washingtonia robusta, trunk `height` m to the crown (local coords, foot at the origin)"""
+def washingtonia(seed, height, skirt=True, n_fronds=28, lo=False):
+    """Washingtonia robusta, trunk `height` m to the crown (local coords, foot at the origin); lo: the light version
+    (build_lod)"""
     r = random.Random(seed)
     mb = C.MeshBuilder()
     lean = _n(np.array([r.uniform(-1, 1), r.uniform(-1, 1), 0.0])) * r.uniform(0.01, 0.04)
@@ -612,7 +637,7 @@ def washingtonia(seed, height, skirt=True, n_fronds=28):
     def radius(z):
         return 0.20 + 0.03 * (1 - z / height) + 0.26 * math.exp(-z / 0.55)
     zb = height - 1.4                                           # the criss-cross leaf bases under the crown
-    nseg, nr = 18, int(zb / 0.25)
+    nseg, nr = (8, max(2, int(zb / 1.2))) if lo else (18, int(zb / 0.25))
     rows, uvs = [], []
     for j in range(nr + 1):
         z = zb * j / nr
@@ -620,14 +645,16 @@ def washingtonia(seed, height, skirt=True, n_fronds=28):
         rows.append([c + np.array([math.cos(a) * rr, math.sin(a) * rr, 0]) for a in np.linspace(0, 2 * math.pi, nseg, endpoint=False)])
         uvs.append([(3 * k / nseg, z) for k in range(nseg)])
     _grid(mb, "v2_wash_trunk", rows, uvs, close=True)
-    _trunk_lattice(mb, "v2_wash_boots", centre, lambda z: radius(z) * (1 + 0.15 * (z - zb) / 1.4), zb, height, n_boot=8, pz=0.16, amp=0.22)
+    _trunk_lattice(mb, "v2_wash_boots", centre, lambda z: radius(z) * (1 + 0.15 * (z - zb) / 1.4), zb, height, n_boot=8, pz=0.16,
+                   amp=0.0 if lo else 0.22, seg_per=1 if lo else 6, rings_per=0.5 if lo else 7)
     top = centre(height)
     rows, uvs = [], []
-    for j in range(5):
-        t = j / 4
+    nj, na = (3, 10) if lo else (5, 24)
+    for j in range(nj):
+        t = j / (nj - 1)
         rr = (radius(height) * 1.15 + 0.06 * math.sin(math.pi * t)) * (1 - t ** 3)
-        rows.append([top + np.array([math.cos(a) * rr, math.sin(a) * rr, 0.55 * t]) for a in np.linspace(0, 2 * math.pi, 24, endpoint=False)])
-        uvs.append([(8 * k / 24, 9 + t * 3) for k in range(24)])
+        rows.append([top + np.array([math.cos(a) * rr, math.sin(a) * rr, 0.55 * t]) for a in np.linspace(0, 2 * math.pi, na, endpoint=False)])
+        uvs.append([(8 * k / na, 9 + t * 3) for k in range(na)])
     _grid(mb, "v2_wash_boots", rows, uvs, close=True)
     for i in range(n_fronds):
         age = i / (n_fronds - 1)
@@ -641,8 +668,9 @@ def washingtonia(seed, height, skirt=True, n_fronds=28):
         for k in range(6):
             e = el - math.radians(10) * (k / 5)
             pts.append(pts[-1] + (hd * math.cos(e) + Z * math.sin(e)) * Lp / 6)
-        _tube(mb, "v2_petiole", pts, [0.035, 0.032, 0.028, 0.025, 0.022, 0.02, 0.02], seg=4, v_scale=0.5)
-        for k in range(1, 6):                                   # the petiole's teeth
+        pr = [0.035, 0.032, 0.028, 0.025, 0.022, 0.02, 0.02]
+        _tube(mb, "v2_petiole", pts[::3] if lo else pts, pr[::3] if lo else pr, seg=3 if lo else 4, v_scale=0.5)
+        for k in range(1, 1 if lo else 6):                      # the petiole's teeth
             p = pts[k]
             d, s, u = _frame(pts[k] - pts[k - 1])
             for sg in (-1, 1):
@@ -650,14 +678,14 @@ def washingtonia(seed, height, skirt=True, n_fronds=28):
                         [(0, 0), (1, 0), (0.5, 1)])
         fdir = _n(pts[-1] - pts[-2]) + Z * 0.25
         mat = "v2_fan_old" if age > 0.85 and r.random() < 0.6 else "v2_fan"
-        _fan(mb, r, pts[-1], fdir, r.uniform(0.85, 1.05), mat, nseg=46, droop=0.6 + 0.6 * age)
+        _fan(mb, r, pts[-1], fdir, r.uniform(0.85, 1.05), mat, nseg=20 if lo else 46, droop=0.6 + 0.6 * age, lo=lo)
     for k in range(2):                                          # the spear leaves, still folded
         p0 = top + Z * 0.5
         d = _n(Z + np.array([r.uniform(-0.2, 0.2), r.uniform(-0.2, 0.2), 0]))
-        _tube(mb, "v2_fan", [p0, p0 + d * 0.8, p0 + d * 1.5], [0.05, 0.035, 0.005], seg=6)
+        _tube(mb, "v2_fan", [p0, p0 + d * 0.8, p0 + d * 1.5], [0.05, 0.035, 0.005], seg=3 if lo else 6)
     if skirt:                                                   # the skirt of dead fronds hanging against the trunk
-        for layer in range(3):
-            nn = 16 + 3 * layer
+        for layer in range(2 if lo else 3):
+            nn = (8 if lo else 16) + 3 * layer
             for i in range(nn):
                 az = 2 * math.pi * (i + 0.5 * layer) / nn + r.uniform(-0.1, 0.1)
                 hd = np.array([math.cos(az), math.sin(az), 0.0])
@@ -666,13 +694,15 @@ def washingtonia(seed, height, skirt=True, n_fronds=28):
                 tip = base + hd * 0.25 - Z * 0.55
                 _tube(mb, "v2_dead", [base, tip], [0.025, 0.02], seg=3)
                 fd = _n(hd * 0.25 - Z)
-                _fan(mb, r, tip, fd, r.uniform(0.75, 0.95), "v2_dead", nseg=22, open_deg=40, droop=0.15, fold=0.15, dead=True)
+                _fan(mb, r, tip, fd, r.uniform(0.75, 0.95), "v2_dead", nseg=3 if lo else 22, open_deg=40, droop=0.15, fold=0.15,
+                     dead=True, lo=lo)
     return mb
 
 
 # ---- small plants ----------------------------------------------------------------------------------------------
-def grass(seed, h=0.75, n=230, plumes=24):
-    """fountain grass: arching blades out of a tight base, feathery plumes over them"""
+def grass(seed, h=0.75, n=230, plumes=24, lo=False):
+    """fountain grass: arching blades out of a tight base, feathery plumes over them (lo: wider blades on four rows,
+    two cards a plume)"""
     r = random.Random(seed)
     mb = C.MeshBuilder()
     for i in range(n):
@@ -681,11 +711,12 @@ def grass(seed, h=0.75, n=230, plumes=24):
         b = hd * r.uniform(0, 0.07)
         hh = h * r.uniform(0.55, 1.0)
         out = r.uniform(0.15, 0.75)
-        w = r.uniform(0.008, 0.013)
+        w = r.uniform(0.008, 0.013) * (2.5 if lo else 1.0)
         s = np.cross(Z, hd)
         rows, uvs = [], []
-        for k in range(7):
-            t = k / 6
+        nk = 4 if lo else 7
+        for k in range(nk):
+            t = k / (nk - 1)
             p = b + Z * hh * math.sin(t * math.pi * 0.62) / math.sin(math.pi * 0.62) + hd * out * hh * t ** 1.6
             p = p - Z * out * hh * 0.5 * max(0, t - 0.6) ** 2
             ww = w * (1 - t) ** 0.7 + 0.0005
@@ -700,11 +731,12 @@ def grass(seed, h=0.75, n=230, plumes=24):
         p0 = hd * r.uniform(0, 0.05)
         p1 = p0 + Z * hh * 0.7 + hd * out * hh * 0.3
         p2 = p0 + Z * hh + hd * out * hh * 0.75
-        _tube(mb, "v2_grass", [p0, p1, p2], [0.003, 0.0025, 0.002], seg=3)
+        _tube(mb, "v2_grass", [p0, p2] if lo else [p0, p1, p2], [0.003, 0.002] if lo else [0.003, 0.0025, 0.002], seg=3)
         d = _n(p2 - p1)
         pl = 0.20 * r.uniform(0.8, 1.2)
-        for k in range(3):                                     # crossed cards with the plume's texture
-            a = math.pi * k / 3 + az
+        nc = 2 if lo else 3
+        for k in range(nc):                                    # crossed cards with the plume's texture
+            a = math.pi * k / nc + az
             sv = np.array([math.cos(a), math.sin(a), 0.0])
             sv = _n(sv - d * np.dot(sv, d)) * 0.035
             q0, q1 = p2 - d * 0.02, p2 + d * pl
@@ -712,8 +744,9 @@ def grass(seed, h=0.75, n=230, plumes=24):
     return mb
 
 
-def agave(seed, n=30, length=0.75):
-    """Agave americana: thick keeled leaves, channelled on top, with their dark terminal spines"""
+def agave(seed, n=30, length=0.75, lo=False):
+    """Agave americana: thick keeled leaves, channelled on top, with their dark terminal spines (lo: four rows a leaf,
+    wider, no spines)"""
     r = random.Random(seed)
     mb = C.MeshBuilder()
     for i in range(n):
@@ -723,9 +756,9 @@ def agave(seed, n=30, length=0.75):
         s = np.cross(Z, hd)
         tilt = math.radians(14 + 66 * f ** 0.8 + r.uniform(-5, 5))
         Lf = length * (1.0 - 0.45 * f) * r.uniform(0.85, 1.1)
-        w = 0.10 * (1 - 0.3 * f) * r.uniform(0.9, 1.1)
+        w = 0.10 * (1 - 0.3 * f) * r.uniform(0.9, 1.1) * (1.25 if lo else 1.0)
         th = w * 0.6
-        prof = [(0.0, 0.75), (0.15, 1.0), (0.45, 0.85), (0.75, 0.5), (0.93, 0.15), (1.0, 0.0)]
+        prof = [(0.0, 0.75), (0.3, 0.95), (0.7, 0.55), (1.0, 0.0)] if lo else [(0.0, 0.75), (0.15, 1.0), (0.45, 0.85), (0.75, 0.5), (0.93, 0.15), (1.0, 0.0)]
         rows, uvs = [], []
         for t, hw in prof:
             e = tilt - math.radians(30) * t * t * (1 - f)        # the outer leaves arch over
@@ -736,14 +769,16 @@ def agave(seed, n=30, length=0.75):
                          c - up * et])                                                             # keel below
             uvs.append([(0, t), (0.5, t), (1, t), (0.5, t)])
         _grid(mb, "v2_agave", rows, uvs, close=True)
+        if lo:
+            continue
         tip_c = hd * Lf * math.cos(tilt - math.radians(30) * (1 - f)) + Z * (0.04 + Lf * math.sin(tilt - math.radians(30) * (1 - f)))
         d = _n(tip_c - rows[-2][1])
         _tube(mb, "v2_spine", [tip_c - d * 0.01, tip_c + d * 0.035], [0.006, 0.0005], seg=4)
     return mb
 
 
-def lavender(seed, r0=0.38, h=0.36, needles=520, spikes=80):
-    """a lavender mound: grey needle leaves, purple spikes on long stems"""
+def lavender(seed, r0=0.38, h=0.36, needles=520, spikes=80, lo=False):
+    """a lavender mound: grey needle leaves, purple spikes on long stems (lo: wider two-triangle needles)"""
     r = random.Random(seed)
     mb = C.MeshBuilder()
     for i in range(needles):
@@ -752,7 +787,10 @@ def lavender(seed, r0=0.38, h=0.36, needles=520, spikes=80):
         k = r.uniform(0.35, 1.0) ** 0.5
         p = np.array([u[0] * r0 * k, u[1] * r0 * k, u[2] * h * k])
         d = _n(np.array([u[0], u[1], u[2] + 0.8]) + np.array([r.gauss(0, 0.3), r.gauss(0, 0.3), 0]))
-        _leaf(mb, "v2_lav_leaf", p - d * 0.05, d, _n(np.cross(d, np.cross(Z, d)) + 1e-3), 0.11, 0.014, fold=0.2, droop=0.0)
+        if lo:
+            _leaf_lo(mb, "v2_lav_leaf", p - d * 0.06, d, _n(np.cross(d, np.cross(Z, d)) + 1e-3), 0.15, 0.04, fold=0.2, droop=0.0)
+        else:
+            _leaf(mb, "v2_lav_leaf", p - d * 0.05, d, _n(np.cross(d, np.cross(Z, d)) + 1e-3), 0.11, 0.014, fold=0.2, droop=0.0)
     for i in range(spikes):
         az = r.uniform(0, 2 * math.pi)
         rr = r0 * r.uniform(0, 0.8)
@@ -762,11 +800,11 @@ def lavender(seed, r0=0.38, h=0.36, needles=520, spikes=80):
         _tube(mb, "v2_lav_leaf", [p0, p1], [0.002, 0.0015], seg=3)
         d = _n(p1 - p0)
         q1 = p1 + d * r.uniform(0.06, 0.09)
-        _tube(mb, "v2_lav_flower", [p1, p1 + d * 0.03, q1], [0.009, 0.011, 0.002], seg=5)
+        _tube(mb, "v2_lav_flower", [p1, p1 + d * 0.03, q1], [0.009, 0.011, 0.002], seg=3 if lo else 5)
     return mb
 
 
-def jar(seed, kind="khabia", height=0.9):
+def jar(seed, kind="khabia", height=0.9, lo=False):
     """a turned terracotta jar: kind 'khabia' (round belly) or 'amphora' (tall, narrow foot)"""
     r = random.Random(seed)
     mb = C.MeshBuilder()
@@ -776,7 +814,7 @@ def jar(seed, kind="khabia", height=0.9):
     else:
         prof = [(0.0, 0.16), (0.03, 0.19), (0.18, 0.31), (0.42, 0.38), (0.65, 0.35), (0.82, 0.24), (0.90, 0.17),
                 (0.94, 0.17), (0.97, 0.20), (1.0, 0.20), (1.0, 0.17), (0.94, 0.15)]
-    seg = 28
+    seg = 12 if lo else 28
     rows, uvs = [], []
     for k, (t, rad) in enumerate(prof):
         rr = rad * height * r.uniform(0.98, 1.02)
@@ -844,7 +882,7 @@ def tex_olive_bark(name="TEX_V2_OLIVE_BARK.jpg", seed=19, n=512):
     return _save(name, a)
 
 
-def olive(seed, height=4.0, spread=4.2):
+def olive(seed, height=4.0, spread=4.2, lo=False):
     """an old olive tree: a short gnarled trunk splitting in three twisted leaders, branches and twigs spreading into
     a broad irregular dome, sprays of leaves at their ends (alpha cards with the leaf texture)"""
     r = random.Random(seed)
@@ -854,7 +892,7 @@ def olive(seed, height=4.0, spread=4.2):
 
     def branch(pts0, rad0, d, length, depth):
         pts, radii = [pts0], [rad0]
-        n = 6 if depth < 2 else 4
+        n = (4 if depth < 2 else 3) if lo else (6 if depth < 2 else 4)
         for k in range(n):
             out = _n(np.array([pts[-1][0], pts[-1][1], 0.0]) + 1e-3)
             d = _n(d + np.array([r.gauss(0, 0.22), r.gauss(0, 0.22), r.gauss(0.0, 0.1)]) + out * 0.10)
@@ -862,7 +900,7 @@ def olive(seed, height=4.0, spread=4.2):
                 d = _n(d - Z * 0.4)
             pts.append(pts[-1] + d * length / n)
             radii.append(rad0 * (1 - 0.6 * (k + 1) / n))
-        _tube(mb, "v2_olive_bark", pts, radii, seg=(8, 6, 5, 4)[min(depth, 3)], v_scale=1.0)
+        _tube(mb, "v2_olive_bark", pts, radii, seg=((5, 4, 3, 3) if lo else (8, 6, 5, 4))[min(depth, 3)], v_scale=1.0)
         if depth >= 3:
             tips.extend([pts[-1], pts[-2]])
             return
@@ -877,23 +915,23 @@ def olive(seed, height=4.0, spread=4.2):
     pts = [np.zeros(3) - Z * 0.15]
     for k in range(4):                                           # the gnarled trunk, twisting
         pts.append(pts[-1] + np.array([r.gauss(0, 0.06), r.gauss(0, 0.06), th / 4]))
-    _tube(mb, "v2_olive_bark", pts, [0.30, 0.24, 0.21, 0.20, 0.19], seg=10)
+    _tube(mb, "v2_olive_bark", pts, [0.30, 0.24, 0.21, 0.20, 0.19], seg=6 if lo else 10)
     for k in range(3):                                           # its burls
         p = pts[1 + k] + _n(np.array([r.gauss(0, 1), r.gauss(0, 1), 0])) * 0.16
-        _tube(mb, "v2_olive_bark", [p - Z * 0.12, p, p + Z * 0.14], [0.05, 0.10, 0.04], seg=6)
+        _tube(mb, "v2_olive_bark", [p - Z * 0.12, p, p + Z * 0.14], [0.05, 0.10, 0.04], seg=4 if lo else 6)
     n_lead = 3
     for k in range(n_lead):
         a = 2 * math.pi * k / n_lead + r.uniform(-0.3, 0.3)
         hd = np.array([math.cos(a), math.sin(a), 0.0])
         branch(pts[-1] + hd * 0.08, 0.14, _n(hd * 0.75 + Z), height * 0.42, 0)
     for p in tips:                                               # leaf sprays, turned out of the crown
-        for k in range(7):
+        for k in range(4 if lo else 7):
             c = p + np.array([r.gauss(0, 0.22), r.gauss(0, 0.22), r.gauss(0.05, 0.15)])
             out = _n(c - crown_c)
             nrm = _n(out * 0.6 + np.array([r.gauss(0, 0.6), r.gauss(0, 0.6), r.gauss(0.3, 0.5)]))
             a1 = _n(np.cross(nrm, Z) + 1e-3)
             a2 = np.cross(nrm, a1)
-            s_ = r.uniform(0.24, 0.36)
+            s_ = r.uniform(0.24, 0.36) * (1.3 if lo else 1.0)
             q = [c - a1 * s_ - a2 * s_, c + a1 * s_ - a2 * s_, c + a1 * s_ + a2 * s_, c - a1 * s_ + a2 * s_]
             mb.poly("v2_olive_leaves", [_P(v) for v in q], [(0, 0), (1, 0), (1, 1), (0, 1)])
     return mb
@@ -1063,6 +1101,30 @@ def build_sources(M, col):
         for ob in (o if isinstance(o, list) else [o]):
             ob.hide_render = True
             ob.hide_viewport = True
+    return S
+
+
+LOD = {"DATE_PALM_V2_A": lambda: date_palm(4, 5.0, n_fronds=30, lo=True),
+       "DATE_PALM_V2_B": lambda: date_palm(7, 5.6, n_fronds=27, lo=True),
+       "DATE_PALM_V2_C": lambda: date_palm(12, 4.6, n_fronds=25, dates=False, lo=True),
+       "WASHINGTONIA_V2_A": lambda: washingtonia(1, 9.0, skirt=True, n_fronds=20, lo=True),
+       "WASHINGTONIA_V2_B": lambda: washingtonia(3, 9.6, skirt=False, n_fronds=20, lo=True),
+       "WASHINGTONIA_V2_C": lambda: washingtonia(8, 8.4, skirt=True, n_fronds=20, lo=True),
+       "OLIVE_TREE_V2_A": lambda: olive(6, lo=True), "OLIVE_TREE_V2_B": lambda: olive(9, 3.8, 3.4, lo=True),
+       "FOUNTAIN_GRASS_V2": lambda: grass(5, n=50, plumes=10, lo=True), "AGAVE_V2": lambda: agave(3, n=14, lo=True),
+       "AGAVE_V2_SMALL": lambda: agave(8, n=12, length=0.5, lo=True), "LAVENDER_V2": lambda: lavender(6, needles=70, spikes=24, lo=True),
+       "JAR_KHABIA_V2": lambda: jar(2, "khabia", 0.85, lo=True), "JAR_AMPHORA_V2": lambda: jar(4, "amphora", 1.05, lo=True)}
+
+
+def build_lod(M, col):
+    """the light versions of the sources (the light GLB for After Effects, client 27-10): the same plants with the same
+    materials and textures, about 25 times fewer triangles; {source mesh name: light object}"""
+    materials(M)
+    S = {}
+    for k, make in LOD.items():
+        ob = source(k + "_LOD", make(), M, col)
+        ob.hide_render = ob.hide_viewport = True
+        S["SRC_" + k] = ob
     return S
 
 

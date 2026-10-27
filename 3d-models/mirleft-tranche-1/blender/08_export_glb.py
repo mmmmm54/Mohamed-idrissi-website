@@ -1,8 +1,12 @@
 """
 08_export_glb — light GLB of the 1er TRANCHE scene, with textures and colours (After Effects,
-web viewers, D5...).   python 08_export_glb.py [--ae | --ae-safe | --residence]
+web viewers, D5...).   python 08_export_glb.py [--ae | --ae-safe | --residence] [--light]
 --residence (client 27-10: "bghit maykunch fih ard w b7ar, ghir dekchi dyalna"): the same, without the terrain and
 the ocean round the site (00_SURROUNDINGS): Mirleft_Tranche_1_RESIDENCE.glb.
+--light (client 27-10: the residence GLB "compressed ... under 16 mb", smooth in After Effects): every plant on its
+light version (21_plants.build_lod: the same plant, materials and textures, about 25 times fewer triangles), the other
+meshes welded so their flat faces share their vertices and decimated where they stay heavy, no UVs on the plain
+colours, the images at half size (512 px). Plain glTF, no Draco: Mirleft_Tranche_1_RESIDENCE_LIGHT.glb.
 
 glTF only carries image textures and plain colours, so every procedural material of the scene is
 swapped for a Principled BSDF with
@@ -15,6 +19,8 @@ The 12 duplex pairs (two variants), the loungers and the trees share their meshe
 stays small. No cameras or lights. Units metres, +Y up (glTF). Writes Mirleft_Tranche_1.glb next to
 the .blend.
 """
+import importlib.util
+import math
 import os
 import sys
 import tempfile
@@ -29,7 +35,8 @@ BAY = os.path.join(os.path.dirname(ROOT), "mirleft-bay")
 D5 = os.path.join(BAY, "output", "d5", "textures")
 TIL = os.path.join(BAY, "assets", "textures", "tileable")
 TMP = tempfile.mkdtemp()
-SIZE = 1024
+LIGHT = "--light" in sys.argv
+SIZE = 512 if LIGHT else 1024
 
 
 def lin(h):
@@ -80,6 +87,8 @@ def gen_tiles(name, cols, rows, c1, c2, mortar, period_px=512, stagger=True, dia
                 d.rectangle([x0 + 2, j * h + 2, x0 + w - 2, (j + 1) * h - 2], fill=col)
     a = np.asarray(im).astype(np.int16) + rng.integers(-6, 6, (N, N, 1))
     im = Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
+    if LIGHT:
+        im = im.resize((N // 2, N // 2), Image.LANCZOS)
     p = os.path.join(TMP, name + ".jpg")
     im.save(p, quality=88)
     return p
@@ -96,13 +105,13 @@ TEX = {
     "M03_Timber_Pergola": (tinted(os.path.join(D5, "M03_Timber_Pergola_COL.jpg"), "timber"), 1.2),
     "M07_Pavers_Beige": (tinted(os.path.join(D5, "M07_Pavers_Beige_COL.jpg"), "pavers"), 2.0),
     "M09_Terrace_Stone": (tinted(os.path.join(D5, "M09_Terrace_Stone_COL.jpg"), "terrace"), 2.4),
-    "M10_Pool_Mosaic": (tinted(os.path.join(D5, "M10_Pool_Mosaic_COL.jpg"), "pool_mosaic", size=512), 0.5),
+    "M10_Pool_Mosaic": (tinted(os.path.join(D5, "M10_Pool_Mosaic_COL.jpg"), "pool_mosaic", size=SIZE // 2), 0.5),
     "T01_Terrain_Soil_Sand_Rock": (tinted(os.path.join(D5, "T01_Terrain_Soil_Sand_Rock_COL.jpg"), "terrain"), 9.0),
     "T16_Site_Land_Soil": (tinted(os.path.join(D5, "T01_Terrain_Soil_Sand_Rock_COL.jpg"), "site_land", "#FFFFFF", "#CFB6A8"), 18.0),
     "T03_Lawn": (tinted(os.path.join(TIL, "TEX_LAWN_COL.jpg"), "lawn"), 2.0),
-    "Kerb_Concrete": (tinted(os.path.join(TIL, "TEX_CONCRETE_COL.jpg"), "paving", size=512), 2.0),
-    "T22_Trottoir_Kerb_Entrance": (tinted(os.path.join(TIL, "TEX_CONCRETE_COL.jpg"), "paving_ent", size=512), 2.0),
-    "M12_Roof_Gravel": (tinted(os.path.join(TIL, "TEX_GRAVEL_COL.jpg"), "roof", size=512), 1.0),
+    "Kerb_Concrete": (tinted(os.path.join(TIL, "TEX_CONCRETE_COL.jpg"), "paving", size=SIZE // 2), 2.0),
+    "T22_Trottoir_Kerb_Entrance": (tinted(os.path.join(TIL, "TEX_CONCRETE_COL.jpg"), "paving_ent", size=SIZE // 2), 2.0),
+    "M12_Roof_Gravel": (tinted(os.path.join(TIL, "TEX_GRAVEL_COL.jpg"), "roof", size=SIZE // 2), 1.0),
     "M11_Asphalt": (gen_tiles("asphalt", 0, 0, "#5E5B57", None, (90, 88, 84), noise=14), 2.0),
     "M11_Asphalt_Entrance": (gen_tiles("asphalt_ent", 0, 0, "#5E5B57", None, (90, 88, 84), noise=14), 2.0),
     "D05_Bejmat_Terre_De_Sienne": (gen_tiles("bejmat", 10, 20, "#A0522D", "#8B4526", (110, 74, 54)), 1.0),
@@ -204,7 +213,7 @@ def new_mat(old):
                 a = np.asarray(im).copy()
                 a[..., 0], a[..., 1], a[..., 2] = r, g, bb
                 im = Image.fromarray(a)
-            im = im.resize((min(im.width, 512), min(im.height, 512)), Image.LANCZOS)
+            im = im.resize((min(im.width, SIZE // 2), min(im.height, SIZE // 2)), Image.LANCZOS)
             p = os.path.join(TMP, name + ".png")
             im.save(p)
             t = nt.nodes.new("ShaderNodeTexImage")
@@ -258,6 +267,8 @@ def main():
         for o in list(sur.all_objects) if sur else []:
             bpy.data.objects.remove(o, do_unlink=True)
         vl.update()
+    if LIGHT:
+        lighten(vl)
     swapped, done = {}, set()
     for o in list(vl.objects):
         if o.type != "MESH" or o.hide_render:
@@ -277,8 +288,13 @@ def main():
                 face_tiles[i] = tile
         if face_tiles:
             box_uv(me, face_tiles)
+        elif LIGHT and not any(m and m.node_tree and any(n.type == "TEX_IMAGE" for n in m.node_tree.nodes) for m in me.materials):
+            while me.uv_layers:                         # plain colours only: no UVs to carry
+                me.uv_layers.remove(me.uv_layers[0])
         done.add(me.name)
     out = os.path.join(ROOT, "Mirleft_Tranche_1_RESIDENCE.glb" if "--residence" in sys.argv else "Mirleft_Tranche_1.glb")
+    if LIGHT:
+        out = out[:-4] + "_LIGHT.glb"
     if "--ae" in sys.argv:
         # After Effects: origin at the centre of the tranche, its ground at height 0
         cx, cy, cz = centre()
@@ -296,6 +312,60 @@ def main():
     print("GLB", round(os.path.getsize(out) / 2 ** 20, 1), "MiB", "materials", len(swapped), "meshes", len(done))
     if "--ae-safe" in sys.argv:
         export_obj(out)
+
+
+HEAVY = 2500        # --light: triangles a mesh keeps before it is decimated (down to RMIN of itself at the most)
+RMIN = 0.4
+
+
+def lighten(vl):
+    """--light: the plants on their light versions, every other mesh welded (its flat faces then share their vertices,
+    smooth shading with sharp edges over 25 degrees) and decimated over HEAVY triangles"""
+    import bmesh
+    sys.path.insert(0, HERE)
+    import lib as L
+    spec = importlib.util.spec_from_file_location("t1_21", os.path.join(HERE, "21_plants.py"))
+    PL = importlib.util.module_from_spec(spec)
+    PL.__dict__["L"] = L
+    spec.loader.exec_module(PL)
+    col = bpy.data.collections.new("LOD")
+    bpy.context.scene.collection.children.link(col)
+    lod = PL.build_lod({}, col)
+    users = {}
+    for o in bpy.data.objects:
+        if o.name in vl.objects and o.type == "MESH" and not o.hide_render and col not in o.users_collection:
+            users.setdefault(o.data.name, []).append(o)
+    t0 = t1 = 0
+    for name, obs in users.items():
+        tris = lambda me: sum(len(p.vertices) - 2 for p in me.polygons)
+        n0 = tris(bpy.data.meshes[name]) * len(obs)
+        if name in lod:
+            for o in obs:
+                o.data = lod[name].data
+            t0, t1 = t0 + n0, t1 + tris(lod[name].data) * len(obs)
+            continue
+        me = bpy.data.meshes[name]
+        bm = bmesh.new()
+        bm.from_mesh(me)
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0005)
+        bm.to_mesh(me)
+        bm.free()
+        n = tris(me)
+        if n > HEAVY and not any(o.modifiers for o in obs):
+            mod = obs[0].modifiers.new("dec", "DECIMATE")
+            mod.ratio = max(RMIN, HEAVY / n)
+            mod.use_collapse_triangulate = True
+            new = bpy.data.meshes.new_from_object(obs[0].evaluated_get(bpy.context.evaluated_depsgraph_get()))
+            obs[0].modifiers.remove(mod)
+            for o in obs:
+                o.data = new
+            bpy.data.meshes.remove(me)
+            new.name = name
+            me = new
+        me.shade_smooth()
+        me.set_sharp_from_angle(angle=math.radians(25.0))
+        t0, t1 = t0 + n0, t1 + tris(me) * len(obs)
+    print("LIGHT triangles drawn", t0, "->", t1)
 
 
 def centre():
