@@ -3,11 +3,13 @@
 web viewers, D5...).   python 08_export_glb.py [--ae | --ae-safe | --residence] [--light]
 --residence (client 27-10: "bghit maykunch fih ard w b7ar, ghir dekchi dyalna"): the same, without the terrain and
 the ocean round the site (00_SURROUNDINGS): Mirleft_Tranche_1_RESIDENCE.glb.
---light (client 27-10: the residence GLB "compressed ... under 16 mb", smooth in After Effects): every plant on its
-light version (21_plants.build_lod: the same plant, materials and textures, about 25 times fewer triangles), the other
-meshes welded so their flat faces share their vertices, their hidden faces dropped (inside another solid) and the
-heavy ones decimated (the buildings to 40 % at the most, the flat ground never), no UVs on the plain colours, the
-images at half size (512 px), the nodes' transforms rounded. Plain glTF, no Draco: Mirleft_Tranche_1_RESIDENCE_LIGHT.glb.
+--light (client 27-10: the residence GLB "compressed ... under 16 mb", smooth in After Effects; a 5000-node GLB
+showed only its box there, the zoning and the Bay's Draco "compressed" GLB load): every plant on its light version
+(21_plants.build_lod: the same plants and materials, the palms' fronds and fans as cards painted with their own
+leaflets, about 2 million triangles in all), the other meshes welded, their hidden faces dropped (inside another
+solid) and the heavy ones decimated (the buildings to 40 % at the most, the flat ground never), the images at half
+size (512 px), alpha cut out (MASK); then joined into one mesh a material and Draco-compressed (pack, glTF-Transform
+through npx): Mirleft_Tranche_1_RESIDENCE_compressed.glb.
 
 glTF only carries image textures and plain colours, so every procedural material of the scene is
 swapped for a Principled BSDF with
@@ -209,7 +211,7 @@ def new_mat(old):
             t.image = bpy.data.images.load(p, check_existing=True)
             nt.links.new(t.outputs["Color"], b.inputs["Base Color"])
             if alpha:
-                nt.links.new(t.outputs["Alpha"], b.inputs["Alpha"])
+                alpha_link(nt, t, b)
                 m.blend_method = "CLIP"
             ob_ = next((n for n in old.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
             b.inputs["Roughness"].default_value = ob_.inputs["Roughness"].default_value if ob_ else 0.7
@@ -228,7 +230,7 @@ def new_mat(old):
             t = nt.nodes.new("ShaderNodeTexImage")
             t.image = bpy.data.images.load(p, check_existing=True)
             nt.links.new(t.outputs["Color"], b.inputs["Base Color"])
-            nt.links.new(t.outputs["Alpha"], b.inputs["Alpha"])
+            alpha_link(nt, t, b)
             m.blend_method = "CLIP"
             b.inputs["Roughness"].default_value = 0.6
         if name == "D01_Mashrabiya_Wood":
@@ -250,6 +252,18 @@ def new_mat(old):
     return m, tile
 
 
+def alpha_link(nt, t, b):
+    """the image's alpha to the BSDF; --light: through a Math Round, so the GLB says alphaMode MASK (cut out, no
+    sorting: the cards stay right once joined into one mesh for After Effects)"""
+    if not LIGHT:
+        nt.links.new(t.outputs["Alpha"], b.inputs["Alpha"])
+        return
+    rnd = nt.nodes.new("ShaderNodeMath")
+    rnd.operation = "ROUND"
+    nt.links.new(t.outputs["Alpha"], rnd.inputs[0])
+    nt.links.new(rnd.outputs[0], b.inputs["Alpha"])
+
+
 def box_uv(me, face_tiles):
     if not me.uv_layers:
         me.uv_layers.new(name="UVMap")
@@ -263,9 +277,12 @@ def box_uv(me, face_tiles):
             continue
         nx, ny, nz = (abs(c) for c in p.normal)
         ax = (0, 1) if nz >= nx and nz >= ny else ((1, 2) if nx >= ny else (0, 2))
-        for li in p.loop_indices:
-            v = co[me.loops[li].vertex_index]
-            uv[li].uv = (v[ax[0]] / tile, v[ax[1]] / tile)
+        f = [(co[me.loops[li].vertex_index][ax[0]] / tile, co[me.loops[li].vertex_index][ax[1]] / tile) for li in p.loop_indices]
+        if LIGHT:                          # whole tiles off, each face near 0 (Draco quantizes UVs over their range)
+            u0, v0 = math.floor(min(a for a, _ in f)), math.floor(min(b for _, b in f))
+            f = [(a - u0, b - v0) for a, b in f]
+        for li, t in zip(p.loop_indices, f):
+            uv[li].uv = t
 
 
 def main():
@@ -297,13 +314,10 @@ def main():
                 face_tiles[i] = tile
         if face_tiles:
             box_uv(me, face_tiles)
-        elif LIGHT and not any(m and m.node_tree and any(n.type == "TEX_IMAGE" for n in m.node_tree.nodes) for m in me.materials):
-            while me.uv_layers:                         # plain colours only: no UVs to carry
-                me.uv_layers.remove(me.uv_layers[0])
         done.add(me.name)
     out = os.path.join(ROOT, "Mirleft_Tranche_1_RESIDENCE.glb" if "--residence" in sys.argv else "Mirleft_Tranche_1.glb")
     if LIGHT:
-        out = out[:-4] + "_LIGHT.glb"
+        out = os.path.join(TMP, "Mirleft_Tranche_1_RESIDENCE_LIGHT.glb")
     if "--ae" in sys.argv:
         # After Effects: origin at the centre of the tranche, its ground at height 0
         cx, cy, cz = centre()
@@ -318,30 +332,25 @@ def main():
     bpy.ops.export_scene.gltf(filepath=out, export_format="GLB", use_visible=True, export_cameras=False,
                               export_lights=False, export_apply=True, export_image_format="JPEG" if "--ae-safe" in sys.argv else "AUTO",
                               export_materials="EXPORT", export_yup=True, export_draco_mesh_compression_enable=False)
-    if LIGHT:
-        round_nodes(out)
     print("GLB", round(os.path.getsize(out) / 2 ** 20, 1), "MiB", "materials", len(swapped), "meshes", len(done))
+    if LIGHT:
+        pack(out, os.path.join(ROOT, "Mirleft_Tranche_1_RESIDENCE_compressed.glb"))
     if "--ae-safe" in sys.argv:
         export_obj(out)
 
 
-def round_nodes(path):
-    """--light: the 5000 nodes' transforms rounded (0.1 mm, 1e-6) and their names dropped (the meshes keep theirs), a
-    JSON chunk half as heavy; the binary chunk as it is"""
-    import json
-    import struct
-    b = open(path, "rb").read()
-    jl = struct.unpack("<I", b[12:16])[0]
-    J = json.loads(b[20:20 + jl])
-    for n in J["nodes"]:
-        n.pop("name", None)
-        for k, d in (("translation", 4), ("rotation", 6), ("scale", 5)):
-            if k in n:
-                n[k] = [round(v, d) for v in n[k]]
-    js = json.dumps(J, separators=(",", ":")).encode()
-    js += b" " * (-len(js) % 4)
-    rest = b[20 + jl:]
-    open(path, "wb").write(struct.pack("<IIII", 0x46546C67, 2, 20 + len(js) + len(rest), len(js)) + b"JSON" + js + rest)
+def pack(src, out):
+    """--light: the GLB joined into one mesh a material (a hundred draw calls instead of 5000 nodes: After Effects
+    shows the zoning and the Bay's compressed GLB, but only the box of a 5000-node one) and Draco-compressed, with
+    glTF-Transform 4.5.1 as Mirleft_Bay_*_compressed.glb; geometry not simplified, textures as they are"""
+    import subprocess
+    gt = ["npx", "--yes", "@gltf-transform/cli@4.5.1"]
+    joined = os.path.join(TMP, "joined.glb")
+    subprocess.run(gt + ["optimize", src, joined, "--compress", "false", "--instance", "false", "--palette", "false",
+                         "--simplify", "false", "--texture-compress", "auto", "--texture-size", "1024"], check=True)
+    # 16 bits for the positions (1 cm over the 600 m of the site; the default 14 bits opened gaps), 14 for the UVs
+    subprocess.run(gt + ["draco", joined, out, "--quantize-position", "16", "--quantize-texcoord", "14"], check=True)
+    print("COMPRESSED", round(os.path.getsize(out) / 2 ** 20, 1), "MiB", out)
 
 
 HEAVY = 1500        # --light: triangles a mesh keeps before it is decimated, down to RMIN of itself at the most for
@@ -455,6 +464,9 @@ def lighten(vl):
             me = new
         me.shade_smooth()
         me.set_sharp_from_angle(angle=math.radians(25.0))
+    for o in [o for o in bpy.data.objects if o.name in vl.objects and o.type == "MESH" and not o.data.polygons]:
+        bpy.data.objects.remove(o, do_unlink=True)              # all hidden: no empty node in the GLB
+    vl.update()
     t1 = sum(tris(o.data) for o in bpy.data.objects if o.name in vl.objects and o.type == "MESH" and not o.hide_render)
     print("LIGHT triangles drawn", t0, "->", t1)
 

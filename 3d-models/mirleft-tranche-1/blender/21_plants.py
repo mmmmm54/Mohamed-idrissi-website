@@ -519,7 +519,7 @@ def _pinnate_frond(mb, r, base, az, el, droop, length, age, mats, nleaf=62, spre
                   curl=r.uniform(-0.05, 0.05))
 
 
-def date_palm(seed, height, n_fronds=48, dates=True, M=None, lo=False):
+def date_palm(seed, height, n_fronds=48, dates=True, M=None, lo=False, cards=False):
     """Phoenix dactylifera, trunk `height` m to the crown (local coords, foot at the origin); lo: the light version
     (build_lod)"""
     r = random.Random(seed)
@@ -561,10 +561,17 @@ def date_palm(seed, height, n_fronds=48, dates=True, M=None, lo=False):
         rb = 0.18 + 0.12 * age
         base = top + np.array([math.cos(az) * rb, math.sin(az) * rb, 0.72 - 0.75 * age])
         mats = ("v2_date_old" if age > 0.86 and r.random() < 0.6 else "v2_date_leaf", "v2_rachis")
+        if cards:
+            _frond_card(mb, r, base, az, el, droop, Lf, age, "v2_date_card_old" if mats[0] == "v2_date_old" else "v2_date_card",
+                        spread=1.0 if age > 0.08 else 0.45)
+            continue
         _pinnate_frond(mb, r, base, az, el, droop, Lf, age, mats, nleaf=22 if lo else 82, spread=1.0 if age > 0.08 else 0.45, lo=lo)
     for k in range(r.randint(2, 3)):                            # dead fronds hanging under the crown
         az = r.uniform(0, 2 * math.pi)
         base = top + np.array([math.cos(az) * 0.3, math.sin(az) * 0.3, 0.05])
+        if cards:
+            _frond_card(mb, r, base, az, math.radians(-62), math.radians(25), r.uniform(2.6, 3.2), 1.0, "v2_dead_card", spread=0.5)
+            continue
         _pinnate_frond(mb, r, base, az, math.radians(-62), math.radians(25), r.uniform(2.6, 3.2), 1.0, ("v2_dead", "v2_dead"),
                        nleaf=10 if lo else 40, spread=0.5, lo=lo)
     if dates and not lo:                                                   # date bunches under the crown, orange
@@ -622,7 +629,7 @@ def _fan(mb, r, hast, f, R, mat, nseg=48, open_deg=115, droop=1.0, fold=0.35, de
                 mb.poly(mat, [_P(a[i]), _P(a[i + 1]), _P(b[i + 1]), _P(b[i])], [ua[i], ua[i + 1], ub[i + 1], ub[i]])
 
 
-def washingtonia(seed, height, skirt=True, n_fronds=28, lo=False):
+def washingtonia(seed, height, skirt=True, n_fronds=28, lo=False, cards=False):
     """Washingtonia robusta, trunk `height` m to the crown (local coords, foot at the origin); lo: the light version
     (build_lod)"""
     r = random.Random(seed)
@@ -678,6 +685,9 @@ def washingtonia(seed, height, skirt=True, n_fronds=28, lo=False):
                         [(0, 0), (1, 0), (0.5, 1)])
         fdir = _n(pts[-1] - pts[-2]) + Z * 0.25
         mat = "v2_fan_old" if age > 0.85 and r.random() < 0.6 else "v2_fan"
+        if cards:
+            _fan_card(mb, r, pts[-1], fdir, r.uniform(0.85, 1.05), mat.replace("fan", "fan_card"), droop=0.6 + 0.6 * age)
+            continue
         _fan(mb, r, pts[-1], fdir, r.uniform(0.85, 1.05), mat, nseg=15 if lo else 46, droop=0.6 + 0.6 * age, lo=lo)
     for k in range(2):                                          # the spear leaves, still folded
         p0 = top + Z * 0.5
@@ -694,6 +704,10 @@ def washingtonia(seed, height, skirt=True, n_fronds=28, lo=False):
                 tip = base + hd * 0.25 - Z * 0.55
                 _tube(mb, "v2_dead", [base, tip], [0.025, 0.02], seg=3)
                 fd = _n(hd * 0.25 - Z)
+                if cards:
+                    _fan_card(mb, r, tip, fd, r.uniform(0.75, 0.95), "v2_dead_fan_card", open_deg=40, droop=0.15, fold=0.15,
+                              dead=True, ncol=2)
+                    continue
                 _fan(mb, r, tip, fd, r.uniform(0.75, 0.95), "v2_dead", nseg=3 if lo else 22, open_deg=40, droop=0.15, fold=0.15,
                      dead=True, lo=lo)
     return mb
@@ -892,7 +906,7 @@ def olive(seed, height=4.0, spread=4.2, lo=False):
 
     def branch(pts0, rad0, d, length, depth):
         pts, radii = [pts0], [rad0]
-        n = (4 if depth < 2 else 3) if lo else (6 if depth < 2 else 4)
+        n = (3 if depth < 2 else 2) if lo else (6 if depth < 2 else 4)
         for k in range(n):
             out = _n(np.array([pts[-1][0], pts[-1][1], 0.0]) + 1e-3)
             d = _n(d + np.array([r.gauss(0, 0.22), r.gauss(0, 0.22), r.gauss(0.0, 0.1)]) + out * 0.10)
@@ -900,7 +914,7 @@ def olive(seed, height=4.0, spread=4.2, lo=False):
                 d = _n(d - Z * 0.4)
             pts.append(pts[-1] + d * length / n)
             radii.append(rad0 * (1 - 0.6 * (k + 1) / n))
-        _tube(mb, "v2_olive_bark", pts, radii, seg=((5, 4, 3, 3) if lo else (8, 6, 5, 4))[min(depth, 3)], v_scale=1.0)
+        _tube(mb, "v2_olive_bark", pts, radii, seg=((4, 3, 3, 3) if lo else (8, 6, 5, 4))[min(depth, 3)], v_scale=1.0)
         if depth >= 3:
             tips.extend([pts[-1], pts[-2]])
             return
@@ -935,6 +949,181 @@ def olive(seed, height=4.0, spread=4.2, lo=False):
             q = [c - a1 * s_ - a2 * s_, c + a1 * s_ - a2 * s_, c + a1 * s_ + a2 * s_, c - a1 * s_ + a2 * s_]
             mb.poly("v2_olive_leaves", [_P(v) for v in q], [(0, 0), (1, 0), (1, 1), (0, 1)])
     return mb
+
+
+
+# ---- the light palms' cards (build_lod, the After Effects GLB: a frond or a fan is one card painted with its own
+# leaflets, a few triangles instead of a few thousand) --------------------------------------------------------------
+def _strip_colours(path, us=(0.5,), n=24):
+    """the colours of a leaf strip texture as the 3D leaves show it (Blender reads the image bottom up): for each u
+    in us, n colours from v = 0 (base) to v = 1 (tip), a narrow band averaged"""
+    from PIL import Image
+    a = np.asarray(Image.open(path).convert("RGB")).astype(np.float32)
+    h, w = a.shape[:2]
+    out = []
+    for u in us:
+        x0, x1 = int(max(0, (u - 0.08) * w)), int(min(w, (u + 0.08) * w)) + 1
+        col = a[:, x0:x1].mean(axis=1)
+        out.append([tuple(col[int(round((1 - k / (n - 1)) * (h - 1)))]) for k in range(n)])
+    return out
+
+
+def _shade(c, f):
+    return tuple(int(max(0, min(255, v * f))) for v in c) + (255,)
+
+
+def tex_frond_card(name, leaf, seed, dead=False, H=1024):
+    """a date palm frond lying flat (the rachis up the middle, base at the bottom), its leaflets either side painted
+    with the leaflet texture `leaf` and spaced, angled and sized as _pinnate_frond's; alpha"""
+    p = os.path.join(TEX, name)
+    if os.path.exists(p):
+        return p
+    from PIL import Image, ImageDraw
+    r = random.Random(seed)
+    cols = _strip_colours(leaf, us=(0.3,))[0]                  # beside the lighter midrib
+    W = H // 4                                                # power of two; x squeezed by W / (2 CARD_HW H)
+    bg = tuple(int(np.mean([c[k] for c in cols])) for k in range(3))
+    im = Image.new("RGBA", (W, H), bg + (0,))
+    d = ImageDraw.Draw(im)
+
+    def X(x, y):
+        return (W / 2 + x / CARD_HW * W / 2, H * (1 - y))
+    tt, t = [], 0.18
+    nleaf = 40 if dead else 82
+    while t < 0.985:
+        tt.append(t)
+        t += (0.80 / nleaf) * (0.6 if (len(tt) % 3) else 1.8)
+    for idx, t in enumerate(tt):
+        prof = math.sin(math.pi * min(1.0, (t - 0.12) / 0.92)) ** 0.65
+        for sg in (-1, 1):
+            plane = (idx + (sg > 0)) % 3
+            elev = math.radians((52, 22, 4)[plane] + r.uniform(-8, 8))
+            ll = (0.11 + 0.05 * (0.5 if dead else 1.0)) * (0.25 + 0.75 * prof) * r.uniform(0.88, 1.08)
+            ll *= abs(math.cos(elev - CARD_RISE))                    # seen in the card's plane
+            fwd = math.radians(48 - 26 * t + r.uniform(-6, 6))
+            dx, dy = sg * math.sin(fwd), math.cos(fwd)
+            nx, ny = -dy, dx
+            w = ll * r.uniform(0.060, 0.075)
+            f = r.uniform(0.93, 1.07)
+            bx, by = sg * 0.004, t
+            steps = 6
+            for k in range(steps):
+                s0, s1 = k / steps, (k + 1) / steps
+                ws = [w / 2 * (0.45 + 0.55 * min(1.0, s / 0.35) if s < 0.35 else 1.0 - 0.25 * (s - 0.35) / 0.35 if s < 0.7
+                               else 0.75 * (1 - s) / 0.3) for s in (s0, s1)]
+                c0 = (bx + dx * ll * s0, by + dy * ll * s0)
+                c1 = (bx + dx * ll * s1, by + dy * ll * s1)
+                poly = [X(c0[0] - nx * ws[0], c0[1] - ny * ws[0]), X(c0[0] + nx * ws[0], c0[1] + ny * ws[0]),
+                        X(c1[0] + nx * ws[1], c1[1] + ny * ws[1]), X(c1[0] - nx * ws[1], c1[1] - ny * ws[1])]
+                d.polygon(poly, fill=_shade(cols[min(len(cols) - 1, int((s0 + s1) / 2 * len(cols)))], f))
+    rach = _hex("#7F7C4C")
+    for k in range(24):
+        t0, t1 = k / 24, (k + 1) / 24
+        hw0, hw1 = (0.010 * (1 - 0.85 * t0) + 0.0015), (0.010 * (1 - 0.85 * t1) + 0.0015)
+        d.polygon([X(-hw0, t0), X(hw0, t0), X(hw1, t1), X(-hw1, t1)], fill=_shade(tuple(rach), 1.0))
+    im.save(p, optimize=True)
+    return p
+
+
+def tex_fan_card(name, seg, seed, H=512, W=512):
+    """a Washingtonia fan seen from the front (the hastula low in the middle, the fan opening 115 degrees either side
+    of up), its pleated segments painted with the segment texture `seg`, joined to 55 % and split beyond, as _fan's;
+    alpha"""
+    p = os.path.join(TEX, name)
+    if os.path.exists(p):
+        return p
+    from PIL import Image, ImageDraw
+    r = random.Random(seed)
+    L, Mi, R_ = _strip_colours(seg, us=(0.22, 0.5, 0.78), n=16)
+    bg = tuple(int(np.mean([c[k] for c in Mi])) for k in range(3))
+    im = Image.new("RGBA", (W, H), bg + (0,))
+    d = ImageDraw.Draw(im)
+
+    def X(phi, rho):
+        x, y = math.sin(phi) * rho, math.cos(phi) * rho
+        return ((x + 1) / 2 * W, (1 - (y + FAN_Y0) / (1 + FAN_Y0)) * H)
+    nseg, open_deg = 46, 115
+    dphi = math.radians(2 * open_deg) / nseg
+    st = (0.03, 0.18, 0.36, 0.55, 0.70, 0.85, 1.0)
+    for k in range(nseg):
+        phi_c = -math.radians(open_deg) + dphi * (k + 0.5)
+        tipr = r.uniform(0.92, 1.0)
+        f = r.uniform(0.94, 1.06)
+        for j in range(len(st) - 1):
+            row = []
+            for rho in (st[j], st[j + 1]):
+                free = max(0.0, (rho - 0.55) / 0.45)
+                wf = 1.0 if rho <= 0.55 else (1 - free) ** 0.8
+                rr = rho * (tipr if rho > 0.55 else 1.0)
+                row.append([X(phi_c + side * dphi * wf, rr) for side in (-0.5, 0.0, 0.5)])
+            ci = min(15, int((st[j] + st[j + 1]) / 2 * 16))
+            d.polygon([row[0][0], row[0][1], row[1][1], row[1][0]], fill=_shade(L[ci], f))
+            d.polygon([row[0][1], row[0][2], row[1][2], row[1][1]], fill=_shade(R_[ci], f))
+    im.save(p, optimize=True)
+    return p
+
+
+CARD_HW = 0.14                 # a frond card's half width, in frond lengths
+CARD_RISE = math.radians(25)   # its halves rise from the rachis (the palm's V)
+FAN_Y0 = 0.43                  # a fan card's texture reaches 0.43 R below the hastula (115 degrees each side)
+
+
+def card_materials(M):
+    """the cards' materials (alpha), with the leaflet textures they are painted from"""
+    M["v2_date_card"] = _img_mat("V2_Date_Frond_Card", tex_frond_card("TEX_V2_DATE_FROND_CARD.png", os.path.join(TEX, "TEX_V2_DATE_LEAFLET.jpg"), 41), 0.55, 0.30, alpha=True)
+    M["v2_date_card_old"] = _img_mat("V2_Date_Frond_Card_Old", tex_frond_card("TEX_V2_DATE_FROND_CARD_OLD.png", os.path.join(TEX, "TEX_V2_DATE_LEAFLET_OLD.jpg"), 42), 0.6, 0.25, alpha=True)
+    M["v2_dead_card"] = _img_mat("V2_Palm_Dead_Frond_Card", tex_frond_card("TEX_V2_DEAD_FROND_CARD.png", os.path.join(TEX, "TEX_V2_PALM_DEAD.jpg"), 43, dead=True), 0.85, 0.05, alpha=True)
+    M["v2_fan_card"] = _img_mat("V2_Washingtonia_Fan_Card", tex_fan_card("TEX_V2_FAN_CARD.png", os.path.join(TEX, "TEX_V2_FAN_SEGMENT.jpg"), 44), 0.5, 0.30, alpha=True)
+    M["v2_fan_card_old"] = _img_mat("V2_Washingtonia_Fan_Card_Old", tex_fan_card("TEX_V2_FAN_CARD_OLD.png", os.path.join(TEX, "TEX_V2_FAN_SEGMENT_OLD.jpg"), 45), 0.6, 0.25, alpha=True)
+    M["v2_dead_fan_card"] = _img_mat("V2_Palm_Dead_Fan_Card", tex_fan_card("TEX_V2_DEAD_FAN_CARD.png", os.path.join(TEX, "TEX_V2_PALM_DEAD.jpg"), 46), 0.85, 0.05, alpha=True)
+    return M
+
+
+def _frond_card(mb, r, base, az, el, droop, length, age, mat, spread=1.0, ns=6):
+    """a date palm frond as two cards (the light palms): the rachis curving as _pinnate_frond's, a card either side
+    rising CARD_RISE (less with age), its leaflets drooping at the edge, painted by tex_frond_card"""
+    hd = np.array([math.cos(az), math.sin(az), 0.0])
+    twist = r.uniform(-0.15, 0.15)
+    pts, dirs = [base], []
+    for k in range(ns):
+        t = (k + 0.5) / ns
+        e = el - droop * t ** 1.25
+        d = _rot(hd * math.cos(e) + Z * math.sin(e), Z, twist * t)
+        dirs.append(d)
+        pts.append(pts[-1] + d * length / ns)
+    hw = CARD_HW * length * (0.11 + 0.05 * spread) / 0.16
+    rise = CARD_RISE - math.radians(18) * age
+    dro = (0.12 + 0.25 * age) * 0.5
+    rows = []
+    for k in range(ns + 1):
+        d, s, u = _frame(dirs[min(k, ns - 1)])
+        p = pts[k]
+        rows.append([p + (-s * math.cos(rise) + u * math.sin(rise)) * hw - Z * dro * hw, p,
+                     p + (s * math.cos(rise) + u * math.sin(rise)) * hw - Z * dro * hw])
+    uvs = [[(0.0, k / ns), (0.5, k / ns), (1.0, k / ns)] for k in range(ns + 1)]
+    _grid(mb, mat, rows, uvs)
+
+
+def _fan_card(mb, r, hast, f, R, mat, open_deg=115, droop=1.0, fold=0.35, dead=False, ncol=6):
+    """a Washingtonia fan as one card (the light palms): cupped and drooping at its split tips as _fan's, painted by
+    tex_fan_card"""
+    f, s, n = _frame(f)
+    if dead:
+        n = -n
+    sd = r.uniform(0.7, 1.3) * droop
+    rows, uvs = [], []
+    for rho in (0.03, 0.55, 0.8, 1.0):
+        free = max(0.0, (rho - 0.55) / 0.45)
+        row, uv = [], []
+        for i in range(ncol + 1):
+            phi = math.radians(-open_deg + 2 * open_deg * i / ncol)
+            rd = f * math.cos(phi) + s * math.sin(phi)
+            q = hast + rd * R * rho + n * (fold * R * abs(math.sin(phi)) * rho * 0.6)
+            row.append(q - Z * (R * 0.22 * rho * rho + R * 0.75 * sd * free * free * (0.6 + 0.4 * abs(math.sin(phi)))))
+            uv.append(((math.sin(phi) * rho + 1) / 2, (math.cos(phi) * rho + FAN_Y0) / (1 + FAN_Y0)))
+        rows.append(row)
+        uvs.append(uv)
+    _grid(mb, mat, rows, uvs)
 
 
 # ---- beds and planters (the client's notes: the planting along the walls and the stairs, the jars) -----------------
@@ -1104,23 +1293,25 @@ def build_sources(M, col):
     return S
 
 
-LOD = {"DATE_PALM_V2_A": lambda: date_palm(4, 5.0, n_fronds=28, lo=True),
-       "DATE_PALM_V2_B": lambda: date_palm(7, 5.6, n_fronds=25, lo=True),
-       "DATE_PALM_V2_C": "DATE_PALM_V2_A",
-       "WASHINGTONIA_V2_A": lambda: washingtonia(1, 9.0, skirt=True, n_fronds=20, lo=True),
-       "WASHINGTONIA_V2_B": lambda: washingtonia(3, 9.6, skirt=False, n_fronds=20, lo=True),
-       "WASHINGTONIA_V2_C": "WASHINGTONIA_V2_A",
+LOD = {"DATE_PALM_V2_A": lambda: date_palm(4, 5.0, lo=True, cards=True),
+       "DATE_PALM_V2_B": lambda: date_palm(7, 5.6, n_fronds=42, lo=True, cards=True),
+       "DATE_PALM_V2_C": lambda: date_palm(12, 4.6, n_fronds=38, dates=False, lo=True, cards=True),
+       "WASHINGTONIA_V2_A": lambda: washingtonia(1, 9.0, skirt=True, lo=True, cards=True),
+       "WASHINGTONIA_V2_B": lambda: washingtonia(3, 9.6, skirt=False, lo=True, cards=True),
+       "WASHINGTONIA_V2_C": lambda: washingtonia(8, 8.4, skirt=True, lo=True, cards=True),
        "OLIVE_TREE_V2_A": lambda: olive(6, lo=True), "OLIVE_TREE_V2_B": lambda: olive(9, 3.8, 3.4, lo=True),
-       "FOUNTAIN_GRASS_V2": lambda: grass(5, n=50, plumes=10, lo=True), "AGAVE_V2": lambda: agave(3, n=14, lo=True),
-       "AGAVE_V2_SMALL": lambda: agave(8, n=12, length=0.5, lo=True), "LAVENDER_V2": lambda: lavender(6, needles=70, spikes=24, lo=True),
+       "FOUNTAIN_GRASS_V2": lambda: grass(5, n=30, plumes=6, lo=True), "AGAVE_V2": lambda: agave(3, n=10, lo=True),
+       "AGAVE_V2_SMALL": lambda: agave(8, n=8, length=0.5, lo=True), "LAVENDER_V2": lambda: lavender(6, needles=34, spikes=12, lo=True),
        "JAR_KHABIA_V2": lambda: jar(2, "khabia", 0.85, lo=True), "JAR_AMPHORA_V2": lambda: jar(4, "amphora", 1.05, lo=True)}
 
 
 def build_lod(M, col):
     """the light versions of the sources (the light GLB for After Effects, client 27-10): the same plants with the same
-    materials and textures, about 25 times fewer triangles; {source mesh name: light object}. A variant named
-    instead of built shares that light version (two date palms and two Washingtonias, a lighter file)"""
+    materials and textures, about 25 times fewer triangles (the palms' fronds and fans as cards painted with their
+    own leaflets, card_materials); {source mesh name: light object}. A variant named instead of built shares that
+    light version"""
     materials(M)
+    card_materials(M)
     S = {}
     for k, make in LOD.items():
         if callable(make):
