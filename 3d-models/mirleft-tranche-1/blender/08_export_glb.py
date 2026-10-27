@@ -314,8 +314,8 @@ def main():
         export_obj(out)
 
 
-HEAVY = 2500        # --light: triangles a mesh keeps before it is decimated (down to RMIN of itself at the most)
-RMIN = 0.4
+HEAVY = 1200        # --light: triangles a mesh keeps before it is decimated (down to RMIN of itself at the most)
+RMIN = 0.25
 
 
 def lighten(vl):
