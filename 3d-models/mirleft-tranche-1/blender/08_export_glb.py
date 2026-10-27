@@ -46,8 +46,15 @@ def lin(h):
     return tuple(((v + 0.055) / 1.055) ** 2.4 if v > 0.04045 else v / 12.92 for v in c)
 
 
+_TINTED = {}
+
+
 def tinted(src, name, tint_from=None, tint_to=None, size=SIZE):
-    """Resized JPEG copy; optional colour shift tint_from -> tint_to (multiplied in linear light)."""
+    """Resized JPEG copy; optional colour shift tint_from -> tint_to (multiplied in linear light). The same image
+    asked again under another name is the same file (one image in the GLB for the beige pavers' six uses...)."""
+    key = (src, tint_from, tint_to, size)
+    if key in _TINTED:
+        return _TINTED[key]
     im = Image.open(src).convert("RGB").resize((size, size), Image.LANCZOS)
     if tint_from:
         a = np.asarray(im).astype(np.float32) / 255.0
@@ -58,6 +65,7 @@ def tinted(src, name, tint_from=None, tint_to=None, size=SIZE):
         im = Image.fromarray((a * 255).astype(np.uint8))
     p = os.path.join(TMP, name + ".jpg")
     im.save(p, quality=80 if LIGHT else 85)
+    _TINTED[key] = p
     return p
 
 
@@ -196,7 +204,7 @@ def new_mat(old):
             im = Image.open(bpy.path.abspath(src.filepath)).convert("RGBA" if alpha else "RGB")
             im.thumbnail((SIZE, SIZE), Image.LANCZOS)
             p = os.path.join(TMP, name + (".png" if alpha else ".jpg"))
-            im.save(p) if alpha else im.save(p, quality=80 if LIGHT else 88)
+            im.save(p, optimize=True) if alpha else im.save(p, quality=80 if LIGHT else 88)
             t = nt.nodes.new("ShaderNodeTexImage")
             t.image = bpy.data.images.load(p, check_existing=True)
             nt.links.new(t.outputs["Color"], b.inputs["Base Color"])
@@ -216,7 +224,7 @@ def new_mat(old):
                 im = Image.fromarray(a)
             im = im.resize((min(im.width, SIZE // 2), min(im.height, SIZE // 2)), Image.LANCZOS)
             p = os.path.join(TMP, name + ".png")
-            im.save(p)
+            im.save(p, optimize=True)
             t = nt.nodes.new("ShaderNodeTexImage")
             t.image = bpy.data.images.load(p, check_existing=True)
             nt.links.new(t.outputs["Color"], b.inputs["Base Color"])
@@ -337,8 +345,9 @@ def round_nodes(path):
 
 
 HEAVY = 1500        # --light: triangles a mesh keeps before it is decimated, down to RMIN of itself at the most for
-RMIN = (0.4, 0.2)   # the buildings (named with one of BUILDINGS) and for the rest (beds' edging, kerbs, playground...)
+RMIN = (0.4, 0.2, 0.75)   # the buildings (named with one of BUILDINGS), the rest (beds' edging, kerbs, playground...),
 BUILDINGS = ("SRC_", "HOTEL", "SPA", "RESTAURANT", "COMMERCE", "VILLA", "DUPLEX", "LOCAL", "TOILETTE", "WALLS")
+DETAILED = ("RESTAURANT", "COMMERCE")    # and the buildings whose small details (merlons, dentils, railings) go first
 SEE = ("M06_Glass", "M10_Pool_Water", "D01_Mashrabiya", "A07_Curtain", "V0", "V2_", "H04")   # hide nothing behind them
 
 
@@ -434,7 +443,8 @@ def lighten(vl):
         n = tris(me)
         if n > HEAVY and not flat[name] and not any(o.modifiers for o in obs):
             mod = obs[0].modifiers.new("dec", "DECIMATE")
-            mod.ratio = max(RMIN[0] if any(k in name for k in BUILDINGS) else RMIN[1], HEAVY / n)
+            rmin = RMIN[2] if any(k in name for k in DETAILED) else RMIN[0] if any(k in name for k in BUILDINGS) else RMIN[1]
+            mod.ratio = max(rmin, HEAVY / n)
             mod.use_collapse_triangulate = True
             new = bpy.data.meshes.new_from_object(obs[0].evaluated_get(bpy.context.evaluated_depsgraph_get()))
             obs[0].modifiers.remove(mod)
