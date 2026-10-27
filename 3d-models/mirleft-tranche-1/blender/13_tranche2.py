@@ -564,7 +564,7 @@ def build(M, B, srcv, H):
     # gravel beds edged in stone, drifts of grasses, lavender and agaves, a terracotta jar now and then
     PLB = B.PL                                                 # the plant library (21_plants)
     mb_b = C.MeshBuilder()
-    n_bed = 0
+    n_bed, n_gt = 0, 0
     gate_zone = unary_union([v.f(gate_box(axis, c, a - 1.0, b + 1.0, 1.8)) for v, axis, c, a, b, kind in gates])
     for v in vs:
         foot = v.g(VB.FOOT.union(deck[v.c])) if v.t == "B" else v.g(VC.FOOT.union(VC.HARD))
@@ -575,19 +575,10 @@ def build(M, B, srcv, H):
         for q in L.as_polys(bed):
             PLB.bed_surface(mb_b, q, v.zl)
             n_bed += PLB.bed_plants(q, v.zl, put, RNG)
-        lawn = v.garden.difference(hd).difference(walls).difference(path_all).difference(bed.buffer(0.8)).buffer(-1.3)
-        if lawn.is_empty:
-            continue
-        x0, y0, x1, y1 = lawn.bounds
-        best = None
-        for _ in range(160):
-            p = Point(RNG.uniform(x0, x1), RNG.uniform(y0, y1))
-            if lawn.contains(p):
-                d = min(foot.distance(p), 4.5) + 0.3 * min(lawn.boundary.distance(p), 2.0)
-                if best is None or d > best[0]:
-                    best = (d, p)
-        if best is not None:
-            put("olive", (best[1].x, best[1].y), v.zl, RNG.uniform(0.5, 0.6))
+        # client 27-10 ("add palms and trees ... this looks empty"): the garden's trees as a composition (21_plants)
+        region = (v.garden.difference(hd.buffer(0.5)).difference(walls.buffer(0.2)).difference(path_all.buffer(0.4))
+                  .difference(foot.buffer(0.8)).difference(gate_zone))
+        n_gt += PLB.garden_trees(mb_b, region, bed, foot, v.zl, put, RNG, [])
     mb_b.build("T2_GARDEN_BEDS", cols["T2_03_LANDSCAPE"], M)
     n_st = 0
     for q, zs, k, side in stair_beds:                          # the stair's planters
@@ -596,7 +587,7 @@ def build(M, B, srcv, H):
             put("olive", (c_.x, c_.y), zs, 0.42)
         else:
             n_st += PLB.bed_plants(q, zs, put, RNG, jar_every=0, density=1.4, spacing=0.45)
-    print(f"  T2: garden beds {n_bed} plants, one small olive tree per garden; stair planters {len(stair_beds)} ({n_st} plants)")
+    print(f"  T2: garden beds {n_bed} plants, garden trees {n_gt}; stair planters {len(stair_beds)} ({n_st} plants)")
     # shrubs behind the low walls, inside the gardens
     bed = low.buffer(0.75, join_style=2).intersection(gardens).difference(low.buffer(0.15)).difference(houses.buffer(0.3))
     bed = bed.difference(path_all.buffer(0.3)).difference(unary_union([hard_of(v) for v in vs]))

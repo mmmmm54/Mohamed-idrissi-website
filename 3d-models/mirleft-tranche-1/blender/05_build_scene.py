@@ -1185,13 +1185,19 @@ def main():
     n_bed = 0
     tree_pts = unary_union([Point(t["c"]).buffer(1.3) for t in SITE["trees"]] + [p.buffer(1.0) for p in moved])
     hard_t1 = unary_union([bld.buffer(0.9)] + [g.buffer(0.6) for g, _ in terraces] + [e.buffer(0.7) for e in entries])
+    taken = [Point(t["c"]) for t in SITE["trees"]] + list(moved)
+    n_gt = 0
     for gp, zg_ in GARDENS:
         bed = gp.intersection(walls_g.buffer(1.0, join_style=2)).difference(walls_g.buffer(0.03)).difference(hard_t1)
-        for q in L.as_polys(PL.clean(bed, min_area=1.2)):
+        bed = PL.clean(bed, min_area=1.2)
+        for q in L.as_polys(bed):
             PL.bed_surface(mb, q, zg_)
             n_bed += PL.bed_plants(q, zg_, lambda k, xy, zz, s_: plant(k, xy, s_, zz), RNG, avoid=tree_pts)
+        # client 27-10 ("add palms and trees ... this looks empty"): the garden's trees as a composition (21_plants)
+        n_gt += PL.garden_trees(mb, gp.difference(hard_t1).difference(walls_g.buffer(0.2)), bed, bld, zg_,
+                                lambda k, xy, zz, s_: plant(k, xy, s_, zz), RNG, taken)
     mb.build("GARDEN_BEDS_T1", cols["06_LANDSCAPE"], M)
-    print("  villas' garden beds along the walls:", n_bed, "plants")
+    print("  villas' garden beds along the walls:", n_bed, "plants; garden trees:", n_gt)
     for u, v, z, kind, s in spots:                                   # pool court beds (reference images)
         plant(RNG.choice(("agave", "agave_b")) if kind == "agave" else kind, fw(u, v), s, z_deck + z)
     print("  pool court plants:", len(spots))

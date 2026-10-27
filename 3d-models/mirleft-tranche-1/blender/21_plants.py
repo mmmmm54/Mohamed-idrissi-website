@@ -966,6 +966,81 @@ def planter_box(mb, q, z, h=0.45, wall="cladding"):
     return z + h - 0.05
 
 
+def garden_trees(mb, region, beds, foot, z, put, rng, taken, olive=True):
+    """client 27-10 ("add palms and trees, something cool, on the duplex and villas, this looks empty"): a garden's
+    trees as a composition: a grove of three date palms of three heights in its far corner (a gravel island and
+    agaves under them where it stands in the lawn), a pair of Washingtonias along its longest bed, one olive tree in
+    the open lawn, flowering shrubs against the walls. region: where trees may stand (lawn and beds, clear of the
+    house, terraces and pool), beds: the beds along the walls, foot: the house, z: the lawn's level, taken: Points
+    already planted (extended). Returns the number of trees."""
+    from shapely.geometry import LineString, Point
+    n0 = len(taken)
+    if region.is_empty:
+        return 0
+    free = lambda p, d=2.2: region.buffer(-0.7).contains(p) and all(p.distance(q) > d for q in taken)
+    # the grove in the far corner, near the walls
+    inner = region.buffer(-1.4)
+    x0, y0, x1, y1 = region.bounds
+    best = None
+    for _ in range(260):
+        p = Point(rng.uniform(x0, x1), rng.uniform(y0, y1))
+        if inner.contains(p) and region.boundary.distance(p) < 3.2 and all(p.distance(q) > 3.0 for q in taken):
+            sc_ = foot.distance(p) if not foot.is_empty else 5.0
+            if best is None or sc_ > best[0]:
+                best = (sc_, p)
+    if best is not None:
+        c = best[1]
+        a0 = rng.uniform(0, 2 * math.pi)
+        in_lawn = beds.is_empty or not beds.buffer(0.2).contains(c)
+        if in_lawn:
+            isl = c.buffer(2.3, 24).intersection(region.buffer(-0.3))
+            if beds is not None and not beds.is_empty:
+                isl = isl.difference(beds)
+            if not isl.is_empty and isl.area > 3.0:
+                bed_surface(mb, isl, z)
+        for (dx, dy), s_ in (((0.0, 0.0), 0.85), ((1.35, 0.45), 0.70), ((0.40, 1.35), 0.58)):
+            p = Point(c.x + dx * math.cos(a0) - dy * math.sin(a0), c.y + dx * math.sin(a0) + dy * math.cos(a0))
+            if region.buffer(-0.5).contains(p):
+                put("date", (p.x, p.y), z + 0.03, s_ * rng.uniform(0.95, 1.05))
+                taken.append(p)
+        for k in range(5):                                        # agaves and grasses under the grove
+            r_, t_ = rng.uniform(1.3, 2.0), a0 + 2 * math.pi * k / 5 + 0.3
+            p = Point(c.x + 0.6 * math.cos(a0) + r_ * math.cos(t_), c.y + 0.6 * math.sin(a0) + r_ * math.sin(t_))
+            if region.buffer(-0.4).contains(p):
+                put("agave_b" if k % 2 else "grass", (p.x, p.y), z + 0.03, rng.uniform(0.85, 1.05))
+    # a pair of Washingtonias along the longest bed
+    if beds is not None and not beds.is_empty:
+        g = max(L.as_polys(beds), key=lambda q: q.area)
+        r = list(g.minimum_rotated_rectangle.exterior.coords)[:4]
+        e = max(((r[k], r[(k + 1) % 4]) for k in range(4)), key=lambda ab: math.dist(*ab))
+        ln = LineString(e)
+        if ln.length > 7.0:
+            for t in (0.25, 0.75):
+                p = ln.interpolate(t, normalized=True)
+                p = g.exterior.interpolate(g.exterior.project(p)) if not g.contains(p) else p
+                q = Point(*(np.array(p.coords[0]) + (np.array(g.centroid.coords[0]) - np.array(p.coords[0])) * 0.3))
+                if free(q, 2.6) or (g.contains(q) and all(q.distance(o) > 2.6 for o in taken)):
+                    put("wash", (q.x, q.y), z + 0.03, rng.uniform(0.62, 0.72))
+                    taken.append(q)
+            for t in (0.08, 0.5, 0.92):                            # flowering shrubs against the wall
+                p = ln.interpolate(t, normalized=True)
+                if g.buffer(0.1).contains(p) and all(p.distance(o) > 1.2 for o in taken):
+                    put("shrub_pink", (p.x, p.y), z + 0.03, rng.uniform(0.9, 1.15))
+    # one olive tree in the open lawn
+    if olive:
+        best = None
+        for _ in range(200):
+            p = Point(rng.uniform(x0, x1), rng.uniform(y0, y1))
+            if inner.contains(p) and (beds is None or beds.is_empty or not beds.buffer(0.8).contains(p)):
+                d = min([p.distance(q) for q in taken] + [6.0]) + 0.3 * min(foot.distance(p) if not foot.is_empty else 4.0, 4.5)
+                if best is None or d > best[0]:
+                    best = (d, p)
+        if best is not None and best[0] > 2.4:
+            put("olive", (best[1].x, best[1].y), z, rng.uniform(0.6, 0.72))
+            taken.append(best[1])
+    return len(taken) - n0
+
+
 def build_sources(M, col):
     """the library's sources, keyed as 05's srcv: (key -> object); variants listed under key + '_v'"""
     materials(M)
