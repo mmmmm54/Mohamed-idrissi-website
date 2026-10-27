@@ -41,7 +41,6 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 | `blender/16_villa_a.py`, `17_hotel.py` | The villa type A of `VILLA_TYPE_A.dwg`; the hotel (a design proposal). |
 | `blender/18_extract_t3.py`, `19_tranche3.py` | Tranche 3: reads the plan de masse 31-05-13 into `data/t3_site.json`; builds it into the scene (called by `05_build_scene.py`). |
 | `blender/20_pool_park.py`, `96_test_pool.py` | The pool park on the cliff (a design proposal), built into the scene by `05_build_scene.py`; its quick test. |
-| `blender/24_export_ae_baked.py` | The residence for After Effects with its light and shadows baked into its textures (`Mirleft_AE_BAKED.glb`). |
 | `blender/23_playground.py` | The children's playground on the tiled court by the restaurant (a design proposal), built into the scene by `05_build_scene.py`. |
 | `blender/22_export_ae_parts.py` | The light GLBs for After Effects, one per part (`Mirleft_AE_PARTS.zip`); with `--zoning` the whole residence in one file, a colour per zone (`Mirleft_AE_ZONING.glb`). |
 | `blender/21_plants.py`, `97_test_plants.py` | The detailed plant library (palms, olive trees, grasses, agaves, lavender, jars) with its textures (`data/textures/TEX_V2_*`), the beds and planters; its quick test (`RETEX=1` redraws the textures). |
