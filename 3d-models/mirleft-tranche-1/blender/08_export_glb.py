@@ -1,6 +1,8 @@
 """
 08_export_glb — light GLB of the 1er TRANCHE scene, with textures and colours (After Effects,
-web viewers, D5...).   python 08_export_glb.py [--ae | --ae-safe]
+web viewers, D5...).   python 08_export_glb.py [--ae | --ae-safe | --residence]
+--residence (client 27-10: "bghit maykunch fih ard w b7ar, ghir dekchi dyalna"): the same, without the terrain and
+the ocean round the site (00_SURROUNDINGS): Mirleft_Tranche_1_RESIDENCE.glb.
 
 glTF only carries image textures and plain colours, so every procedural material of the scene is
 swapped for a Principled BSDF with
@@ -245,6 +247,11 @@ def box_uv(me, face_tiles):
 def main():
     bpy.ops.wm.open_mainfile(filepath=os.path.join(ROOT, "Mirleft_Tranche_1.blend"))
     vl = bpy.context.view_layer
+    if "--residence" in sys.argv:                       # the residence only: no terrain or ocean round the site
+        sur = bpy.data.collections.get("00_SURROUNDINGS")
+        for o in list(sur.all_objects) if sur else []:
+            bpy.data.objects.remove(o, do_unlink=True)
+        vl.update()
     swapped, done = {}, set()
     for o in list(vl.objects):
         if o.type != "MESH" or o.hide_render:
@@ -265,7 +272,7 @@ def main():
         if face_tiles:
             box_uv(me, face_tiles)
         done.add(me.name)
-    out = os.path.join(ROOT, "Mirleft_Tranche_1.glb")
+    out = os.path.join(ROOT, "Mirleft_Tranche_1_RESIDENCE.glb" if "--residence" in sys.argv else "Mirleft_Tranche_1.glb")
     if "--ae" in sys.argv:
         # After Effects: origin at the centre of the tranche, its ground at height 0
         cx, cy, cz = centre()
