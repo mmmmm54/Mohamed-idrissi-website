@@ -156,9 +156,10 @@ TEX = {
     "T26_Commerce_Strip_Beige": (tinted(os.path.join(GEN, "TEX_PAVERS_BEIGE_HERRINGBONE.jpg"), "strip_beige"), 0.8),
     "T18_Tile_Ardesia_Beige": (tinted(os.path.join(GEN, "TEX_TILE_ARDESIA_BEIGE.jpg"), "tile_ardesia"), 1.2),
     "T19_Tile_Jade_Green": (tinted(os.path.join(GEN, "TEX_TILE_JADE_GREEN.jpg"), "tile_jade"), 1.2),
+    "D02_Door_Wood_Noyer": (tinted(os.path.join(GEN, "TEX_WOOD_NOYER.jpg"), "door_noyer"), 1.0),   # client 28-10: walnut
 }
 FLAT = {   # plain colours (hex), roughness, metallic
-    "A06_Interior_Proxy": ("#D2C2AA", 0.9, 0.0), "D02_Door_Wood_Dark": ("#5C3A22", 0.6, 0.0),
+    "A06_Interior_Proxy": ("#D2C2AA", 0.9, 0.0),
     "D03_Slate_Access": ("#4F5257", 0.7, 0.0), "D06_Synthetic_Turf": ("#3F7F3A", 0.9, 0.0),
     "D07_Tennis_Acrylic": ("#2F6E8F", 0.6, 0.0), "D08_Play_Rubber": ("#C9734A", 0.9, 0.0),
     "M05_Aluminium_Bronze": ("#433C37", 0.38, 0.8), "M06_Glass": ("#8FA2A8", 0.05, 0.0),

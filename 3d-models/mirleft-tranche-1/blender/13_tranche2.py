@@ -555,7 +555,7 @@ def build(M, B, srcv, H):
         ob.location = (xy[0], xy[1], z)
         ob.rotation_euler = (0, 0, RNG.uniform(0, 6.283))
         ob.scale = (s, s, s)
-        (cols["T2_03_LANDSCAPE"] if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora")) else cols["T2_04_TREES_PALMS"]).objects.link(ob)
+        (cols["T2_03_LANDSCAPE"] if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora", "flower")) else cols["T2_04_TREES_PALMS"]).objects.link(ob)
         nveg[0] += 1
 
     path_all = unary_union(paths)
@@ -564,21 +564,15 @@ def build(M, B, srcv, H):
     # gravel beds edged in stone, drifts of grasses, lavender and agaves, a terracotta jar now and then
     PLB = B.PL                                                 # the plant library (21_plants)
     mb_b = C.MeshBuilder()
-    n_bed, n_gt = 0, 0
+    n_gt = 0
     gate_zone = unary_union([v.f(gate_box(axis, c, a - 1.0, b + 1.0, 1.8)) for v, axis, c, a, b, kind in gates])
     for v in vs:
         foot = v.g(VB.FOOT.union(deck[v.c])) if v.t == "B" else v.g(VC.FOOT.union(VC.HARD))
         hd = hard_of(v)
-        bed = v.garden.intersection(high.buffer(1.0, join_style=2)).difference(high.buffer(0.03))
-        bed = PLB.clean(bed.difference(hd.buffer(0.6)).difference(foot.buffer(0.9)).difference(path_all.buffer(0.5))
-                       .difference(low.buffer(0.9)).difference(gate_zone), min_area=1.2)
-        for q in L.as_polys(bed):
-            PLB.bed_surface(mb_b, q, v.zl)
-            n_bed += PLB.bed_plants(q, v.zl, put, RNG)
-        # client 27-10 ("add palms and trees ... this looks empty"): the garden's trees as a composition (21_plants)
+        # client 28-10: the garden planted as his D5 duplex (21_plants.garden_photo), no gravel beds
         region = (v.garden.difference(hd.buffer(0.5)).difference(walls.buffer(0.2)).difference(path_all.buffer(0.4))
                   .difference(foot.buffer(0.8)).difference(gate_zone))
-        n_gt += PLB.garden_trees(mb_b, region, bed, foot, v.zl, put, RNG, [])
+        n_gt += PLB.garden_photo(region, foot, v.zl, put, RNG)
     mb_b.build("T2_GARDEN_BEDS", cols["T2_03_LANDSCAPE"], M)
     n_st = 0
     for q, zs, k, side in stair_beds:                          # the stair's planters
@@ -587,7 +581,7 @@ def build(M, B, srcv, H):
             put("olive", (c_.x, c_.y), zs, 0.42)
         else:
             n_st += PLB.bed_plants(q, zs, put, RNG, jar_every=0, density=1.4, spacing=0.45)
-    print(f"  T2: garden beds {n_bed} plants, garden trees {n_gt}; stair planters {len(stair_beds)} ({n_st} plants)")
+    print(f"  T2: gardens planted as the D5 duplex {n_gt} plants; stair planters {len(stair_beds)} ({n_st} plants)")
     # shrubs behind the low walls, inside the gardens
     bed = low.buffer(0.75, join_style=2).intersection(gardens).difference(low.buffer(0.15)).difference(houses.buffer(0.3))
     bed = bed.difference(path_all.buffer(0.3)).difference(unary_union([hard_of(v) for v in vs]))

@@ -303,6 +303,12 @@ def materials(M):
     M["v2_olive_bark"] = _img_mat("V2_Olive_Bark", tex_olive_bark(), 0.95, bump=0.6)
     M["v2_terracotta"] = _img_mat("V2_Terracotta_Jar", tex_terracotta(), 0.8, bump=0.15)
     M["v2_gravel"] = _img_mat("V2_Gravel_Mulch", tex_gravel(), 0.95, bump=0.5)
+    # client 28-10: the orange trees and the flower tufts of his D5 garden
+    M["v2_citrus_leaves"] = _img_mat("V2_Citrus_Leaves", tex_citrus_leaves(), 0.45, 0.25, alpha=True)
+    M["v2_orange"] = _img_mat("V2_Orange_Fruit", tex_flat("TEX_V2_ORANGE.jpg", "#E98A1E", 34, 0.15), 0.4)
+    M["v2_flower_leaf"] = _img_mat("V2_Flower_Leaf", tex_flat("TEX_V2_FLOWER_LEAF.jpg", "#4E6A34", 35, 0.2), 0.7, 0.2)
+    M["v2_flower_orange"] = _img_mat("V2_Flower_Orange", tex_flat("TEX_V2_FLOWER_ORANGE.jpg", "#EE8A2C", 36, 0.25), 0.7, 0.2)
+    M["v2_flower_white"] = _img_mat("V2_Flower_White", tex_flat("TEX_V2_FLOWER_WHITE.jpg", "#F2ECCB", 38, 0.15), 0.7, 0.2)
     return M
 
 
@@ -952,6 +958,124 @@ def olive(seed, height=4.0, spread=4.2, lo=False):
 
 
 
+
+# ---- the gardens as the client's D5 duplex (28-10): orange trees, tufts of flowers ---------------------------------
+def tex_citrus_leaves(name="TEX_V2_CITRUS_LEAVES.png", seed=37, n=512):
+    """a spray of citrus leaves on its twig, with alpha: broad glossy oval leaves, deep green, a lighter midrib"""
+    p = os.path.join(TEX, name)
+    if os.path.exists(p):
+        return p
+    from PIL import Image, ImageDraw, ImageFilter
+    rng = np.random.default_rng(seed)
+    im = Image.new("RGBA", (n, n), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    twigs = [((n * 0.5, n * 0.98), (n * 0.5 + rng.normal(0, 30), n * 0.06))]
+    for _ in range(3):
+        y0 = rng.uniform(0.3, 0.8) * n
+        twigs.append(((n * 0.5, y0), (n * 0.5 + rng.choice([-1, 1]) * rng.uniform(110, 200), y0 - rng.uniform(70, 180))))
+    for (x0, y0), (x1, y1) in twigs:
+        d.line([(x0, y0), (x1, y1)], fill=(88, 80, 58, 255), width=4)
+        L_ = math.hypot(x1 - x0, y1 - y0)
+        k = 0
+        while k * 24 < L_:
+            t = k * 24 / L_
+            px, py = x0 + (x1 - x0) * t, y0 + (y1 - y0) * t
+            ang = math.atan2(y1 - y0, x1 - x0)
+            for sg in (-1, 1):
+                a = ang + sg * rng.uniform(0.6, 1.0)
+                ll, ww = rng.uniform(44, 62) * (1 - 0.25 * t), rng.uniform(18, 25)
+                pts = []
+                for j in range(13):                             # an oval leaf
+                    u = j / 12
+                    w_ = math.sin(math.pi * u) ** 0.8 * ww / 2
+                    pts.append((u, w_))
+                c = _hex(["#2E5A22", "#376628", "#3F702D", "#2A5220"][rng.integers(4)]) * rng.uniform(0.9, 1.1)
+                outline = [(px + math.cos(a) * ll * u - math.sin(a) * w_, py + math.sin(a) * ll * u + math.cos(a) * w_) for u, w_ in pts] + \
+                          [(px + math.cos(a) * ll * u + math.sin(a) * w_, py + math.sin(a) * ll * u - math.cos(a) * w_) for u, w_ in pts[::-1]]
+                d.polygon(outline, fill=(int(c[0]), int(c[1]), int(c[2]), 255))
+                d.line([(px, py), (px + math.cos(a) * ll * 0.9, py + math.sin(a) * ll * 0.9)], fill=(int(c[0] * 1.35), int(c[1] * 1.3), int(c[2] * 1.2), 255), width=1)
+            k += 1
+    im = im.filter(ImageFilter.GaussianBlur(0.5))
+    im.save(p)
+    return p
+
+
+def _ball(mb, mat, c, rad, lo=False):
+    """a small round fruit or flower head (UV sphere, a few faces)"""
+    nl, nv = (2, 4) if lo else (3, 6)
+    rows = []
+    for j in range(1, nl + 1):
+        ph = math.pi * j / (nl + 1)
+        rows.append([c + np.array([math.cos(2 * math.pi * i / nv) * math.sin(ph), math.sin(2 * math.pi * i / nv) * math.sin(ph), math.cos(ph)]) * rad
+                     for i in range(nv)])
+    _grid(mb, mat, rows, [[(i / nv, j / nl) for i in range(nv)] for j in range(nl)], close=True)
+    top, bot = c + Z * rad, c - Z * rad
+    for i in range(nv):
+        i2 = (i + 1) % nv
+        mb.poly(mat, [_P(top), _P(rows[0][i]), _P(rows[0][i2])], [(0.5, 1), (0, 0.8), (1, 0.8)])
+        mb.poly(mat, [_P(bot), _P(rows[-1][i2]), _P(rows[-1][i])], [(0.5, 0), (1, 0.2), (0, 0.2)])
+
+
+def citrus(seed, height=2.6, spread=2.3, lo=False):
+    """an orange tree as in the client's D5 garden: a short trunk, three or four limbs, a dense rounded crown of leaf
+    sprays (alpha cards), oranges on its outside"""
+    r = random.Random(seed)
+    mb = C.MeshBuilder()
+    ht = height * 0.30
+    top = np.array([r.gauss(0, 0.04), r.gauss(0, 0.04), ht])
+    _tube(mb, "v2_olive_bark", [-Z * 0.1, top * 0.5 + np.array([r.gauss(0, 0.03), r.gauss(0, 0.03), 0]), top], [0.09, 0.075, 0.065],
+          seg=5 if lo else 7)
+    cc = Z * (ht + (height - ht) * 0.52)
+    R, Rz = spread / 2, (height - ht) / 2
+    for k in range(3 if lo else 4):                              # limbs into the crown
+        a = 2 * math.pi * k / (3 if lo else 4) + r.uniform(-0.3, 0.3)
+        tip = cc + np.array([math.cos(a) * R * 0.55, math.sin(a) * R * 0.55, r.uniform(-0.1, 0.3) * Rz])
+        mid = (top + tip) / 2 + np.array([r.gauss(0, 0.06), r.gauss(0, 0.06), 0.05])
+        _tube(mb, "v2_olive_bark", [top, mid, tip], [0.05, 0.035, 0.02], seg=4 if lo else 5)
+    n_cards = 70 if lo else 150
+    for i in range(n_cards):                                     # leaf sprays on a rounded shell, turned outwards
+        zz = 1 - 2 * (i + 0.5) / n_cards
+        rad = math.sqrt(max(0.0, 1 - zz * zz))
+        th = i * GOLD
+        dv = np.array([math.cos(th) * rad, math.sin(th) * rad, zz])
+        c = cc + dv * np.array([R, R, Rz]) * r.uniform(0.62, 1.0)
+        nrm = _n(dv + np.array([r.gauss(0, 0.4), r.gauss(0, 0.4), r.gauss(0.2, 0.4)]))
+        a1 = _n(np.cross(nrm, Z) + 1e-3)
+        a2 = np.cross(nrm, a1)
+        s_ = r.uniform(0.28, 0.38) * (1.35 if lo else 1.0)
+        q = [c - a1 * s_ - a2 * s_, c + a1 * s_ - a2 * s_, c + a1 * s_ + a2 * s_, c - a1 * s_ + a2 * s_]
+        mb.poly("v2_citrus_leaves", [_P(v) for v in q], [(0, 0), (1, 0), (1, 1), (0, 1)])
+    for i in range(14 if lo else 34):                            # the oranges, on the outside of the crown
+        zz = r.uniform(-0.45, 0.75)
+        th = r.uniform(0, 2 * math.pi)
+        rad = math.sqrt(1 - zz * zz)
+        dv = np.array([math.cos(th) * rad, math.sin(th) * rad, zz])
+        _ball(mb, "v2_orange", cc + dv * np.array([R, R, Rz]) * r.uniform(0.95, 1.04), 0.045, lo)
+    return mb
+
+
+def flowers(seed, mat="v2_flower_orange", r0=0.30, h=0.30, leaves=160, heads=40, lo=False):
+    """a tuft of flowering perennials as in the client's D5 garden (orange lantana, white daisies): a low mound of
+    small leaves, flower heads dotted over it"""
+    r = random.Random(seed)
+    mb = C.MeshBuilder()
+    for i in range(leaves):
+        u = _n(np.array([r.gauss(0, 1), r.gauss(0, 1), abs(r.gauss(0, 1)) + 0.25]))
+        k = r.uniform(0.3, 1.0) ** 0.5
+        p = np.array([u[0] * r0 * k, u[1] * r0 * k, u[2] * h * k])
+        d = _n(np.array([u[0], u[1], u[2] + 0.6]) + np.array([r.gauss(0, 0.3), r.gauss(0, 0.3), 0]))
+        up = _n(np.cross(d, np.cross(Z, d)) + 1e-3)
+        if lo:
+            _leaf_lo(mb, "v2_flower_leaf", p - d * 0.04, d, up, 0.11, 0.05, fold=0.2, droop=0.05)
+        else:
+            _leaf(mb, "v2_flower_leaf", p - d * 0.03, d, up, 0.08, 0.035, fold=0.25, droop=0.05)
+    for i in range(heads):
+        u = _n(np.array([r.gauss(0, 1), r.gauss(0, 1), abs(r.gauss(0, 0.6)) + 0.5]))
+        k = r.uniform(0.75, 1.0)
+        c = np.array([u[0] * r0 * k, u[1] * r0 * k, u[2] * h * k + 0.03])
+        _ball(mb, mat, c, r.uniform(0.028, 0.04), lo)
+    return mb
+
 # ---- the light palms' cards (build_lod, the After Effects GLB: a frond or a fan is one card painted with its own
 # leaflets, a few triangles instead of a few thousand) --------------------------------------------------------------
 def _strip_colours(path, us=(0.5,), n=24):
@@ -1268,6 +1392,90 @@ def garden_trees(mb, region, beds, foot, z, put, rng, taken, olive=True):
     return len(taken) - n0
 
 
+def garden_photo(region, foot, z, put, rng, taken=None):
+    """client 28-10 (the D5 duplex he sent: "dir chjar w rbi3 like li f tswira ... f duplex kamlin villas, ykunu nitum"):
+    a garden planted as that picture, and neat: a date palm in each of its two far corners, one big olive tree in the
+    open lawn, an orange tree along the side, smaller olive trees spaced out, low shrubs at the palms' feet, tufts of
+    orange, white and purple flowers dotted on the lawn along its edges. No gravel beds. region: the lawn clear of the
+    house, terraces, paths and walls; foot: the house(s); z: the lawn's level. Returns the number of plants."""
+    from shapely.geometry import Point
+    from shapely.prepared import prep
+    placed = [] if taken is None else taken
+    if region.is_empty or region.area < 14.0:
+        return 0
+    inner = region.buffer(-1.0)
+    if inner.is_empty:
+        return 0
+    house = min(L.as_polys(foot), key=lambda q: q.distance(region)) if not foot.is_empty else region.centroid
+    hc = np.array(house.centroid.coords[0])
+    bnd = region.boundary
+    pin = prep(inner)
+    x0, y0, x1, y1 = inner.bounds
+    cand = [Point(x, y) for x in np.arange(x0, x1 + 0.01, 0.5) for y in np.arange(y0, y1 + 0.01, 0.5)]
+    cand = [p for p in cand if pin.contains(p)]
+    if not cand:
+        return 0
+    edge = {id(p): bnd.distance(p) for p in cand}
+    dist = lambda p: min([p.distance(q) for q in placed] + [99.0])
+    n = 0
+
+    def unit(p):
+        v = np.array(p.coords[0]) - hc
+        return v / (np.linalg.norm(v) + 1e-9)
+    # a date palm in the far corner, a second one in another corner
+    corner = [p for p in cand if edge[id(p)] < 1.7] or cand
+    p1 = max(corner, key=lambda p: house.distance(p))
+    palms = [p1]
+    c2 = [p for p in corner if p.distance(p1) > 6.0 and float(np.dot(unit(p), unit(p1))) < 0.3]
+    if c2:
+        palms.append(max(c2, key=lambda p: house.distance(p) + 0.5 * min(p.distance(p1), 12.0)))
+    for p in palms:
+        put("date", (p.x, p.y), z + 0.03, rng.uniform(0.72, 0.86))
+        placed.append(p)
+        n += 1
+    # one big olive tree in the most open spot of the lawn
+    open_ = [p for p in cand if dist(p) > 3.5 and edge[id(p)] > 1.6]
+    if open_:
+        p = max(open_, key=lambda p: min(edge[id(p)], house.distance(p)) + 0.15 * min(dist(p), 8.0))
+        put("olive", (p.x, p.y), z, rng.uniform(0.72, 0.8))
+        placed.append(p)
+        n += 1
+    # orange trees, then smaller olive trees, each as far as it can be from what is planted
+    plan = ["citrus"] * (1 if region.area < 130 else 2) + ["olive"] * int(np.clip(region.area / 55.0, 1, 3))
+    for key in plan:
+        free = [p for p in cand if edge[id(p)] > 1.2]
+        if not free:
+            break
+        p = max(free, key=dist)
+        if dist(p) < 2.8:
+            break
+        put(key, (p.x, p.y), z, rng.uniform(0.95, 1.1) if key == "citrus" else rng.uniform(0.48, 0.58))
+        placed.append(p)
+        n += 1
+    # low shrubs at the palms' feet
+    rin = prep(region.buffer(-0.3))
+    for p in palms:
+        for k in range(2):
+            a = rng.uniform(0, 2 * math.pi)
+            q = Point(p.x + math.cos(a) * rng.uniform(0.9, 1.3), p.y + math.sin(a) * rng.uniform(0.9, 1.3))
+            if rin.contains(q):
+                put("shrub", (q.x, q.y), z + 0.02, rng.uniform(0.75, 0.95))
+                n += 1
+    # tufts of flowers on the lawn along its edges, spaced out
+    kinds = ("flower_orange", "flower_orange", "flower_white", "lavender")
+    j = 0
+    for ring in L.as_polys(region.buffer(-0.75)):
+        ln = ring.exterior
+        for t in np.arange(rng.uniform(0.5, 1.5), ln.length, 3.0):
+            q = ln.interpolate(t)
+            if min([q.distance(o) for o in placed] + [9.0]) < 1.1:
+                continue
+            put(kinds[j % len(kinds)], (q.x, q.y), z + 0.02, rng.uniform(0.85, 1.15))
+            j += 1
+            n += 1
+    return n
+
+
 def build_sources(M, col):
     """the library's sources, keyed as 05's srcv: (key -> object); variants listed under key + '_v'"""
     materials(M)
@@ -1286,6 +1494,10 @@ def build_sources(M, col):
     S["lavender"] = source("LAVENDER_V2", lavender(6), M, col)
     S["jar"] = source("JAR_KHABIA_V2", jar(2, "khabia", 0.85), M, col)
     S["amphora"] = source("JAR_AMPHORA_V2", jar(4, "amphora", 1.05), M, col)
+    S["citrus"] = source("CITRUS_V2", citrus(15), M, col)              # client 28-10: his D5 garden
+    S["citrus_v"] = [S["citrus"], source("CITRUS_V2_B", citrus(23, 2.3, 2.0), M, col)]
+    S["flower_orange"] = source("FLOWERS_ORANGE_V2", flowers(5, "v2_flower_orange"), M, col)
+    S["flower_white"] = source("FLOWERS_WHITE_V2", flowers(9, "v2_flower_white"), M, col)
     for o in list(S.values()):
         for ob in (o if isinstance(o, list) else [o]):
             ob.hide_render = True
@@ -1302,7 +1514,10 @@ LOD = {"DATE_PALM_V2_A": lambda: date_palm(4, 5.0, lo=True, cards=True),
        "OLIVE_TREE_V2_A": lambda: olive(6, lo=True), "OLIVE_TREE_V2_B": lambda: olive(9, 3.8, 3.4, lo=True),
        "FOUNTAIN_GRASS_V2": lambda: grass(5, n=30, plumes=6, lo=True), "AGAVE_V2": lambda: agave(3, n=10, lo=True),
        "AGAVE_V2_SMALL": lambda: agave(8, n=8, length=0.5, lo=True), "LAVENDER_V2": lambda: lavender(6, needles=34, spikes=12, lo=True),
-       "JAR_KHABIA_V2": lambda: jar(2, "khabia", 0.85, lo=True), "JAR_AMPHORA_V2": lambda: jar(4, "amphora", 1.05, lo=True)}
+       "JAR_KHABIA_V2": lambda: jar(2, "khabia", 0.85, lo=True), "JAR_AMPHORA_V2": lambda: jar(4, "amphora", 1.05, lo=True),
+       "CITRUS_V2": lambda: citrus(15, lo=True), "CITRUS_V2_B": lambda: citrus(23, 2.3, 2.0, lo=True),
+       "FLOWERS_ORANGE_V2": lambda: flowers(5, "v2_flower_orange", leaves=40, heads=18, lo=True),
+       "FLOWERS_WHITE_V2": lambda: flowers(9, "v2_flower_white", leaves=40, heads=18, lo=True)}
 
 
 def build_lod(M, col):
@@ -1327,7 +1542,7 @@ def vary(S, seed=26):
     """every instance of the date palm and the Washingtonia on one of their variants (deterministic)"""
     rng = random.Random(seed)
     n = 0
-    for key in ("date", "wash", "olive"):
+    for key in ("date", "wash", "olive", "citrus"):
         base = S[key].data
         vs = [o.data for o in S[key + "_v"]]
         for ob in bpy.data.objects:

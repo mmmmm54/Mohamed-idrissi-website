@@ -18,9 +18,9 @@ Round the site, the real surroundings: the terrain out to 12 km with a satellite
 | `Mirleft_Tranche_1_PACKED_2K.blend` | The scene with every texture packed inside at 2K (25 MB): the light copy to send or open anywhere. |
 | `Mirleft_Tranche_1_PACKED.blend` | The same scene with full-size textures packed inside (68 MB). |
 | `Mirleft_Tranche_1.blend` | The scene with textures linked from `../mirleft-bay/assets/textures` and `data/textures` (11 MB): keep the folders side by side. |
-| `Mirleft_Tranche_1.glb` | GLB with JPEG textures and colours (84 MB with the surroundings and the detailed plants of 26-10; shared meshes; no cameras or lights). Metres, Y up. `blender/08_export_glb.py` |
-| `Mirleft_Tranche_1_RESIDENCE.glb` | The same GLB without the terrain and the ocean round the site (62 MB, client 27-10: "ghir dekchi dyalna, risidence"): every building, ground and plant of the residence. `08_export_glb.py --residence` |
-| `Mirleft_Tranche_1_RESIDENCE_compressed.glb` | The same residence for After Effects (13 MB, client 27-10: "compressed ... under 16 mb"; the 62 MB one is not smooth in AE, and a light one kept as 5000 separate objects showed only its box there): built like the Bay's compressed GLB that loads in AE, joined into one mesh a material (59 meshes) and Draco-compressed, 2.4 million triangles instead of 62. Every plant on its light version: the palms' fronds and fans as cards painted with their own leaflets (alpha cut out), the olives, grasses, agaves, lavender and jars with fewer faces, the same materials; the faces hidden inside other solids dropped, the heavy buildings decimated to 40 % at the most (the restaurant and the commerces to 75 %, the edging and kerbs further, the flat ground never), images at 512 px. No cameras or lights. `08_export_glb.py --residence --light` (needs `npx`, for glTF-Transform 4.5.1) |
+| `Mirleft_Tranche_1.glb` | GLB with JPEG textures and colours (80 MB with the surroundings and the detailed plants of 26-10; shared meshes; no cameras or lights). Metres, Y up. `blender/08_export_glb.py` |
+| `Mirleft_Tranche_1_RESIDENCE.glb` | The same GLB without the terrain and the ocean round the site (58 MB, client 27-10: "ghir dekchi dyalna, risidence"): every building, ground and plant of the residence. `08_export_glb.py --residence` |
+| `Mirleft_Tranche_1_RESIDENCE_compressed.glb` | The same residence for After Effects (15 MB, client 27-10: "compressed ... under 16 mb"; the 62 MB one is not smooth in AE, and a light one kept as 5000 separate objects showed only its box there): built like the Bay's compressed GLB that loads in AE, joined into one mesh a material (59 meshes) and Draco-compressed, 2.2 million triangles instead of 49. Its bounding box is the RESIDENCE GLB's (metres, same origin), so a later version replaces it in After Effects in place (Replace Footage, or Alt-drag onto the layer). Every plant on its light version: the palms' fronds and fans as cards painted with their own leaflets (alpha cut out), the olives, grasses, agaves, lavender and jars with fewer faces, the same materials; the faces hidden inside other solids dropped, the heavy buildings decimated to 40 % at the most (the restaurant and the commerces to 75 %, the edging and kerbs further, the flat ground never), images at 512 px. No cameras or lights. `08_export_glb.py --residence --light` (needs `npx`, for glTF-Transform 4.5.1) |
 | `Mirleft_AE_ZONING.glb`, `Mirleft_AE_ZONING_LEGEND.png` | The whole residence in ONE light file for After Effects (13 MB, client 26-10: "file wa7ed fih residence kamla, ghir ta9ssim, b colors"): each zone in one flat colour (villas duplex, restaurant and commerces, villas type B, type C, SPA, services, villas type A, hotel), the ground in three (paving and walls, green, water); no surroundings, plants, furniture or interiors; the legend beside it. `22_export_ae_parts.py --zoning` |
 | `Mirleft_AE_PARTS.zip` | Light GLBs for After Effects (client 26-10: the full GLB freezes it): one file per part (Tranche 1's villas, restaurant and commerces, pool court, ground; villas type B, type C, SPA, Tranche 2's ground and stair; villas type A, hotel, Tranche 3's ground; pool park; surroundings; plants as simple volumes), 0.3 to 4 MB each, and all of them in one 27 MB file. No plants (simple volumes instead), no furniture or interiors, each part one mesh, decimated, plain colours; same origin for all, so they fall into place when layered. `blender/22_export_ae_parts.py` |
 | `Mirleft_Tranche_1_AE_SAFE.glb` | The most compatible version for After Effects (95 MB, with Tranche 2): the two tranches only, one mesh, centred with its ground at 0, JPEG only, no alpha, no trees. `08_export_glb.py --ae-safe`. Not rebuilt since 26-10 (it predates Tranches 3 and 4 and the plant library). |
@@ -540,10 +540,22 @@ planting along the walls as the pool reference, and in the big stairs going down
   each garden of the villas duplex, B, C and A gets a composition (`21_plants.garden_trees`): a grove of three date
   palms of three heights in its far corner (on a gravel island with agaves and grasses where it stands in the lawn),
   a pair of Washingtonias along its longest bed with flowering shrubs against the wall, one olive tree in the open
-  lawn (about 290 trees in all).
+  lawn (about 290 trees in all). Replaced on 28-10 by the planting below.
 - **Tranche 1's villas (27-10)**: the plan's palms and trees drawn in the strip outside a villa's garden wall are
   planted inside its garden, 1 m from the wall (27 of them); the trees inside a garden are smaller; the shade and
   street trees of the plan are olive trees from the library, so every tree of the site is a detailed one.
+- **The gardens as the client's D5 duplex (28-10, "dir chjar w rbi3 like li f tswira ... f duplex kamlin villas,
+  ykunu nitum")**: every garden of the villas duplex, B, C and A (`21_plants.garden_photo`): lawn without gravel
+  beds, a date palm in each of its two far corners, one big olive tree in the most open spot, an orange tree with
+  its fruit (`citrus`, two variants) along the side, smaller olive trees spaced out, low shrubs at the palms' feet,
+  tufts of orange, white and purple flowers (`flowers`, lavender) along the lawn's edges; the duplexes' strip
+  behind the stone front wall in flower. The plan's trees that stood in those gardens give way to it.
+
+## Doors and the duplexes' rear pergola (client 28-10)
+- Every door and the duplexes' garden gates in walnut wood, "couleur noyer" (`D02_Door_Wood_Noyer`, texture
+  `data/textures/TEX_WOOD_NOYER.jpg`, `lib.walnut_wood`), not dark: entrance doors, gates, the roof doors.
+- The duplexes' rear pergola stands on the balcony: three posts on its piers (the two ends and the middle one
+  between the two railings), none on the terrace floor; its beam over the balcony's edge (`02_duplex.py`).
 
 ## The children's playground (client 27-10)
 "We want to add a park for kids like this or even something different, with colours": on the tiled court between

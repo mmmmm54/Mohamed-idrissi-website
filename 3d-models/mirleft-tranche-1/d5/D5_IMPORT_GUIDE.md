@@ -104,7 +104,7 @@ West of the SPA and the type C block, from the plan de masse 31-05-13 (collectio
 `T3_03_LANDSCAPE`, `T3_04_TREES_PALMS`, `T3_05_HOTEL`):
 - villas type A `T3_VILLA_A01` to `T3_VILLA_A04` (one mesh shared), since 24-10 from `VILLA_TYPE_A.dwg`: four
   battered towers with their niches and cornice round the central band and its patio, the entrance block
-  +6.20 with the studded portal `D02_Door_Wood_Dark` on the entrance terrace, the chimney, the outside stair to
+  +6.20 with the studded portal `D02_Door_Wood_Noyer` on the entrance terrace, the chimney, the outside stair to
   the roof terrace, the pool `T19_Tile_Jade_Green` under `M10_Pool_Water`; walls `T3_WALLS_GARDENS`,
   `T3_WALLS_FRONT_GATES` on street 7;
 - the hotel, **a design proposal** (no plan received), objects `T3_HOTEL_<material>`. Since 24-10 (second review)
@@ -113,7 +113,7 @@ West of the SPA and the type C block, from the plan de masse 31-05-13 (collectio
   upstairs, a centre block with the SPA's studded door; on the parking, the principal front, a pointed horseshoe
   window in each bay in a taupe alfiz `D14_Stone_Surround_Taupe` with green zellige `T19_Tile_Jade_Green`, a zellige
   frieze, cedar mashrabiya oriels and stone balconies, bronze lanterns on the pilasters, the grand entrance in each
-  half (horseshoe arch in its zellige alfiz, studded doors `D02_Door_Wood_Dark`); domed towers, domes, parasols
+  half (horseshoe arch in its zellige alfiz, studded doors `D02_Door_Wood_Noyer`); domed towers, domes, parasols
   and pergolas on the roofs; the main building's gate block on the Voie Publique; the gate pavilion on the
   crossing is new, standing over both (monumental arches, corner turrets, drum and dome to about +14, fountain);
   the water garden: the long basin in three basins over two weirs and its arm, `T19_Tile_Jade_Green` under
@@ -152,3 +152,12 @@ On the tiled court by the restaurant: object `KIDS_PARK_<material>` in `08_PLAYG
 swings, roundabout, seesaw, sandpit, spring riders, benches, shade sails), on coloured rubber surfaces
 (`P09`-`P12_EPDM_*`), its paints `P01`-`P08`. Tranche 1's palms that stood outside the villas' garden walls are
 inside the gardens now. **Delete the old model in D5 completely before importing.**
+
+## Doors, rear pergola, gardens (28-10)
+Every door and the duplexes' garden gates in walnut wood (`D02_Door_Wood_Noyer`, "couleur noyer", texture
+`TEX_WOOD_NOYER.jpg`; it was the dark `D02_Door_Wood_Dark`): the entrance doors, the gates and the roof doors on the
+stair cages. The duplexes' rear pergola stands on the balcony: three posts on its piers (the two ends and the middle
+one between the two railings), none on the terrace floor. The villas' gardens are planted as the client's D5
+duplex: lawn without gravel beds, a date palm in two corners, olive trees, an orange tree (`CITRUS_V2`), tufts of
+orange, white and purple flowers (`FLOWERS_*_V2`, lavender) along the edges; in the NO_PALMS_TREES file only the
+flowers and shrubs stay. **Delete the old model in D5 completely before importing.**

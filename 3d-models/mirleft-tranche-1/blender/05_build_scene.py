@@ -1102,12 +1102,12 @@ def main():
         ob.location = (xy[0], xy[1], lawn_top(*xy) if z is None else z)
         ob.rotation_euler = (0, 0, RNG.uniform(0, 6.283))
         ob.scale = (s, s, s if sz is None else sz)
-        (veg if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora")) else cols["06_TREES_PALMS"]).objects.link(ob)
+        (veg if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora", "flower")) else cols["06_TREES_PALMS"]).objects.link(ob)
         nveg[0] += 1
 
     court = to_world(POOL.COURT, pc["c"], pc["rot_deg"])
     bld = unary_union([to_world(DPX.FOOT, d["c"], d["rot_deg"]) for d in SITE["duplexes"]])   # villa N°09 + rear terrace
-    n_skip = 0
+    n_skip = n_gdn = 0
     # client 27-10 ("dont do this error, should be inside"): the plan's palms and trees in the strip outside a villa's
     # garden wall are planted inside its garden, 1 m from the wall
     houses_c = [Point(d["c"]) for d in SITE["duplexes"]]
@@ -1158,6 +1158,9 @@ def main():
         z = z_deck + POOL.BAC_SOIL if court.buffer(0.5).contains(Point(xy)) else None
         if z is None and t["kind"] in ("palm", "olive", "washingtonia", "shade"):
             xy = inside(xy)
+        if z is None and garden_level(*xy) is not None:             # client 28-10: the villas' gardens planted as
+            n_gdn += 1                                               # his D5 duplex (21_plants.garden_photo) instead
+            continue
         small = 0.65 if garden_level(*xy) is not None else 1.0  # the client's notes: the trees in a garden smaller
         # client 27-10: every tree from the detailed library (the shade and street trees as olive trees)
         if t["kind"] == "palm":                                 # symbol 0.23-0.68 m radius on the plan: young palms
@@ -1172,32 +1175,23 @@ def main():
             plant("olive", xy, 0.45, hz(*xy) + 0.09)
         else:
             plant("olive", xy, RNG.uniform(0.75, 0.9), hz(*xy) + 0.09)
-    print("  trees of the 12-10 layout left out on the pavilion:", n_skip, "; moved inside a villa's garden wall:", len(moved))
-    # rev 4: a low planted strip behind each villa's stone front wall (front reference image)
+    print("  trees of the 12-10 layout left out on the pavilion:", n_skip, "; moved inside a villa's garden wall:", len(moved),
+          "; in the gardens, replaced by the D5 planting:", n_gdn)
+    # rev 4: a low planted strip behind each villa's stone front wall (front reference image); client 28-10: in
+    # flower, purple, orange and white as his D5 duplex
     for d in SITE["duplexes"]:
         fd = frame(d["c"], d["rot_deg"])
         for s in (1, -1):
-            for x in np.arange(5.75, 8.50, 0.70):
-                plant("shrub", fd(s * x, -6.80), RNG.uniform(0.75, 0.95))
-    # client 26-10 (the client's notes on the landscape): beds along the villas' garden walls as the pool reference:
-    # gravel edged in stone, drifts of grasses, lavender and agaves, a terracotta jar now and then
-    mb = C.MeshBuilder()
-    n_bed = 0
-    tree_pts = unary_union([Point(t["c"]).buffer(1.3) for t in SITE["trees"]] + [p.buffer(1.0) for p in moved])
+            for i_, x in enumerate(np.arange(5.75, 8.50, 0.70)):
+                plant(("lavender", "flower_orange", "flower_white")[i_ % 3], fd(s * x, -6.80), RNG.uniform(0.8, 1.0))
+    # client 28-10 (the D5 duplex he sent, "dir chjar w rbi3 like li f tswira ... f duplex kamlin villas, ykunu nitum"):
+    # every garden planted as that picture (21_plants.garden_photo), in place of the gravel beds and tree groups of 27-10
     hard_t1 = unary_union([bld.buffer(0.9)] + [g.buffer(0.6) for g, _ in terraces] + [e.buffer(0.7) for e in entries])
-    taken = [Point(t["c"]) for t in SITE["trees"]] + list(moved)
     n_gt = 0
     for gp, zg_ in GARDENS:
-        bed = gp.intersection(walls_g.buffer(1.0, join_style=2)).difference(walls_g.buffer(0.03)).difference(hard_t1)
-        bed = PL.clean(bed, min_area=1.2)
-        for q in L.as_polys(bed):
-            PL.bed_surface(mb, q, zg_)
-            n_bed += PL.bed_plants(q, zg_, lambda k, xy, zz, s_: plant(k, xy, s_, zz), RNG, avoid=tree_pts)
-        # client 27-10 ("add palms and trees ... this looks empty"): the garden's trees as a composition (21_plants)
-        n_gt += PL.garden_trees(mb, gp.difference(hard_t1).difference(walls_g.buffer(0.2)), bed, bld, zg_,
-                                lambda k, xy, zz, s_: plant(k, xy, s_, zz), RNG, taken)
-    mb.build("GARDEN_BEDS_T1", cols["06_LANDSCAPE"], M)
-    print("  villas' garden beds along the walls:", n_bed, "plants; garden trees:", n_gt)
+        n_gt += PL.garden_photo(gp.difference(hard_t1).difference(walls_g.buffer(0.2)), bld, zg_,
+                                lambda k, xy, zz, s_: plant(k, xy, s_, zz), RNG)
+    print("  villas' gardens planted as the client's D5 duplex:", n_gt, "plants")
     for u, v, z, kind, s in spots:                                   # pool court beds (reference images)
         plant(RNG.choice(("agave", "agave_b")) if kind == "agave" else kind, fw(u, v), s, z_deck + z)
     print("  pool court plants:", len(spots))

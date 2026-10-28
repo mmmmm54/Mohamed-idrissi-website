@@ -16,7 +16,8 @@ every pair; the drawing shows one villa, its neighbour is its mirror across the 
   Roof +7.10, cornice = grey stone ledge / ochre stone band / grey stone ledge, acrotère to +8.30
       with a rounded coping; stair cage of the two villas over their stairs (+9.80) with the same
       cornice, its roof door on the side, a small window at the back (no horns, client 24-10); 'GT' ducts.
-  Timber pergolas over both terraces ('Pergola en bois', plan TERRASSE 'V/Terrasse').
+  Timber pergolas over both terraces ('Pergola en bois', plan TERRASSE 'V/Terrasse'); the rear one on three posts on
+      the balcony's piers (client 28-10). Doors and the garden gate in walnut ('couleur noyer', client 28-10).
   Remark of slide 10: the two villas' terraces are separated by a wall on the joint (front terrace,
       rear terrace and roof terrace), as the drawing shows it on the joint.
   Window and door surrounds in taupe stone, beige aluminium frames (darker than the render, 20-10), studded timber entrance door: from the
@@ -474,16 +475,20 @@ def build(M, col, variant="A"):
         mb.box("ledge", s * 0.20, s * 0.95, -2.28, CY0 - 0.002, 7.80, 7.86)
 
     # ---- pergolas (timber): rear terrace (15 rafters) and front terrace (7 rafters) ---------------
+    # client 28-10: the rear pergola stands on the balcony, three posts on its piers (the two ends and the middle
+    # one between the two railings), none on the terrace floor; its beam over the balcony's edge
     T = "timber"
+    yb = YR - 0.10
     for s in (1, -1):
         X = lambda u, s=s: s * u
-        for xc in (0.30, 3.02, 5.21, 7.96):
-            mb.box(T, X(xc - 0.065), X(xc + 0.065), 4.455, 4.585, Z1, 6.55)
-        mb.box(T, X(SEP), X(HX + 0.10), 4.46, 4.58, 6.55, 6.75)
+        for a, b in PIERS:
+            xc = (max(a, SEP) + b) / 2
+            mb.box(T, X(xc - 0.065), X(xc + 0.065), yb - 0.065, yb + 0.065, Z_PR, 6.55)
+        mb.box(T, X(SEP), X(HX + 0.10), yb - 0.06, yb + 0.06, 6.55, 6.75)
         mb.box(T, X(SEP), X(HX), YRE + 0.002, YRE + 0.08, 6.60, 6.75)
         for k in range(15):
             xc = 0.28 + 0.549 * k
-            rafter(mb, s, xc - 0.03, xc + 0.03, YRE + 0.002, 4.98, 6.75, 6.90)
+            rafter(mb, s, xc - 0.03, xc + 0.03, YRE + 0.002, yb + 0.46, 6.75, 6.90)
         for xc in (0.24, 3.24):
             mb.box(T, X(xc - 0.06), X(xc + 0.06), -6.82, -6.70, Z1, 6.85)
         mb.box(T, X(SEP), X(WX + 0.10), -6.82, -6.70, 6.85, 7.05)

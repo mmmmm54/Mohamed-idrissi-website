@@ -228,7 +228,26 @@ def marble_band(path, seed=11, n=1024):
     Image.fromarray(np.clip(img, 0, 255).astype(np.uint8)).save(path, quality=90)
 
 
+def walnut_wood(path, seed=13, n=1024):
+    """client 28-10: the doors in walnut ('couleur noyer'), not black: warm brown boards with their grain running
+    up (along v), darker late wood, a few knots of figure"""
+    base, light, dark = hexc("#7A4B2A"), hexc("#94603A"), hexc("#4E2E19")
+    y, x = np.mgrid[0:n, 0:n] / n
+    warp = tnoise(n, 1.6, seed, 0.35)                       # long features along y: the grain
+    rings = np.sin((x * 9.0 + warp * 2.2) * 2 * math.pi)
+    t = (rings * 0.5 + 0.5) ** 2.2
+    img = light * (1 - t)[..., None] + dark * t[..., None]
+    img = img * 0.55 + base * 0.45
+    fine = tnoise(n, 0.7, seed + 1, 0.15)
+    img *= (0.90 + 0.18 * fine)[..., None]
+    board = (np.floor(x * 6) % 2)[..., None]                # boards a shade apart
+    img *= 1.0 - 0.05 * board
+    from PIL import Image
+    Image.fromarray(np.clip(img, 0, 255).astype(np.uint8)).save(path, quality=90)
+
+
 TEXTURES = {
+    "walnut": ("TEX_WOOD_NOYER.jpg", 1.00),
     "pavers": ("TEX_PAVERS_BEIGE_HERRINGBONE.jpg", 0.80),
     "sidewalk": ("TEX_PAVERS_SIDEWALK_GREY.jpg", 0.80),
     "ardesia": ("TEX_TILE_ARDESIA_BEIGE.jpg", 1.20),
@@ -242,7 +261,9 @@ def texture(key):
     fname, tile = TEXTURES[key]
     path = os.path.join(TEX, fname)
     if not os.path.exists(path):
-        if key == "pavers":
+        if key == "walnut":
+            walnut_wood(path)
+        elif key == "pavers":
             herringbone(path)
         elif key == "sidewalk":                 # pavements (trottoirs): grey pavers (client, 19-10)
             herringbone(path, seed=5, pal=("#83817D", "#7A7874", "#8C8A85", "#73716D", "#7F7C78", "#908D88"), joint="#57554F")
@@ -292,7 +313,7 @@ def materials():
     mod = bay("07_build_materials.py")
     M = mod.build()
     M["mashrabiya"] = lattice_mat("D01_Mashrabiya_Wood", "#3B2414", mashrabiya_png(), 1.0)
-    M["door_wood"] = mod.simple("D02_Door_Wood_Dark", "#5C3A22", 0.55, 0.0, 6.0, 0.2, 0.1)
+    M["door_wood"] = img_mat("D02_Door_Wood_Noyer", "walnut", rough=0.5, bump=0.15)   # client 28-10: walnut, not black
     M["slate"] = mod.simple("D03_Slate_Access", "#4F5257", 0.7, 0.0, 10.0, 0.25, 0.2)
     M["trim"] = mod.render_plaster("D04_Render_Trim", "#E2CBA6", "#D3B990")
     M["bejmat"] = uv_tiles(mod.tiles("D05_Bejmat_Terre_De_Sienne", "#A0522D", "#8B4526", 0.10, 0.05, "#6E4A36", 0.004, 0.7, 0.3, 0.5))

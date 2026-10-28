@@ -147,7 +147,7 @@ def build(M, B, srcv, H):
         ob.location = (float(xy[0]), float(xy[1]), z)
         ob.rotation_euler = (0, 0, RNG.uniform(0, 6.283))
         ob.scale = (s, s, s)
-        (cols["T4_03_LANDSCAPE"] if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora")) else cols["T4_04_TREES_PALMS"]).objects.link(ob)
+        (cols["T4_03_LANDSCAPE"] if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora", "flower")) else cols["T4_04_TREES_PALMS"]).objects.link(ob)
         nveg[0] += 1
 
     mb = C.MeshBuilder()           # ground, walls, furniture

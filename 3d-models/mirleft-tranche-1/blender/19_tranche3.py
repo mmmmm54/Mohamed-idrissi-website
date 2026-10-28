@@ -76,7 +76,7 @@ def build(M, B, srcv, H):
         ob.location = (float(xy[0]), float(xy[1]), z)
         ob.rotation_euler = (0, 0, RNG.uniform(0, 6.283))
         ob.scale = (s, s, s)
-        (cols["T3_03_LANDSCAPE"] if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora")) else cols["T3_04_TREES_PALMS"]).objects.link(ob)
+        (cols["T3_03_LANDSCAPE"] if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora", "flower")) else cols["T3_04_TREES_PALMS"]).objects.link(ob)
         nveg[0] += 1
 
     # ---- the villas type A on their lots ------------------------------------------------------------------
@@ -171,7 +171,7 @@ def build(M, B, srcv, H):
     walls = unary_union([high, low])
     # gardens: the lawn at the pad, the path from the gate to the court's arch; trees in the lawn
     mb_l, mb_p, mb_b = C.MeshBuilder(), C.MeshBuilder(), C.MeshBuilder()
-    n_bed, n_gt = [0], [0]
+    n_gt = [0]
     for v in vs:
         path = v["path"].intersection(v["lot"]).difference(v["foot"])
         low_z = min(hz(x, y) for x, y in v["lot"].exterior.coords) - 0.65
@@ -179,18 +179,10 @@ def build(M, B, srcv, H):
         lawn = v["lot"].difference(v["foot"]).difference(path).difference(walls)
         L.prism(mb_l, "t2_lawn", lawn, low_z - v["zl"], 0.0, zf=flat)
         L.prism(mb_p, "t2_path", path.difference(walls), low_z - v["zl"], Z_PATH, zf=flat)
-        # client 26-10 (the client's notes on the landscape): one smaller olive tree instead of the lawn's trees, beds
-        # along the garden walls as the pool reference (gravel, grasses, lavender, agaves, a jar)
-        bed = v["lot"].intersection(high.buffer(1.0, join_style=2)).difference(high.buffer(0.03))
-        bed = B.PL.clean(bed.difference(v["foot"].buffer(0.9)).difference(path.buffer(0.5)).difference(low.buffer(0.9))
-                         .difference(v["gate"].buffer(1.6)), min_area=1.2)
-        for q in L.as_polys(bed):
-            B.PL.bed_surface(mb_b, q, v["zl"])
-            n_bed[0] += B.PL.bed_plants(q, v["zl"], put, RNG)
-        # client 27-10 ("add palms and trees ... this looks empty"): the garden's trees as a composition (21_plants)
+        # client 28-10: the garden planted as his D5 duplex (21_plants.garden_photo), no gravel beds
         region = (v["lot"].difference(v["foot"].buffer(0.8)).difference(walls.buffer(0.2)).difference(path.buffer(0.4))
                   .difference(v["gate"].buffer(1.6)))
-        n_gt[0] += B.PL.garden_trees(mb_b, region, bed, v["foot"], v["zl"], put, RNG, [])
+        n_gt[0] += B.PL.garden_photo(region, v["foot"], v["zl"], put, RNG)
         for t in np.linspace(0.15, 0.85, 4):                  # shrubs behind the low wall
             q = Point(v["w"](v["xe"] - 1.0, -2.0 + 24.0 * t))
             if lawn.buffer(-0.4).contains(q) and q.distance(Point(v["gate_c"])) > 2.0:
@@ -199,7 +191,7 @@ def build(M, B, srcv, H):
     L.prism(mb_p, "t2_path", ppath, -1.60, PAVE_DZ, zf=pz)
     mb_l.build("T3_GROUND_GARDENS_LAWN", cols["T3_01_GROUND"], M)
     mb_b.build("T3_GARDEN_BEDS", cols["T3_03_LANDSCAPE"], M)
-    print(f"  T3: garden beds {n_bed[0]} plants, garden trees {n_gt[0]}")
+    print(f"  T3: gardens planted as the D5 duplex {n_gt[0]} plants")
     mb_p.build("T3_GROUND_PATHS", cols["T3_01_GROUND"], M)
     mb = C.MeshBuilder()
     L.prism(mb, "t2_verge", strips, -1.60, PAVE_DZ + 0.02, zf=pz)      # level with the pool park's lawn at its end
