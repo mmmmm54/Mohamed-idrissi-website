@@ -1,0 +1,39 @@
+{
+ "counts": {
+  "TYPE_DUPLEX_PAIR": {
+   "model": 17,
+   "permit": 17,
+   "ok": true
+  },
+  "TYPE_VILLA_B": {
+   "model": 33,
+   "permit": 33,
+   "ok": true
+  },
+  "TYPE_VILLA_C": {
+   "model": 13,
+   "permit": 13,
+   "ok": true
+  },
+  "TYPE_VILLA_A": {
+   "model": 4,
+   "permit": 4,
+   "ok": true
+  }
+ },
+ "issues": [],
+ "site_area_m2": 82350,
+ "site_area_title_m2": 82070,
+ "units": {
+  "duplex_unit_ground_m2": 80.1,
+  "duplex_unit_upper_m2": 52.4,
+  "duplex_unit_total_m2": 132.4,
+  "duplex_permit_m2": 124,
+  "villa_B_total_m2": 151.8,
+  "villa_B_permit_m2": 164,
+  "villa_C_total_m2": 143.8,
+  "villa_C_permit_m2": 145,
+  "villa_A_total_m2": 219.8,
+  "villa_A_permit_m2": 220
+ }
+}

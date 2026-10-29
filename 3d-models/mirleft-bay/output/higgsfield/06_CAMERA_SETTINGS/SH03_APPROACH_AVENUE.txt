@@ -1,0 +1,7 @@
+Shot: SH03_APPROACH_AVENUE
+Blender camera: SH03_APPROACH_AVENUE (blender/15_build_cameras.py)
+Lens: 35 mm, sensor 36 mm vertical fit, 9:16 1080x1920
+Aperture: f/8 equivalent (no DOF)
+Move: slow dolly forward along the avenue centre line at walking speed
+Duration: 6 s
+Time of day: golden hour, sun az 257 deg / el 10 deg (LIGHTING_03_GOLDEN_HOUR)

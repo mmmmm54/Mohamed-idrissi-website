@@ -1,0 +1,16 @@
+import { Dwg_File_Type, LibreDwg } from '@mlightcad/libredwg-web';
+import fs from 'fs';
+const lib = await LibreDwg.create('./node_modules/@mlightcad/libredwg-web/wasm/');
+const [inp, out] = process.argv.slice(2);
+const dwg = lib.dwg_read_data(fs.readFileSync(inp), Dwg_File_Type.DWG);
+const db = lib.convert(dwg);
+const ents = db.entities || [];
+const count = {};
+for (const e of ents) count[e.type] = (count[e.type] || 0) + 1;
+const blocks = (db.tables?.BLOCK_RECORD?.entries || []).length;
+const layers = (db.tables?.LAYER?.entries || []).map(l => l.name);
+const texts = ents.filter(e => e.type === 'TEXT' || e.type === 'MTEXT').map(e => (e.text || '').replace(/\\[A-Za-z][^;]*;|[{}]/g, '').replace(/\s+/g, ' ').trim()).filter(t => /[A-Za-z]{3,}/.test(t));
+console.log('entities', ents.length, JSON.stringify(count));
+console.log('blocks', blocks, 'layers', layers.length, layers.slice(0, 60).join(' | '));
+console.log('texts', [...new Set(texts)].slice(0, 80).join(' || '));
+fs.writeFileSync(out, JSON.stringify(db, (k, v) => typeof v === 'bigint' ? Number(v) : v));
