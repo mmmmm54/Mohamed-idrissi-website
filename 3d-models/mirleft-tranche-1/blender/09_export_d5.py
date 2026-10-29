@@ -274,9 +274,9 @@ Every door and the duplexes' garden gates in walnut wood (`D02_Door_Wood_Noyer`,
 `TEX_WOOD_NOYER.jpg`; it was the dark `D02_Door_Wood_Dark`): the entrance doors, the gates and the roof doors on the
 stair cages. The duplexes' rear pergola stands on the balcony: three posts on its piers (the two ends and the middle
 one between the two railings), none on the terrace floor. The villas' gardens are planted as the client's D5
-duplex: lawn without gravel beds, a date palm in two corners, olive trees, an orange tree (`CITRUS_V2`), tufts of
+duplex: lawn without gravel beds, one small date palm, small olive trees, an orange tree (`CITRUS_V2`), tufts of
 orange, white and purple flowers (`FLOWERS_*_V2`, lavender) along the edges; in the NO_PALMS_TREES file only the
-flowers and shrubs stay. **Delete the old model in D5 completely before importing.**
+flowers and shrubs stay. 29-10: fewer palms in the streets and none against a façade (small olive trees instead). **Delete the old model in D5 completely before importing.**
 """
 
 

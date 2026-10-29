@@ -550,6 +550,11 @@ planting along the walls as the pool reference, and in the big stairs going down
   its fruit (`citrus`, two variants) along the side, smaller olive trees spaced out, low shrubs at the palms' feet,
   tufts of orange, white and purple flowers (`flowers`, lavender) along the lawn's edges; the duplexes' strip
   behind the stone front wall in flower. The plan's trees that stood in those gardens give way to it.
+- **Fewer palms, the buildings in sight (29-10, "dertih bzzaf palms, li f dyor ghsum ykunu sghar w 9ssar ... ay
+  binaya ghsum ybano")**: a garden has one palm now, small and short, and its trees are small and 2.5 m off the
+  house; outside the gardens (`21_plants.declutter`) a palm within 3 m of a façade gives way to a small olive tree
+  (or to nothing against the wall), down the rows a palm closer than 8 m to the one kept gives way to a small olive
+  tree, and the palms kept are a fifth shorter (104 kept, 130 small trees, 26 removed).
 
 ## Doors and the duplexes' rear pergola (client 28-10)
 - Every door and the duplexes' garden gates in walnut wood, "couleur noyer" (`D02_Door_Wood_Noyer`, texture

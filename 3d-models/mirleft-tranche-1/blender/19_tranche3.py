@@ -78,6 +78,7 @@ def build(M, B, srcv, H):
         ob.scale = (s, s, s)
         (cols["T3_03_LANDSCAPE"] if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora", "flower")) else cols["T3_04_TREES_PALMS"]).objects.link(ob)
         nveg[0] += 1
+        return ob
 
     # ---- the villas type A on their lots ------------------------------------------------------------------
     vs = []

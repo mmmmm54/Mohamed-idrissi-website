@@ -1394,10 +1394,13 @@ def garden_trees(mb, region, beds, foot, z, put, rng, taken, olive=True):
 
 def garden_photo(region, foot, z, put, rng, taken=None):
     """client 28-10 (the D5 duplex he sent: "dir chjar w rbi3 like li f tswira ... f duplex kamlin villas, ykunu nitum"):
-    a garden planted as that picture, and neat: a date palm in each of its two far corners, one big olive tree in the
-    open lawn, an orange tree along the side, smaller olive trees spaced out, low shrubs at the palms' feet, tufts of
-    orange, white and purple flowers dotted on the lawn along its edges. No gravel beds. region: the lawn clear of the
-    house, terraces, paths and walls; foot: the house(s); z: the lawn's level. Returns the number of plants."""
+    a garden planted as that picture, and neat: a date palm in its far corner, one olive tree in the open lawn, an
+    orange tree along the side, small olive trees spaced out, low shrubs at the palm's feet, tufts of orange, white
+    and purple flowers dotted on the lawn along its edges. No gravel beds. Client 29-10 ("palms li f dyor ghsum ykunu
+    sghar w 9ssar ... chjirat ... ay binaya ghsum ybano"): one palm, small and short, the trees small and 2.5 m off
+    the house so its façades show. region: the lawn clear of the house, terraces, paths and walls; foot: the
+    house(s); z: the lawn's level. The palm planted is marked 'garden' (declutter leaves it). Returns the number of
+    plants."""
     from shapely.geometry import Point
     from shapely.prepared import prep
     placed = [] if taken is None else taken
@@ -1412,7 +1415,7 @@ def garden_photo(region, foot, z, put, rng, taken=None):
     pin = prep(inner)
     x0, y0, x1, y1 = inner.bounds
     cand = [Point(x, y) for x in np.arange(x0, x1 + 0.01, 0.5) for y in np.arange(y0, y1 + 0.01, 0.5)]
-    cand = [p for p in cand if pin.contains(p)]
+    cand = [p for p in cand if pin.contains(p) and house.distance(p) > 2.5]     # trees off the façades
     if not cand:
         return 0
     edge = {id(p): bnd.distance(p) for p in cand}
@@ -1424,24 +1427,22 @@ def garden_photo(region, foot, z, put, rng, taken=None):
         return v / (np.linalg.norm(v) + 1e-9)
     # a date palm in the far corner, a second one in another corner
     corner = [p for p in cand if edge[id(p)] < 1.7] or cand
-    p1 = max(corner, key=lambda p: house.distance(p))
-    palms = [p1]
-    c2 = [p for p in corner if p.distance(p1) > 6.0 and float(np.dot(unit(p), unit(p1))) < 0.3]
-    if c2:
-        palms.append(max(c2, key=lambda p: house.distance(p) + 0.5 * min(p.distance(p1), 12.0)))
+    palms = [max(corner, key=lambda p: house.distance(p))]          # one palm, small and short (29-10)
     for p in palms:
-        put("date", (p.x, p.y), z + 0.03, rng.uniform(0.72, 0.86))
+        ob = put("date", (p.x, p.y), z + 0.03, rng.uniform(0.46, 0.54))
+        if ob is not None:
+            ob["garden"] = 1
         placed.append(p)
         n += 1
-    # one big olive tree in the most open spot of the lawn
+    # one olive tree in the most open spot of the lawn
     open_ = [p for p in cand if dist(p) > 3.5 and edge[id(p)] > 1.6]
     if open_:
         p = max(open_, key=lambda p: min(edge[id(p)], house.distance(p)) + 0.15 * min(dist(p), 8.0))
-        put("olive", (p.x, p.y), z, rng.uniform(0.72, 0.8))
+        put("olive", (p.x, p.y), z, rng.uniform(0.56, 0.62))
         placed.append(p)
         n += 1
-    # orange trees, then smaller olive trees, each as far as it can be from what is planted
-    plan = ["citrus"] * (1 if region.area < 130 else 2) + ["olive"] * int(np.clip(region.area / 55.0, 1, 3))
+    # orange trees, then small olive trees ("chjirat"), each as far as it can be from what is planted
+    plan = ["citrus"] * (1 if region.area < 130 else 2) + ["olive"] * int(np.clip(region.area / 40.0, 2, 4))
     for key in plan:
         free = [p for p in cand if edge[id(p)] > 1.2]
         if not free:
@@ -1449,7 +1450,7 @@ def garden_photo(region, foot, z, put, rng, taken=None):
         p = max(free, key=dist)
         if dist(p) < 2.8:
             break
-        put(key, (p.x, p.y), z, rng.uniform(0.95, 1.1) if key == "citrus" else rng.uniform(0.48, 0.58))
+        put(key, (p.x, p.y), z, rng.uniform(0.82, 0.92) if key == "citrus" else rng.uniform(0.40, 0.48))
         placed.append(p)
         n += 1
     # low shrubs at the palms' feet
@@ -1474,6 +1475,55 @@ def garden_photo(region, foot, z, put, rng, taken=None):
             j += 1
             n += 1
     return n
+
+
+BUILT = ("SRC_DUPLEX", "SRC_T2_VILLA", "SRC_T3_VILLA", "SRC_RESTAURANT", "SRC_COMMERCES")
+
+
+def declutter(S, min_d=8.0, clear=3.0, seed=29):
+    """client 29-10 ("fix had nkhal, dertih bzzaf palms ... ay binaya ghsum ybano, machi mayb9awch baynin"): fewer
+    palms and none hiding a building. A palm within `clear` m of a façade (the walls of the villas, the restaurant,
+    the commerces, the SPA, the hotel) gives way to a small olive tree, or to nothing against the wall; down the
+    rows, a palm closer than min_d m to the one kept before it gives way to a small olive tree; the palms kept are a
+    fifth shorter. The gardens' own palm (marked 'garden') stays as garden_photo planted it. S: the library's
+    sources. Returns (kept, small trees, removed)."""
+    from mathutils import Vector
+    from mathutils.kdtree import KDTree
+    pts = []
+    for ob in bpy.data.objects:
+        if ob.type != "MESH" or ob.hide_render or not (ob.data.name.startswith(BUILT) or ob.name.endswith("_villa")):
+            continue
+        mw, me = ob.matrix_world, ob.data
+        for p in me.polygons:
+            if abs(p.normal.z) < 0.3 and p.area > 0.05:
+                for q in [me.vertices[i].co for i in p.vertices] + [p.center]:
+                    w = mw @ q
+                    pts.append((w.x, w.y, 0.0))
+    kd = KDTree(len(pts))
+    for i, q in enumerate(pts):
+        kd.insert(q, i)
+    kd.balance()
+    olives = [o.data for o in S["olive_v"]]
+    rng = random.Random(seed)
+    palms = [ob for ob in bpy.data.objects if ob.type == "MESH" and not ob.hide_render and not ob.get("garden")
+             and ob.data.name.startswith(("SRC_DATE_PALM_V2", "SRC_WASHINGTONIA_V2"))]
+    palms.sort(key=lambda o: (round(o.location.x, 1), round(o.location.y, 1)))
+    kept, n_small, n_gone = [], 0, 0
+    for ob in palms:
+        p = Vector((ob.location.x, ob.location.y, 0.0))
+        d_wall = kd.find(p)[2] if pts else 99.0
+        if d_wall >= clear and all((p - q).length >= min_d for q in kept):
+            kept.append(p)
+            ob.scale = ob.scale * 0.8
+        elif d_wall >= 1.6:
+            ob.data = olives[rng.randrange(len(olives))]
+            s_ = rng.uniform(0.40, 0.50)
+            ob.scale = (s_, s_, s_)
+            n_small += 1
+        else:
+            bpy.data.objects.remove(ob, do_unlink=True)
+            n_gone += 1
+    return len(kept), n_small, n_gone
 
 
 def build_sources(M, col):

@@ -1104,6 +1104,7 @@ def main():
         ob.scale = (s, s, s if sz is None else sz)
         (veg if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora", "flower")) else cols["06_TREES_PALMS"]).objects.link(ob)
         nveg[0] += 1
+        return ob
 
     court = to_world(POOL.COURT, pc["c"], pc["rot_deg"])
     bld = unary_union([to_world(DPX.FOOT, d["c"], d["rot_deg"]) for d in SITE["duplexes"]])   # villa N°09 + rear terrace
@@ -1255,6 +1256,9 @@ def main():
             ob.data = lav
             n_lav += 1
     print(f"  plant library: {n_var} palms and olive trees on their variants, {n_lav} shrubs as lavender")
+    # client 29-10 ("dertih bzzaf palms ... ay binaya ghsum ybano"): fewer palms, none against a façade (21_plants)
+    n_k, n_s, n_g = PL.declutter(PLS)
+    print(f"  palms: {n_k} kept (a fifth shorter), {n_s} given way to small olive trees, {n_g} removed against the walls")
 
     # ---- light, cameras, render settings --------------------------------------------------------
     lt_ = L.bay("14_build_lighting.py")

@@ -557,6 +557,7 @@ def build(M, B, srcv, H):
         ob.scale = (s, s, s)
         (cols["T2_03_LANDSCAPE"] if key.startswith(("shrub", "agave", "grass", "lavender", "jar", "amphora", "flower")) else cols["T2_04_TREES_PALMS"]).objects.link(ob)
         nveg[0] += 1
+        return ob
 
     path_all = unary_union(paths)
     # client 26-10 (the client's notes on the landscape): the two trees of each garden ("ma jawch zwinin bzaf") give
