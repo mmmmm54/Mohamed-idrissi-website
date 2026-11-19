@@ -16,6 +16,12 @@ const ideas = [
   { word: 'Technology', note: 'The link', icon: 'nodes' },
   { word: 'Programming', note: 'The code', icon: 'code' },
 ];
+const world = [
+  { file: 'social-posts', label: 'Social', alt: 'Two LearnX social posts in deep blue with the logo and short headlines', wide: true },
+  { file: 'business-cards', label: 'Print', alt: 'LearnX business cards: navy pattern on the back, the wordmark on a star on the front', wide: false },
+  { file: 'badge', label: 'Badge', alt: 'LearnX ID badge on a navy lanyard next to a laptop', wide: false },
+  { file: 'app-icon', label: 'App icon', alt: 'The LearnX symbol as an app icon on a phone home screen', wide: true },
+];
 const palette = [
   { name: 'Night navy', hex: '#071952', token: '--learnx-navy', dark: true },
   { name: 'Deep teal', hex: '#088395', token: '--learnx-teal', dark: true },
@@ -63,6 +69,16 @@ const palette = [
     </figure>
   </section>
 
+  <section class="lx-symbol" aria-labelledby="lx-symbol-title">
+    <div class="page-width lx-symbol-copy">
+      <p class="brand-kicker">The symbol</p>
+      <h2 id="lx-symbol-title" class="brand-heading">Small enough<br /><em>to stand alone.</em></h2>
+    </div>
+    <figure class="lx-symbol-figure" data-reveal>
+      <img src="/branding/learnx/symbol.webp" alt="The LearnX symbol in aqua on navy: linked dots and a spark" width="1600" height="900" loading="lazy" decoding="async" />
+    </figure>
+  </section>
+
   <section class="lx-colour" aria-labelledby="lx-colour-title">
     <div class="page-width">
       <p class="brand-kicker">Colour</p>
@@ -99,6 +115,19 @@ const palette = [
     <figure data-reveal>
       <img src="/branding/learnx/logo-versions.webp" alt="LearnX logo in four versions: on mist, on navy, black on white and white on black" width="1600" height="900" loading="lazy" decoding="async" />
     </figure>
+  </section>
+
+  <section class="page-width lx-world" aria-labelledby="lx-world-title">
+    <p class="brand-kicker">Out in the world</p>
+    <h2 id="lx-world-title" class="brand-heading">From the feed<br /><em>to the lanyard.</em></h2>
+    <ul class="lx-bento">
+      {world.map((item, i) => (
+        <li class:list={{ 'is-wide': item.wide }} data-reveal style={`--i: ${i % 2}`}>
+          <img src={`/branding/learnx/${item.file}.webp`} alt={item.alt} width="1600" height="900" loading="lazy" decoding="async" />
+          <span class="lx-bento-label">{item.label}</span>
+        </li>
+      ))}
+    </ul>
     <p class="brand-outlink"><a class="round-link" href="https://www.behance.net/gallery/210021383/LearnX-Brand-Identity" target="_blank" rel="noopener">Full project on Behance ↗</a></p>
   </section>
 

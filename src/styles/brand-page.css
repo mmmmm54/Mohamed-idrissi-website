@@ -88,6 +88,29 @@
 .lx-type-copy p:not(.brand-kicker) { max-width: 30ch; margin: var(--stack-m) 0 0; color: var(--ink-soft); font-size: 1.1rem; line-height: 1.55; }
 .lx-type-figure img { border-radius: var(--bp-radius); border: 1px solid var(--line); }
 
+/* The symbol alone: a full-bleed navy moment, the page text sitting on it. */
+.lx-symbol { margin-top: var(--bp-section); padding-top: var(--bp-section); background: var(--learnx-navy); }
+.lx-symbol .brand-kicker { color: var(--learnx-aqua); }
+.lx-symbol .brand-heading { color: var(--learnx-mist); }
+.lx-symbol .brand-heading em { color: var(--learnx-aqua); }
+.lx-symbol-figure img { width: 100%; height: auto; }
+
+/* Out in the world: a bento of applications, each tagged with what it is. */
+.lx-world { padding-top: var(--bp-section); }
+.lx-bento { display: grid; gap: var(--card-gap); margin: var(--stack-l) 0 0; padding: 0; list-style: none; }
+.lx-bento li { position: relative; overflow: hidden; border-radius: var(--bp-radius); background: var(--learnx-mist); }
+.lx-bento img { width: 100%; height: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.lx-bento-label { position: absolute; left: var(--stack-s); top: var(--stack-s); padding: .35rem .75rem; border-radius: var(--radius-pill); background: var(--learnx-navy); color: var(--learnx-mist); font-family: var(--font-mono); font-size: var(--size-label); letter-spacing: .1em; text-transform: uppercase; }
+@media (min-width: 44rem) {
+  .lx-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lx-bento li.is-wide { grid-column: 1 / -1; }
+  .lx-bento li.is-wide img { aspect-ratio: 16 / 8; }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .lx-bento img { transition: transform var(--motion-slow) var(--motion-ease); }
+  .lx-bento li:hover img { transform: scale(1.03); }
+}
+
 .lx-versions { padding-top: var(--bp-section); }
 .lx-versions figure { margin-top: var(--stack-l) !important; }
 .lx-versions figure img { border-radius: var(--bp-radius); }
