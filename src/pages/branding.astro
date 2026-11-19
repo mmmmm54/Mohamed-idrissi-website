@@ -1,0 +1,218 @@
+---
+/*
+  Branding: the brand identity work in one place, one chapter per brand.
+  Every chapter takes its colours from tokens in global.css (data-brand="<id>").
+
+  DRAFT COPY: the short chapter lines below were written in Mohamed's absence.
+  Facts come only from supplied material: the LearnX slides (colours, logo
+  concept, ERAS type, logo versions), the existing Vanysis and ExploreMorocco
+  case studies, and their supplied logos. Years and scope still need confirming.
+
+  Assets
+    LearnX:          public/branding/learnx/*.webp (originals in assets-source/learnx/)
+    Vanysis:         public/projects/vanysis/selected/web/
+    ExploreMorocco:  public/projects/exploremorocco/selected/web/
+*/
+import SiteNav from '../components/SiteNav.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SketchArrow from '../components/SketchArrow.astro';
+import FooterLinks from '../components/FooterLinks.astro';
+import { person } from '../lib/site';
+import '../styles/editorial.css';
+import '../styles/info.css';
+import '../styles/branding.css';
+
+const web = (slug: string, file: string) =>
+  `/projects/${slug}/selected/web/${encodeURIComponent(file)}.webp`;
+
+const learnxPalette = [
+  { hex: '#071952', token: 'var(--learnx-navy)', light: true },
+  { hex: '#088395', token: 'var(--learnx-teal)', light: true },
+  { hex: '#37b7c3', token: 'var(--learnx-aqua)', light: true },
+  { hex: '#ebf4f6', token: 'var(--learnx-mist)', light: false },
+];
+const learnxIdeas = ['Brilliance', 'Technology', 'Programming'];
+
+const vanysisPortraits = ['27.png', 'T-01.png', 'Frame 125.png', 'T-03.png', 'T-06.png', 'T-08.png'];
+const vanysisWide = 'T-02.png';
+const vanysisWorlds = ['Science', 'Tech', 'Lifestyle'];
+
+const explorePortraits = [
+  { file: 'explore-morocco_01 1.png', alt: 'ExploreMorocco poster: a woman preparing couscous in Tétouan, framed by teal waves' },
+  { file: 'explore-morocco2_02 1.png', alt: 'ExploreMorocco poster: an artisan’s hands tooling leather' },
+  { file: 'explore-morocco3_01 1.png', alt: 'ExploreMorocco poster: walkers on a mountain path above turquoise pools' },
+];
+
+const chapters = [
+  { id: 'learnx', number: '01', name: 'LearnX', line: 'Logo, colour and type' },
+  { id: 'vanysis', number: '02', name: 'Vanysis', line: 'Visual language' },
+  { id: 'exploremorocco', number: '03', name: 'ExploreMorocco', line: 'Art direction' },
+];
+
+const learnxBehance = 'https://www.behance.net/gallery/210021383/LearnX-Brand-Identity';
+const pageUrl = new URL('/branding/', Astro.site).href;
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Branding by Mohamed Idrissi',
+    url: pageUrl,
+    hasPart: chapters.map((c) => ({ '@type': 'CreativeWork', name: c.name, url: `${pageUrl}#${c.id}` })),
+    creator: { '@type': 'Person', name: person.name, url: new URL('/', Astro.site).href },
+  },
+];
+---
+
+<BaseLayout
+  title="Branding | Mohamed Idrissi, Graphic & Motion Designer"
+  description="Brand identity work by Mohamed Idrissi, graphic designer in Tétouan, Morocco: LearnX, Vanysis and ExploreMorocco."
+  image="/branding/learnx/hero.webp"
+  schema={schema}
+>
+  <SiteNav />
+
+  <main>
+    <header class="branding-hero page-width">
+      <p class="info-eyebrow">Branding</p>
+      <h1>Three brands.<br /><span>Three worlds.</span></h1>
+      <p class="branding-intro">A mark, a palette, a voice. Here is how each one was built, and how it lives once it leaves the guidelines.</p>
+      <ol class="branding-index">
+        {chapters.map((c) => (
+          <li><a href={`#${c.id}`} data-brand={c.id}><span>{c.number}</span><strong>{c.name}</strong><em>{c.line}</em></a></li>
+        ))}
+      </ol>
+    </header>
+
+    <!-- 01 LEARNX -->
+    <section id="learnx" class="brand-chapter" data-brand="learnx" aria-labelledby="learnx-title">
+      <div class="brand-band">
+        <div class="page-width brand-band-inner">
+          <p class="brand-number">01 / Brand identity</p>
+          <h2 id="learnx-title">LearnX</h2>
+          <p class="brand-lede">An identity for a learning brand. One mark that holds three ideas.</p>
+          <ul class="brand-tags"><li>Logo</li><li>Colour</li><li>Typography</li><li>Logo versions</li></ul>
+        </div>
+      </div>
+
+      <div class="page-width brand-body">
+        <figure class="brand-figure brand-figure--hero">
+          <img src="/branding/learnx/hero.webp" alt="White LearnX logo on a deep blue wave background" width="1600" height="1216" loading="lazy" decoding="async" />
+        </figure>
+
+        <div class="brand-split">
+          <div class="brand-note">
+            <p class="brand-kicker">The concept</p>
+            <h3>{learnxIdeas.join(' + ')}</h3>
+            <p>The star stands for the spark, the linked dots for technology, and the open bracket shape for code. Together they draw a forward-pointing L.</p>
+            <ol class="brand-equation" aria-label="Logo concept">
+              {learnxIdeas.map((idea, i) => <li><span>{String(i + 1).padStart(2, '0')}</span>{idea}</li>)}
+            </ol>
+          </div>
+          <figure class="brand-figure">
+            <img src="/branding/learnx/logo-concept.webp" alt="LearnX logo concept: brilliance, technology and programming combined into the mark" width="1600" height="901" loading="lazy" decoding="async" />
+          </figure>
+        </div>
+
+        <div class="brand-block">
+          <p class="brand-kicker">Colour</p>
+          <ul class="brand-palette">
+            {learnxPalette.map((swatch) => (
+              <li class:list={{ 'is-light-text': swatch.light }} style={`--swatch: ${swatch.token}`}><span>{swatch.hex}</span></li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="brand-split brand-split--reverse">
+          <div class="brand-note">
+            <p class="brand-kicker">Typography</p>
+            <h3>ERAS</h3>
+            <p>Open, slightly leaning letters that feel friendly and quick. The primary typeface across the wordmark and headlines.</p>
+          </div>
+          <figure class="brand-figure">
+            <img src="/branding/learnx/primary-font.webp" alt="ERAS primary font specimen: alphabet, numbers and punctuation" width="1600" height="901" loading="lazy" decoding="async" />
+          </figure>
+        </div>
+
+        <div class="brand-block">
+          <p class="brand-kicker">Logo versions</p>
+          <figure class="brand-figure">
+            <img src="/branding/learnx/logo-versions.webp" alt="LearnX logo in four versions: on mist, on navy, black on white and white on black" width="1600" height="900" loading="lazy" decoding="async" />
+            <figcaption>Full colour on light and dark, plus one-colour versions for everything else.</figcaption>
+          </figure>
+        </div>
+
+        <p class="brand-links"><a class="round-link" href={learnxBehance} target="_blank" rel="noopener">Full project on Behance ↗</a></p>
+      </div>
+    </section>
+
+    <!-- 02 VANYSIS -->
+    <section id="vanysis" class="brand-chapter" data-brand="vanysis" aria-labelledby="vanysis-title">
+      <div class="brand-band">
+        <div class="page-width brand-band-inner">
+          <p class="brand-number">02 / Visual language</p>
+          <h2 id="vanysis-title" class="brand-logo-title"><img src="/images/clients/vanysis.png" alt="Vanysis" width="179" height="52" /></h2>
+          <p class="brand-lede">A skin performance brand. Glass, light and precision, so the science feels calm instead of cold.</p>
+          <ul class="brand-tags">{vanysisWorlds.map((world) => <li>{world}</li>)}</ul>
+        </div>
+      </div>
+
+      <div class="page-width brand-body">
+        <div class="brand-note brand-note--wide">
+          <p class="brand-kicker">Three worlds, one language</p>
+          <p>Science, Tech and Lifestyle each have their own mood, but share the same pale glass, soft aqua glow and Arabic-first typography. Any post can sit next to any other.</p>
+        </div>
+
+        <ul class="brand-grid brand-grid--three">
+          {vanysisPortraits.map((file) => (
+            <li><img src={web('vanysis', file)} alt="Vanysis artwork in the brand’s glass and aqua visual language" width="861" height="1076" loading="lazy" decoding="async" /></li>
+          ))}
+        </ul>
+        <figure class="brand-figure">
+          <img src={web('vanysis', vanysisWide)} alt="Vanysis carousel board: three connected panels" width="2400" height="751" loading="lazy" decoding="async" />
+        </figure>
+
+        <p class="todo brand-todo">TODO — Brand book and art direction pages (Brand_Book.pdf, Vanysis_Art Direction.pdf): logo, palette and type spreads go here once exported as images.</p>
+
+        <p class="brand-links"><a class="round-link" href="/work/vanysis/">See the Vanysis project <SketchArrow /></a></p>
+      </div>
+    </section>
+
+    <!-- 03 EXPLOREMOROCCO -->
+    <section id="exploremorocco" class="brand-chapter" data-brand="exploremorocco" aria-labelledby="explore-title">
+      <div class="brand-band">
+        <div class="page-width brand-band-inner">
+          <p class="brand-number">03 / Art direction</p>
+          <h2 id="explore-title" class="brand-logo-title"><img src="/images/clients/exploremorocco.png" alt="ExploreMorocco" width="350" height="100" /></h2>
+          <p class="brand-lede">Northern Morocco, made to be explored slowly. Teal and white, arches and waves.</p>
+          <ul class="brand-tags"><li>Editorial art direction</li><li>Social design</li><li>Composition</li></ul>
+        </div>
+      </div>
+
+      <div class="page-width brand-body">
+        <div class="brand-note brand-note--wide">
+          <p class="brand-kicker">A sense of place</p>
+          <p>Teal and white connect the series. Arches, waves and postcard edges give every layout the feeling of a place, from Tétouan’s streets to local craft and the mountains.</p>
+        </div>
+
+        <ul class="brand-grid brand-grid--three">
+          {explorePortraits.map((poster) => (
+            <li><img src={web('exploremorocco', poster.file)} alt={poster.alt} width="1200" height="1500" loading="lazy" decoding="async" /></li>
+          ))}
+        </ul>
+
+        <p class="brand-links"><a class="round-link" href="/work/exploremorocco/">See all nine designs <SketchArrow /></a></p>
+      </div>
+    </section>
+
+    <section class="branding-cta page-width" aria-labelledby="branding-cta-title">
+      <h2 id="branding-cta-title">Need a brand that holds together?</h2>
+      <a class="round-link primary-link" href="/contact/">Let’s talk <SketchArrow /></a>
+    </section>
+  </main>
+
+  <footer class="site-footer page-width">
+    <a class="footer-mark" href="/" aria-label="Back to the homepage"><img src="/images/brand-icon.svg" alt="" /></a>
+    <FooterLinks />
+    <a class="footer-top" href="/#work">See the work <SketchArrow /></a>
+  </footer>
+</BaseLayout>

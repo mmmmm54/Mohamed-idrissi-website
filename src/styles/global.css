@@ -38,6 +38,29 @@
   --vanysis-fg: #131f3d;
   --vanysis-accent: #131f3d;
 
+  /* Branding page: one chapter colour set per brand.
+     LearnX values come straight from Mohamed's LearnX colour slide.
+     Vanysis and ExploreMorocco are sampled from their supplied artwork. */
+  --learnx-navy: #071952;
+  --learnx-teal: #088395;
+  --learnx-aqua: #37b7c3;
+  --learnx-mist: #ebf4f6;
+  --learnx-bg: var(--learnx-mist);
+  --learnx-fg: var(--learnx-navy);
+  --learnx-accent: var(--learnx-teal);
+
+  --vanysis-deep: #021926;
+  --vanysis-sea: #00455c;
+  --vanysis-glow: #91d6d5;
+  --vanysis-chapter-bg: var(--vanysis-deep);
+  --vanysis-chapter-fg: #e5ebf0;
+  --vanysis-chapter-accent: var(--vanysis-glow);
+
+  --explore-teal: #144949;
+  --explore-chapter-bg: var(--explore-teal);
+  --explore-chapter-fg: #f2f5f1;
+  --explore-chapter-accent: #98c3c7;
+
   /* Video: the dark stage behind a playing film, and the frame colour before a poster loads. */
   --video-overlay: rgba(10, 14, 30, 0.94);
   --video-frame: #0f1729;

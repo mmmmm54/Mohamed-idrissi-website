@@ -1,0 +1,128 @@
+/*
+  Branding page. One chapter per brand: a full-bleed colour band with the
+  brand's name or logo, then the work on white. Colours come from the brand
+  tokens in global.css, mapped here through data-brand.
+*/
+:root {
+  --brand-title: clamp(3.2rem, 11vw, 9rem);
+  --brand-logo-height: clamp(2.6rem, 6vw, 4.6rem);
+  --brand-band-space: clamp(3.5rem, 9vw, 7.5rem);
+  --brand-swatch-height: clamp(7rem, 16vw, 13rem);
+  --brand-tilt: -1.5deg;
+  --brand-index-height: 11rem;
+}
+
+[data-brand] {
+  --b-bg: var(--ink);
+  --b-fg: var(--white);
+  --b-accent: var(--blue);
+}
+[data-brand="learnx"] { --b-bg: var(--learnx-bg); --b-fg: var(--learnx-fg); --b-accent: var(--learnx-accent); }
+[data-brand="vanysis"] { --b-bg: var(--vanysis-chapter-bg); --b-fg: var(--vanysis-chapter-fg); --b-accent: var(--vanysis-chapter-accent); }
+[data-brand="exploremorocco"] { --b-bg: var(--explore-chapter-bg); --b-fg: var(--explore-chapter-fg); --b-accent: var(--explore-chapter-accent); }
+
+/* --- Opening ------------------------------------------------- */
+.branding-hero { padding-block: var(--opening-space) var(--section-space); }
+.branding-hero h1 { max-width: 14ch; color: var(--ink); font-size: var(--editorial-title); font-weight: 700; line-height: 1; letter-spacing: -.055em; }
+.branding-hero h1 span { color: var(--blue); }
+.branding-intro { max-width: 36rem; margin: var(--stack-m) 0 0; color: var(--ink-soft); font-size: clamp(1rem, 1.3vw, 1.15rem); line-height: 1.6; }
+
+.branding-index { display: grid; gap: var(--card-gap); margin: var(--stack-l) 0 0; padding: 0; list-style: none; }
+.branding-index a {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--stack-s) var(--stack-m);
+  align-items: baseline;
+  padding: var(--stack-m);
+  border-radius: var(--radius-card);
+  background: var(--b-bg);
+  color: var(--b-fg);
+  text-decoration: none;
+}
+.branding-index span { font-family: var(--font-mono); font-size: var(--size-label); color: var(--b-accent); }
+.branding-index strong { font-size: clamp(1.5rem, 2.6vw, 2.2rem); font-weight: 700; letter-spacing: -.045em; line-height: 1; }
+.branding-index em { grid-column: 2; font-family: var(--font-mono); font-size: var(--size-label); font-style: normal; letter-spacing: .08em; text-transform: uppercase; opacity: .8; }
+
+/* --- Chapter band -------------------------------------------- */
+.brand-chapter { scroll-margin-top: var(--stack-m); }
+.brand-chapter + .brand-chapter { margin-top: var(--section-space); }
+.brand-band { background: var(--b-bg); color: var(--b-fg); }
+.brand-band-inner { padding-block: var(--brand-band-space); }
+.brand-number { margin: 0 0 var(--stack-m); font-family: var(--font-mono); font-size: var(--size-label); letter-spacing: .12em; text-transform: uppercase; color: var(--b-accent); }
+.brand-band h2 { font-size: var(--brand-title); font-weight: 800; letter-spacing: -.065em; line-height: .9; }
+.brand-logo-title img { width: auto; height: var(--brand-logo-height); }
+.brand-lede { max-width: 32rem; margin: var(--stack-m) 0 0; font-size: clamp(1.1rem, 1.7vw, 1.4rem); line-height: 1.45; }
+.brand-tags { display: flex; flex-wrap: wrap; gap: var(--stack-s); margin: var(--stack-m) 0 0; padding: 0; list-style: none; }
+.brand-tags li { padding: .4rem .8rem; border: 1px solid color-mix(in srgb, var(--b-fg) 34%, transparent); border-radius: var(--radius-pill); font-family: var(--font-mono); font-size: var(--size-label); letter-spacing: .06em; text-transform: uppercase; }
+
+/* --- Chapter body -------------------------------------------- */
+.brand-body { display: grid; gap: var(--editorial-gap); padding-top: var(--editorial-gap); }
+.brand-figure { margin: 0; }
+.brand-figure img { width: 100%; height: auto; border-radius: var(--radius-card); background: var(--soft-surface); }
+.brand-figure figcaption { margin-top: var(--stack-s); color: var(--ink-soft); font-size: var(--size-ui); }
+.brand-figure--hero img { aspect-ratio: 16 / 10; object-fit: cover; }
+
+.brand-kicker { margin: 0 0 var(--stack-s); font-family: var(--font-mono); font-size: var(--size-label); letter-spacing: .12em; text-transform: uppercase; color: var(--b-accent); }
+[data-brand="learnx"] .brand-kicker { color: var(--learnx-teal); }
+[data-brand="vanysis"] .brand-kicker { color: var(--vanysis-sea); }
+[data-brand="exploremorocco"] .brand-kicker { color: var(--explore-teal); }
+
+.brand-note h3 { font-size: var(--heading-medium); font-weight: 700; letter-spacing: -.05em; line-height: 1; }
+.brand-note p:not(.brand-kicker) { max-width: 34rem; margin: var(--stack-m) 0 0; color: var(--ink-soft); line-height: 1.6; }
+.brand-note--wide p:not(.brand-kicker) { max-width: 44rem; margin-top: 0; color: var(--ink); font-size: clamp(1.1rem, 1.8vw, 1.5rem); line-height: 1.45; letter-spacing: -.02em; }
+
+.brand-split { display: grid; gap: var(--stack-m); align-items: center; }
+
+.brand-equation { display: flex; flex-wrap: wrap; gap: var(--stack-s); margin: var(--stack-m) 0 0; padding: 0; list-style: none; }
+.brand-equation li { display: inline-flex; gap: .5rem; align-items: baseline; padding: .45rem .85rem; border-radius: var(--radius-pill); background: var(--learnx-mist); color: var(--learnx-navy); font-weight: 600; }
+.brand-equation span { font-family: var(--font-mono); font-size: var(--size-label); color: var(--learnx-teal); }
+
+.brand-palette { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--card-gap); margin: 0; padding: 0; list-style: none; }
+.brand-palette li { display: flex; align-items: flex-end; min-height: var(--brand-swatch-height); padding: var(--stack-m); border-radius: calc(var(--radius-card) * 3); background: var(--swatch); color: var(--learnx-navy); font-family: var(--font-mono); font-size: var(--size-ui); }
+.brand-palette li.is-light-text { color: var(--white); }
+
+.brand-grid { display: grid; gap: var(--card-gap); margin: 0; padding: 0; list-style: none; }
+.brand-grid--three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.brand-grid img { width: 100%; height: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius-card); background: var(--soft-surface); }
+
+.brand-todo {
+  display: block;
+  padding: var(--stack-m);
+  border: 1px dashed var(--blue);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--blue) 7%, transparent);
+  color: var(--blue);
+  font-family: var(--font-mono);
+  font-size: var(--size-metric);
+  line-height: 1.5;
+}
+
+.brand-links { margin: 0; }
+.brand-links .round-link { margin-top: 0; }
+
+/* --- Closing ------------------------------------------------- */
+.branding-cta { display: flex; flex-direction: column; align-items: flex-start; gap: var(--stack-m); margin-top: var(--section-space); padding-block: var(--section-space); border-top: var(--editorial-rule); }
+.branding-cta h2 { max-width: 16ch; font-size: var(--heading-medium); font-weight: 600; line-height: 1.05; }
+.branding-cta .round-link { margin-top: 0; padding-inline: var(--stack-m); border-bottom: 0; }
+
+@media (min-width: 44rem) {
+  .branding-index { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .branding-index a { grid-template-columns: 1fr; min-height: var(--brand-index-height); align-content: space-between; }
+  .branding-index em { grid-column: 1; }
+  .brand-split { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: var(--editorial-gap); }
+  .brand-split--reverse .brand-note { order: 2; }
+  .brand-palette { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .brand-palette li { min-height: calc(var(--brand-swatch-height) * 1.6); }
+  .brand-grid--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .branding-index a { transition: transform var(--motion-hover) var(--motion-ease); }
+  .branding-index a:hover { transform: rotate(var(--brand-tilt)) translateY(-.25rem); }
+  .brand-palette li { transition: transform var(--motion-hover) var(--motion-ease); }
+  .brand-palette li:hover { transform: translateY(-.4rem); }
+  .brand-grid img { transition: transform var(--motion-slow) var(--motion-ease); }
+  .brand-grid li { overflow: hidden; border-radius: var(--radius-card); }
+  .brand-grid li:hover img { transform: scale(1.03); }
+}
+
