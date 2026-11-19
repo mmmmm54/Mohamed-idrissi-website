@@ -56,7 +56,23 @@
   --vanysis-chapter-fg: #e5ebf0;
   --vanysis-chapter-accent: var(--vanysis-glow);
 
+  /* Vanysis primary palette, from its brand book. */
+  --vanysis-aqua: #b2e4e3;
+  --vanysis-ink: #002a36;
+  --vanysis-ocean: #32889f;
+  --vanysis-sage: #54938b;
+  --vanysis-light: rgba(178, 228, 227, 0.35);
+
   --explore-teal: #144949;
+  --explore-sea: #366663;
+  --explore-foam: #98c3c7;
+  --explore-sand: #f3efe6;
+  --explore-paper: #fbf9f4;
+  --explore-shadow: rgba(19, 48, 44, 0.18);
+
+  /* Brand pages: soft card shadow and the sparkle-dot pattern ink. */
+  --brand-shadow: rgba(7, 25, 82, 0.16);
+  --learnx-dot: rgba(55, 183, 195, 0.14);
   --explore-chapter-bg: var(--explore-teal);
   --explore-chapter-fg: #f2f5f1;
   --explore-chapter-accent: #98c3c7;

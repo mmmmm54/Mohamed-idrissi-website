@@ -1,12 +1,13 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { slugOf } from '../lib/projects';
+import { brands } from '../lib/brands';
 
 /* Every public page, rebuilt on each deploy. Submit /sitemap.xml in Google Search Console. */
 export const GET: APIRoute = async ({ site }) => {
   const base = site ?? new URL('https://www.mohamedidrissi.site');
   const projects = await getCollection('projects');
-  const paths = ['/', ...projects.map((project) => `/work/${slugOf(project.id)}/`), '/branding/', '/about/', '/contact/', '/privacy/'];
+  const paths = ['/', ...projects.map((project) => `/work/${slugOf(project.id)}/`), ...brands.map((brand) => `/branding/${brand.slug}/`), '/about/', '/contact/', '/privacy/'];
   const today = new Date().toISOString().slice(0, 10);
   const urls = paths
     .map((path) => `  <url><loc>${new URL(path, base).href}</loc><lastmod>${today}</lastmod><priority>${path === '/' ? '1.0' : '0.8'}</priority></url>`)

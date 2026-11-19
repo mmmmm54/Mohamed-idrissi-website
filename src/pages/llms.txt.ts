@@ -54,7 +54,9 @@ ${films}
 
 ## About this site
 
-- [Branding](${url('/branding/')}): Brand identity work: LearnX, Vanysis and ExploreMorocco
+- [LearnX brand identity](${url('/branding/learnx/')}): Logo concept, colour, ERAS typography and logo versions
+- [Vanysis brand identity](${url('/branding/vanysis/')}): Logo, colour, Latin and Arabic type, imagery, product and packaging
+- [ExploreMorocco art direction](${url('/branding/exploremorocco/')}): Nine travel posters for northern Morocco
 - [About](${url('/about/')}): Who Mohamed is, how he works and the brands he has worked with
 - [Contact](${url('/contact/')}): Email, WhatsApp and what to include in a brief
 - [Privacy](${url('/privacy/')}): What data the site and Mohamed handle

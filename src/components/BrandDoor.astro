@@ -1,0 +1,33 @@
+---
+/*
+  A "door" into one brand: its colour, its mark, its palette as dots, and the
+  cover that rises into view on hover. Used in the homepage Branding tab and
+  as the "next brand" link at the bottom of each brand page.
+*/
+import type { Brand } from '../lib/brands';
+import { brandNumber, brands } from '../lib/brands';
+import SketchArrow from './SketchArrow.astro';
+import '../styles/brand-door.css';
+
+interface Props {
+  brand: Brand;
+  /* Wide layout for the bottom of a brand page. */
+  wide?: boolean;
+  label?: string;
+}
+const { brand, wide = false, label = 'Open the brand' } = Astro.props;
+---
+
+<a class:list={['brand-door', { 'brand-door--wide': wide }]} href={`/branding/${brand.slug}/`} data-brand={brand.slug}>
+  <span class="door-top">
+    <span>{brandNumber(brand.slug)} / {String(brands.length).padStart(2, '0')}</span>
+    <span>{brand.kind}</span>
+  </span>
+  <span class="door-mark"><img src={brand.mark.src} alt={brand.name} width={brand.mark.width} height={brand.mark.height} loading="lazy" decoding="async" /></span>
+  <span class="door-line">{brand.line}</span>
+  <span class="door-cover" aria-hidden="true"><img src={brand.cover.src} alt="" loading="lazy" decoding="async" /></span>
+  <span class="door-foot">
+    <span class="door-palette" aria-hidden="true">{brand.palette.map((token) => <i style={`--dot: var(${token})`}></i>)}</span>
+    <span class="door-cta">{label} <SketchArrow /></span>
+  </span>
+</a>

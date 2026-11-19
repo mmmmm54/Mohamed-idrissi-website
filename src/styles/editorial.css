@@ -323,7 +323,7 @@
 .work-tabs-thumb { position:absolute; top:.35rem; bottom:.35rem; left:.35rem; width:0; border-radius:var(--radius-pill); background:var(--blue); box-shadow:0 6px 18px color-mix(in srgb, var(--blue) 35%, transparent), 0 1px 2px color-mix(in srgb, var(--ink) 20%, transparent); pointer-events:none; }
 .work-tabs.has-thumb .work-tabs-thumb { transition:transform var(--tabs-slide) var(--ease-apple), width var(--tabs-slide) var(--ease-apple); }
 .work-tabs [role="tab"] { position:relative; z-index:1; display:inline-flex; align-items:center; justify-content:center; gap:.55rem; min-height:56px; padding:.6rem 1.75rem; border:0; border-radius:var(--radius-pill); background:transparent; color:var(--ink-soft); font:inherit; font-family:var(--font-ui); font-size:1.05rem; font-weight:600; letter-spacing:-.01em; cursor:pointer; transition:color var(--tabs-slide) var(--ease-apple), transform .2s var(--ease-apple); }
-.work-tabs [role="tab"] span { font-family:var(--font-mono); font-size:var(--size-label); opacity:.65; }
+.work-tabs [role="tab"] .tab-count { font-family:var(--font-mono); font-size:var(--size-label); opacity:.65; }
 .work-tabs [role="tab"][aria-selected="true"] { color:var(--white); }
 .work-tabs [role="tab"]:not([aria-selected="true"]):hover { color:var(--blue); }
 .work-tabs [role="tab"]:active { transform:scale(.96); }
@@ -346,7 +346,17 @@
   .work-heading { margin-bottom:var(--stack-m); }
   .work-tabs { width:100%; }
   .work-tabs [role="tab"] { flex:1; min-height:52px; padding-inline:.5rem; font-size:.95rem; }
+  /* Three tabs on a phone: "Made to" sits small above the word that matters. */
+  .work-tabs [role="tab"] { flex-wrap:wrap; gap:.1rem .35rem; min-height:60px; line-height:1.1; }
+  .work-tabs .tab-label { display:flex; flex-direction:column; align-items:center; }
+  .work-tabs .tab-pre { font-family:var(--font-mono); font-size:var(--size-label); letter-spacing:.06em; text-transform:uppercase; opacity:.7; }
 }
+/* Branding tab: a short intro, then one door per brand. */
+.work-panel--branding { margin-top:var(--section-space); }
+.work.has-tabs .work-panel--branding { margin-top:0; }
+.branding-intro { max-width:38rem; margin:0 auto var(--stack-l); color:var(--ink-soft); font-size:clamp(1rem,1.3vw,1.15rem); line-height:1.6; text-align:center; }
+.branding-doors { display:grid; gap:var(--mosaic-gap); }
+@media(min-width:44rem) { .branding-doors { grid-template-columns:repeat(3, minmax(0, 1fr)); } }
 
 /* ---------------------------------------------------------------
    HERO, centred: the mascot greets, the title leads, the tabs follow.

@@ -1,0 +1,82 @@
+/*
+  Brand doors: one tall card per brand in its own colour. The cover sits low
+  and rises on hover; the palette rides along as dots. Tokens only.
+*/
+:root {
+  --door-radius: 1.4rem;
+  --door-pad: clamp(1.2rem, 2.4vw, 1.8rem);
+  --door-mark-height: clamp(2rem, 3.4vw, 2.8rem);
+  --door-dot: .9rem;
+  --door-rise: 34%;
+}
+
+.brand-door {
+  --door-bg: var(--ink);
+  --door-fg: var(--white);
+  --door-accent: var(--blue);
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: var(--stack-s);
+  min-height: clamp(26rem, 42vw, 34rem);
+  padding: var(--door-pad);
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: var(--door-radius);
+  background: var(--door-bg);
+  color: var(--door-fg);
+  text-decoration: none;
+}
+.brand-door[data-brand="learnx"] { --door-bg: var(--learnx-mist); --door-fg: var(--learnx-navy); --door-accent: var(--learnx-teal); }
+.brand-door[data-brand="vanysis"] { --door-bg: var(--vanysis-ink); --door-fg: var(--vanysis-chapter-fg); --door-accent: var(--vanysis-aqua); }
+.brand-door[data-brand="exploremorocco"] { --door-bg: var(--explore-teal); --door-fg: var(--explore-chapter-fg); --door-accent: var(--explore-foam); }
+
+.door-top { display: flex; justify-content: space-between; gap: var(--stack-s); font-family: var(--font-mono); font-size: var(--size-label); letter-spacing: .1em; text-transform: uppercase; color: var(--door-accent); }
+.door-mark { display: flex; align-items: center; min-height: calc(var(--door-mark-height) * 1.6); margin-top: var(--stack-m); }
+.door-mark img { width: auto; height: var(--door-mark-height); }
+.brand-door[data-brand="learnx"] .door-mark img { height: calc(var(--door-mark-height) * 1.25); }
+.brand-door[data-brand="exploremorocco"] .door-mark img { height: calc(var(--door-mark-height) * 1.3); }
+.door-line { max-width: 24ch; font-size: clamp(1rem, 1.3vw, 1.15rem); line-height: 1.4; opacity: .85; }
+
+.door-cover {
+  position: absolute;
+  z-index: -1;
+  left: var(--door-pad);
+  right: var(--door-pad);
+  bottom: 0;
+  height: 48%;
+  overflow: hidden;
+  border-radius: calc(var(--door-radius) * .7) calc(var(--door-radius) * .7) 0 0;
+  transform: translateY(var(--door-rise));
+  box-shadow: 0 -12px 40px var(--brand-shadow);
+}
+.door-cover img { width: 100%; height: 100%; object-fit: cover; object-position: center 35%; }
+
+.door-foot { position: relative; display: flex; align-items: center; justify-content: space-between; gap: var(--stack-s); align-self: end; padding: .55rem .6rem .55rem .8rem; border-radius: var(--radius-pill); background: var(--door-bg); }
+.door-palette { display: flex; }
+.door-palette i { width: var(--door-dot); height: var(--door-dot); margin-left: calc(var(--door-dot) * -.25); border: 2px solid var(--door-bg); border-radius: 50%; background: var(--dot); }
+.door-palette i:first-child { margin-left: 0; }
+.door-cta { display: inline-flex; align-items: center; gap: .5rem; font-size: var(--size-ui); font-weight: 600; }
+.door-cta .sketch-arrow { width: 1.4rem; height: 1rem; }
+
+/* Wide door at the bottom of a brand page: mark and line left, cover right. */
+.brand-door--wide { min-height: clamp(18rem, 30vw, 22rem); }
+@media (min-width: 44rem) {
+  .brand-door--wide { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto; column-gap: var(--door-pad); }
+  .brand-door--wide > :not(.door-cover) { grid-column: 1; }
+  .brand-door--wide .door-cover { left: 52%; top: var(--door-pad); height: auto; border-radius: calc(var(--door-radius) * .7) 0 0 0; transform: translateX(12%); }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .brand-door { transition: transform var(--motion-hover) var(--motion-ease), box-shadow var(--motion-hover) var(--motion-ease); }
+  .door-cover { transition: transform var(--motion-slow) var(--motion-ease); }
+  .door-cover img { transition: transform var(--motion-slow) var(--motion-ease); }
+  .door-palette i { transition: margin var(--motion-hover) var(--motion-ease); }
+  .brand-door:hover { transform: translateY(-.4rem) rotate(-.6deg); box-shadow: 0 24px 50px var(--brand-shadow); }
+  .brand-door:hover .door-cover { transform: translateY(0); }
+  .brand-door:hover .door-cover img { transform: scale(1.04); }
+  .brand-door:hover .door-palette i { margin-left: .2rem; }
+  .brand-door--wide:hover { transform: translateY(-.3rem); }
+  .brand-door--wide:hover .door-cover { transform: translateX(0); }
+}
+@media (hover: none) { .door-cover { transform: translateY(calc(var(--door-rise) * .5)); } }

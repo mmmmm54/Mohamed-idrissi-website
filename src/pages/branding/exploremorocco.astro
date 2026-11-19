@@ -1,0 +1,91 @@
+---
+/*
+  ExploreMorocco: a travel journal. A wave-edged opening, then a route
+  through three stops, each a little pile of postcards that straighten
+  when you look at them. All nine original posters are used.
+
+  DRAFT COPY: short lines written in Mohamed's absence, based on the
+  existing ExploreMorocco case study. Poster text is original Spanish
+  artwork. Confirm year and scope before launch.
+*/
+import BrandLayout from '../../layouts/BrandLayout.astro';
+
+const poster = (file: string) => `/projects/exploremorocco/selected/web/${encodeURIComponent(`${file} 1.png`)}.webp`;
+const stops = [
+  {
+    id: 'city', number: '01', place: 'Tétouan', title: 'The white city',
+    note: 'Arches, blue doors and a meal at a low table. The trip starts slowly.',
+    cards: [
+      { file: 'explore-morocco_01', alt: 'Poster: “Tetuán te espera”, a woman preparing couscous' },
+      { file: 'explore-morocco_02', alt: 'Poster: “El norte se abre”, a white street through a teal arch' },
+      { file: 'explore-morocco_03', alt: 'Poster: “Cartas desde el norte de Marruecos”, postcards and stamps' },
+      { file: 'explore-morocco3_03', alt: 'Poster: “La ciudad, desde sus murallas”, the city walls' },
+    ],
+  },
+  {
+    id: 'hands', number: '02', place: 'Workshops & tables', title: 'Hands and table',
+    note: 'Leather, clay and tagine. Craft that takes its time.',
+    cards: [
+      { file: 'explore-morocco2_02', alt: 'Poster: “Manos que guardan el oficio”, hands tooling leather' },
+      { file: 'explore-morocco2_03', alt: 'Poster: “Sabores que se comparten”, a tagine on zellige' },
+      { file: 'explore-morocco3_02', alt: 'Poster: “La tierra, con forma”, hands shaping clay' },
+    ],
+  },
+  {
+    id: 'mountains', number: '03', place: 'The Rif', title: 'Up the mountain',
+    note: 'Green slopes and turquoise water. The north is also mountains.',
+    cards: [
+      { file: 'explore-morocco2_01', alt: 'Poster: “El norte también es montaña”, green mountain ridges' },
+      { file: 'explore-morocco3_01', alt: 'Poster: “Camina hasta el agua”, walkers above turquoise pools' },
+    ],
+  },
+];
+const tilts = ['-4deg', '3deg', '-1.5deg', '4.5deg'];
+---
+
+<BrandLayout
+  slug="exploremorocco"
+  title="ExploreMorocco Art Direction | Mohamed Idrissi, Graphic Designer"
+  description="ExploreMorocco art direction by Mohamed Idrissi: nine travel posters for northern Morocco, from Tétouan’s streets to local craft and the Rif mountains."
+  image="/projects/exploremorocco/selected/web/explore-morocco_01%201.png.webp"
+>
+  <header class="em-hero">
+    <div class="page-width em-hero-inner">
+      <p class="brand-eyebrow">03 / Art direction</p>
+      <h1 class="em-title"><img src="/images/clients/exploremorocco.png" alt="ExploreMorocco" width="350" height="100" /></h1>
+      <p class="em-lede">Northern Morocco, made to be explored slowly. A travel journal in nine frames.</p>
+      <ul class="em-legend" aria-label="Design language">
+        <li>Teal & white</li><li>Arches</li><li>Waves</li><li>Postcard edges</li>
+      </ul>
+    </div>
+    <div class="em-stamp" aria-hidden="true"><span>Tétouan</span><strong>N°9</strong><span>Norte de Marruecos</span></div>
+    <svg class="em-wave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40c120-30 240-30 360 0s240 30 360 0 240-30 360 0 240 30 360 0v40H0Z" /></svg>
+  </header>
+
+  <section class="page-width em-route" aria-label="The route">
+    <ol class="em-stops-nav">
+      {stops.map((stop) => <li><a href={`#${stop.id}`}><span>{stop.number}</span>{stop.place}</a></li>)}
+    </ol>
+
+    {stops.map((stop) => (
+      <section id={stop.id} class="em-stop" aria-labelledby={`${stop.id}-title`}>
+        <header class="em-stop-head" data-reveal>
+          <span class="em-pin" aria-hidden="true"><b>{stop.number}</b></span>
+          <p class="brand-kicker">{stop.place}</p>
+          <h2 id={`${stop.id}-title`}>{stop.title}</h2>
+          <p>{stop.note}</p>
+        </header>
+        <ul class:list={['em-cards', `em-cards--${stop.cards.length}`]}>
+          {stop.cards.map((card, i) => (
+            <li style={`--tilt: ${tilts[i % tilts.length]}; --i: ${i}`} data-reveal>
+              <img src={poster(card.file)} alt={card.alt} width="1200" height="1500" loading="lazy" decoding="async" />
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+
+    <p class="em-signoff" data-reveal>Enviado desde Tetuán. <span>Sent from Tétouan.</span></p>
+    <p class="brand-outlink"><a class="round-link" href="/work/exploremorocco/">The full case study ↗</a></p>
+  </section>
+</BrandLayout>
