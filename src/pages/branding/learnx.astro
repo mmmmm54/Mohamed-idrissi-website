@@ -1,0 +1,122 @@
+---
+/*
+  LearnX: the identity told as an equation. Brilliance + technology +
+  programming = the mark, then the colours (tap to copy), the type and
+  the logo in every version.
+
+  DRAFT COPY: short lines written in Mohamed's absence. Facts come only from
+  his LearnX slides (colours, logo concept, ERAS, logo versions). Confirm
+  year and scope before launch.
+  Assets: public/branding/learnx/ (originals in assets-source/learnx/).
+*/
+import BrandLayout from '../../layouts/BrandLayout.astro';
+
+const ideas = [
+  { word: 'Brilliance', note: 'The spark', icon: 'star' },
+  { word: 'Technology', note: 'The link', icon: 'nodes' },
+  { word: 'Programming', note: 'The code', icon: 'code' },
+];
+const palette = [
+  { name: 'Night navy', hex: '#071952', token: '--learnx-navy', dark: true },
+  { name: 'Deep teal', hex: '#088395', token: '--learnx-teal', dark: true },
+  { name: 'Bright aqua', hex: '#37b7c3', token: '--learnx-aqua', dark: true },
+  { name: 'Morning mist', hex: '#ebf4f6', token: '--learnx-mist', dark: false },
+];
+---
+
+<BrandLayout
+  slug="learnx"
+  title="LearnX Brand Identity | Mohamed Idrissi, Graphic Designer"
+  description="LearnX brand identity by Mohamed Idrissi: a mark built from brilliance, technology and programming, with its colour palette, ERAS typography and logo versions."
+  image="/branding/learnx/hero.webp"
+>
+  <header class="lx-hero">
+    <div class="page-width lx-hero-inner">
+      <p class="brand-eyebrow">01 / Brand identity</p>
+      <h1 class="lx-title">Learn<span>X</span></h1>
+      <p class="lx-lede">A learning brand that thinks in code. One mark, three ideas, zero noise.</p>
+    </div>
+    <figure class="page-width lx-hero-figure" data-reveal>
+      <img src="/branding/learnx/hero.webp" alt="White LearnX logo on a deep blue wave background" width="1600" height="1216" fetchpriority="high" />
+    </figure>
+  </header>
+
+  <section class="page-width lx-equation" aria-labelledby="lx-eq-title">
+    <p class="brand-kicker">The idea</p>
+    <h2 id="lx-eq-title" class="brand-heading">Three ideas.<br /><em>One mark.</em></h2>
+    <ol class="lx-eq">
+      {ideas.map((idea, i) => (
+        <li data-reveal style={`--i: ${i}`}>
+          <span class="lx-eq-icon" aria-hidden="true">
+            {idea.icon === 'star' && <svg viewBox="0 0 48 48"><path d="M24 3c1.6 11 5.4 15.2 21 21-15.6 5.8-19.4 10-21 21-1.6-11-5.4-15.2-21-21 15.6-5.8 19.4-10 21-21Z" fill="currentColor" /></svg>}
+            {idea.icon === 'nodes' && <svg viewBox="0 0 48 48"><circle cx="24" cy="10" r="7" fill="currentColor" /><circle cx="24" cy="38" r="7" fill="currentColor" /><rect x="20.5" y="12" width="7" height="24" rx="3.5" fill="currentColor" /></svg>}
+            {idea.icon === 'code' && <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 13 4 24l10 11M34 13l10 11-10 11M27 7l-6 34" /></svg>}
+          </span>
+          <span class="lx-eq-note">{idea.note}</span>
+          <strong>{idea.word}</strong>
+          <span class="lx-eq-op" aria-hidden="true">{i < ideas.length - 1 ? '+' : '='}</span>
+        </li>
+      ))}
+    </ol>
+    <figure class="lx-eq-result" data-reveal>
+      <img src="/branding/learnx/logo-concept.webp" alt="LearnX logo concept: brilliance, technology and programming combined into the mark" width="1600" height="901" loading="lazy" decoding="async" />
+    </figure>
+  </section>
+
+  <section class="lx-colour" aria-labelledby="lx-colour-title">
+    <div class="page-width">
+      <p class="brand-kicker">Colour</p>
+      <h2 id="lx-colour-title" class="brand-heading">From night<br /><em>to morning.</em></h2>
+      <p class="lx-hint">Tap a colour to copy it.</p>
+    </div>
+    <ul class="lx-swatches page-width">
+      {palette.map((swatch) => (
+        <li>
+          <button type="button" class:list={['lx-swatch', { 'is-dark': swatch.dark }]} style={`--swatch: var(${swatch.token})`} data-hex={swatch.hex}>
+            <span class="lx-swatch-name">{swatch.name}</span>
+            <span class="lx-swatch-hex">{swatch.hex}</span>
+            <span class="lx-swatch-copied" aria-live="polite"></span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="page-width lx-type" aria-labelledby="lx-type-title">
+    <div class="lx-type-copy" data-reveal>
+      <p class="brand-kicker">Typography</p>
+      <h2 id="lx-type-title" class="lx-type-name">ERAS</h2>
+      <p>Open letters with a slight lean. Friendly enough for a first lesson, quick enough to keep up.</p>
+    </div>
+    <figure class="lx-type-figure" data-reveal>
+      <img src="/branding/learnx/primary-font.webp" alt="ERAS primary font specimen: alphabet, numbers and punctuation" width="1600" height="901" loading="lazy" decoding="async" />
+    </figure>
+  </section>
+
+  <section class="page-width lx-versions" aria-labelledby="lx-versions-title">
+    <p class="brand-kicker">Logo versions</p>
+    <h2 id="lx-versions-title" class="brand-heading">Light, dark,<br /><em>and everything in between.</em></h2>
+    <figure data-reveal>
+      <img src="/branding/learnx/logo-versions.webp" alt="LearnX logo in four versions: on mist, on navy, black on white and white on black" width="1600" height="900" loading="lazy" decoding="async" />
+    </figure>
+    <p class="brand-outlink"><a class="round-link" href="https://www.behance.net/gallery/210021383/LearnX-Brand-Identity" target="_blank" rel="noopener">Full project on Behance ↗</a></p>
+  </section>
+
+  <script>
+    /* Copy a swatch's hex code, then say so on the swatch for a moment. */
+    document.querySelectorAll<HTMLButtonElement>('.lx-swatch').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const hex = button.dataset.hex || '';
+        const note = button.querySelector('.lx-swatch-copied');
+        try {
+          await navigator.clipboard.writeText(hex);
+          if (note) note.textContent = 'Copied';
+        } catch {
+          if (note) note.textContent = hex;
+        }
+        button.classList.add('is-copied');
+        setTimeout(() => { button.classList.remove('is-copied'); if (note) note.textContent = ''; }, 1400);
+      });
+    });
+  </script>
+</BrandLayout>

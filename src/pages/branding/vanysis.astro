@@ -1,0 +1,128 @@
+---
+/*
+  Vanysis: the identity as a lab report. A glowing opening, then six
+  numbered chapters with a sticky index on wide screens.
+
+  PRIVACY: only visual crops of the brand book are published
+  (public/branding/vanysis/). Pages with the name story, tagline,
+  positioning, contact details, addresses, pricing, people's names,
+  packaging dielines and guideline copy are left out on purpose, and the
+  full pages are never committed.
+
+  DRAFT COPY: short lines written in Mohamed's absence. Confirm year and
+  scope before launch.
+*/
+import BrandLayout from '../../layouts/BrandLayout.astro';
+
+type Shot = { name: string; alt: string; width: number; height: number };
+const bb = (name: string) => `/branding/vanysis/${name}.webp`;
+const shot = (name: string, alt: string, width: number, height: number): Shot => ({ name, alt, width, height });
+
+const chapters = [
+  { id: 'mark', number: '01', title: 'The mark' },
+  { id: 'colour', number: '02', title: 'Colour' },
+  { id: 'type', number: '03', title: 'Type' },
+  { id: 'imagery', number: '04', title: 'Imagery' },
+  { id: 'product', number: '05', title: 'Product' },
+  { id: 'feed', number: '06', title: 'In the feed' },
+];
+
+const strip: Shot[] = [
+  shot('packaging', 'Vanysis packaging: boxes, inserts and the device in its case', 1226, 888),
+  shot('packaging-boxes', 'Stacked Vanysis product boxes in deep teal', 1352, 884),
+  shot('applications-01', 'Vanysis system applied to devices and treatments', 1226, 888),
+  shot('applications-02', 'Vanysis light therapy masks and clinic setting', 1226, 888),
+];
+const posts = ['27.png', 'Frame 125.png', 'T-06.png', 'T-01.png'];
+const post = (file: string) => `/projects/vanysis/selected/web/${encodeURIComponent(file)}.webp`;
+---
+
+<BrandLayout
+  slug="vanysis"
+  title="Vanysis Brand Identity | Mohamed Idrissi, Graphic Designer"
+  description="Vanysis brand identity by Mohamed Idrissi: logo, colour, Latin and Arabic typography, imagery, product and packaging for a skin performance brand."
+  image="/branding/vanysis/logo.webp"
+>
+  <header class="vy-hero">
+    <div class="vy-glow" aria-hidden="true"></div>
+    <div class="page-width vy-hero-inner">
+      <p class="brand-eyebrow">02 / Brand identity</p>
+      <h1 class="vy-title"><img src="/branding/vanysis/wordmark.webp" alt="Vanysis" width="789" height="226" /></h1>
+      <p class="vy-lede">Skin science, made calm. Glass, light and precision instead of noise.</p>
+      <dl class="vy-specs">
+        <div><dt>Field</dt><dd>Skin performance</dd></div>
+        <div><dt>Scripts</dt><dd>Latin + Arabic</dd></div>
+        <div><dt>System</dt><dd>Logo · Colour · Type · Product</dd></div>
+      </dl>
+    </div>
+    <figure class="page-width vy-hero-figure" data-reveal>
+      <img src={bb('product-system')} alt="Vanysis device and serum side by side" width="1504" height="708" fetchpriority="high" />
+    </figure>
+  </header>
+
+  <div class="page-width vy-report">
+    <nav class="vy-index" aria-label="Brand chapters">
+      <ol>{chapters.map((c) => <li><a href={`#${c.id}`}><span>{c.number}</span>{c.title}</a></li>)}</ol>
+    </nav>
+
+    <div class="vy-chapters">
+      <section id="mark" class="vy-chapter" aria-labelledby="mark-title">
+        <header class="vy-chapter-head"><span>01</span><h2 id="mark-title">The mark</h2><p>A serif wordmark with a quiet dot, and a V that works on its own.</p></header>
+        <figure class="vy-card vy-card--dark" data-reveal><img src={bb('logo')} alt="Vanysis wordmark in pale aqua on deep teal" width="1600" height="700" loading="lazy" decoding="async" /></figure>
+        <div class="vy-pair">
+          <figure class="vy-card" data-reveal><img src={bb('logo-anatomy')} alt="Vanysis logo anatomy: the V icon and the wordmark" width="1280" height="500" loading="lazy" decoding="async" /></figure>
+          <figure class="vy-card" data-reveal><img src={bb('icon')} alt="Vanysis V icon as favicon and social avatar" width="820" height="620" loading="lazy" decoding="async" /></figure>
+        </div>
+        <figure class="vy-card vy-card--narrow" data-reveal><img src={bb('logo-colours')} alt="Vanysis logo on dark teal, pale aqua, white and photography" width="950" height="930" loading="lazy" decoding="async" /></figure>
+      </section>
+
+      <section id="colour" class="vy-chapter" aria-labelledby="colour-title">
+        <header class="vy-chapter-head"><span>02</span><h2 id="colour-title">Colour</h2><p>Deep water and clean glass. Four primaries, four to support them.</p></header>
+        <ul class="vy-chips" aria-label="Primary colours">
+          <li style="--chip: var(--vanysis-aqua)"><span>#B2E4E3</span></li>
+          <li style="--chip: var(--vanysis-ink)" class="is-dark"><span>#002A36</span></li>
+          <li style="--chip: var(--vanysis-ocean)" class="is-dark"><span>#32889F</span></li>
+          <li style="--chip: var(--vanysis-sage)" class="is-dark"><span>#54938B</span></li>
+        </ul>
+        <div class="vy-pair">
+          <figure class="vy-card" data-reveal><img src={bb('palette-primary')} alt="Vanysis primary colours" width="1260" height="920" loading="lazy" decoding="async" /></figure>
+          <figure class="vy-card" data-reveal><img src={bb('palette-secondary')} alt="Vanysis secondary colours" width="1260" height="920" loading="lazy" decoding="async" /></figure>
+        </div>
+        <figure class="vy-card vy-card--narrow" data-reveal><img src={bb('type-on-colour')} alt="Type and colour pairings on the Vanysis palette" width="950" height="930" loading="lazy" decoding="async" /></figure>
+      </section>
+
+      <section id="type" class="vy-chapter" aria-labelledby="type-title">
+        <header class="vy-chapter-head"><span>03</span><h2 id="type-title">Type</h2><p>One voice in two scripts. Latin and Arabic built to sit side by side.</p></header>
+        <div class="vy-pair">
+          <figure class="vy-card vy-card--dark" data-reveal><img src={bb('type-latin')} alt="Schibsted Grotesk type specimen" width="1400" height="820" loading="lazy" decoding="async" /></figure>
+          <figure class="vy-card vy-card--dark" data-reveal><img src={bb('type-arabic')} alt="Arabic type specimen for Vanysis" width="1400" height="820" loading="lazy" decoding="async" /></figure>
+        </div>
+        <figure class="vy-card vy-card--narrow" data-reveal><img src={bb('type-arabic-headline')} alt="Arabic headline set in the Vanysis type system" width="1200" height="560" loading="lazy" decoding="async" /></figure>
+      </section>
+
+      <section id="imagery" class="vy-chapter" aria-labelledby="imagery-title">
+        <header class="vy-chapter-head"><span>04</span><h2 id="imagery-title">Imagery</h2><p>Clinical light, real skin, the logo laid over with room to breathe.</p></header>
+        <div class="vy-pair">
+          <figure class="vy-card" data-reveal><img src={bb('photography-logo')} alt="Vanysis logo over clinical and product photography" width="1376" height="894" loading="lazy" decoding="async" /></figure>
+          <figure class="vy-card" data-reveal><img src={bb('photography')} alt="Vanysis photography: device, care sessions and texture" width="1226" height="894" loading="lazy" decoding="async" /></figure>
+        </div>
+      </section>
+
+      <section id="product" class="vy-chapter" aria-labelledby="product-title">
+        <header class="vy-chapter-head"><span>05</span><h2 id="product-title">Product</h2><p>Boxes, devices and treatments in one system. Scroll sideways.</p></header>
+        <ul class="vy-strip" tabindex="0" aria-label="Product and packaging, scroll sideways">
+          {strip.map((s) => <li><img src={bb(s.name)} alt={s.alt} width={s.width} height={s.height} loading="lazy" decoding="async" /></li>)}
+        </ul>
+      </section>
+
+      <section id="feed" class="vy-chapter" aria-labelledby="feed-title">
+        <header class="vy-chapter-head"><span>06</span><h2 id="feed-title">In the feed</h2><p>The same calm, at the size of a phone screen.</p></header>
+        <figure class="vy-card" data-reveal><img src={bb('social-cards')} alt="Vanysis social cards in the brand colours" width="1600" height="557" loading="lazy" decoding="async" /></figure>
+        <ul class="vy-posts">
+          {posts.map((file, i) => <li data-reveal style={`--i: ${i}`}><img src={post(file)} alt="Vanysis social post in glass and aqua" width="861" height="1076" loading="lazy" decoding="async" /></li>)}
+        </ul>
+        <p class="brand-outlink"><a class="round-link" href="/work/vanysis/">All 35 Vanysis artworks ↗</a></p>
+      </section>
+    </div>
+  </div>
+</BrandLayout>

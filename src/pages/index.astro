@@ -9,6 +9,8 @@ import ServiceIcon from '../components/ServiceIcon.astro';
 import SketchArrow from '../components/SketchArrow.astro';
 import FooterLinks from '../components/FooterLinks.astro';
 import ProjectCover from '../components/ProjectCover.astro';
+import BrandDoor from '../components/BrandDoor.astro';
+import { brands } from '../lib/brands';
 import Testimonials from '../components/Testimonials.astro';
 import MotionGrid from '../components/MotionGrid.astro';
 import MotionPlayer from '../components/MotionPlayer.astro';
@@ -55,8 +57,9 @@ const email = 'mohamedidrissi205@gmail.com';
         <!-- Shown by the script below. Without JavaScript both lists simply follow each other. -->
         <div class="work-tabs" role="tablist" aria-label="Type of work" hidden>
           <span class="work-tabs-thumb" aria-hidden="true"></span>
-          <button type="button" role="tab" id="tab-design" aria-controls="design" aria-selected="true">Made to be seen <span>{projects.length}</span></button>
-          <button type="button" role="tab" id="tab-motion" aria-controls="motion" aria-selected="false" tabindex="-1">Made to move <span>{motion.length}</span></button>
+          <button type="button" role="tab" id="tab-design" aria-controls="design" aria-selected="true"><span class="tab-label"><span class="tab-pre">Made to </span>be seen</span> <span class="tab-count">{projects.length}</span></button>
+          <button type="button" role="tab" id="tab-motion" aria-controls="motion" aria-selected="false" tabindex="-1"><span class="tab-label"><span class="tab-pre">Made to </span>move</span> <span class="tab-count">{motion.length}</span></button>
+          <button type="button" role="tab" id="tab-branding" aria-controls="branding" aria-selected="false" tabindex="-1"><span class="tab-label"><span class="tab-pre">Made to </span>stand out</span> <span class="tab-count">{brands.length}</span></button>
         </div>
       </div>
 
@@ -100,6 +103,14 @@ const email = 'mohamedidrissi205@gmail.com';
             </section>
           );
         })}
+      </div>
+
+      <div class="work-panel work-panel--branding" id="branding">
+        <p class="work-panel-label">Made to stand out: brand identities</p>
+        <p class="branding-intro">Whole brands, built from the first sketch: logo, colour, type and the world around them. Each one has its own page.</p>
+        <div class="branding-doors">
+          {brands.map((brand) => <BrandDoor brand={brand} />)}
+        </div>
       </div>
     </section>
 
@@ -205,7 +216,8 @@ const email = 'mohamedidrissi205@gmail.com';
         moveThumb(index);
         if (focus) tabs[index].focus();
       };
-      const fromHash = () => (location.hash === '#motion' ? 1 : 0);
+      const hashes = ['#work', '#motion', '#branding'];
+      const fromHash = () => Math.max(0, hashes.indexOf(location.hash));
       select(fromHash());
       /* First position without animation, then turn the slide on. */
       setTimeout(() => tabList.classList.add('has-thumb'), 60);
@@ -215,7 +227,7 @@ const email = 'mohamedidrissi205@gmail.com';
       tabs.forEach((tab, index) => {
         tab.addEventListener('click', () => {
           select(index);
-          history.replaceState(null, '', index === 1 ? '#motion' : '#work');
+          history.replaceState(null, '', hashes[index]);
         });
         tab.addEventListener('keydown', (event) => {
           const keys: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1 };
@@ -226,11 +238,11 @@ const email = 'mohamedidrissi205@gmail.com';
       });
       /* Links to #motion (nav, hero) switch the tab, then bring the work section into view. */
       window.addEventListener('hashchange', () => {
-        if (location.hash !== '#motion' && location.hash !== '#work') return;
+        if (!hashes.includes(location.hash)) return;
         select(fromHash());
         document.getElementById('work')?.scrollIntoView({ block: 'start' });
       });
-      if (location.hash === '#motion') requestAnimationFrame(() => document.getElementById('work')?.scrollIntoView({ block: 'start' }));
+      if (location.hash === '#motion' || location.hash === '#branding') requestAnimationFrame(() => document.getElementById('work')?.scrollIntoView({ block: 'start' }));
     }
 
     /* Floating WhatsApp: visible between the hero and the contact section. */

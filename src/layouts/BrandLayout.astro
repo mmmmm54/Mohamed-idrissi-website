@@ -1,0 +1,93 @@
+---
+/*
+  Shell for one brand page: site nav, the brand's own story (slot), then a
+  door into the next brand and the shared footer. Each brand page brings its
+  own look through data-brand on <main> and its section in brand-page.css.
+*/
+import SiteNav from '../components/SiteNav.astro';
+import BaseLayout from './BaseLayout.astro';
+import SketchArrow from '../components/SketchArrow.astro';
+import FooterLinks from '../components/FooterLinks.astro';
+import BrandDoor from '../components/BrandDoor.astro';
+import { brands, nextBrand } from '../lib/brands';
+import '../styles/editorial.css';
+import '../styles/info.css';
+import '../styles/brand-page.css';
+
+interface Props {
+  slug: string;
+  title: string;
+  description: string;
+  image: string;
+}
+const { slug, title, description, image } = Astro.props;
+const brand = brands.find((b) => b.slug === slug)!;
+const next = nextBrand(slug);
+const pageUrl = new URL(`/branding/${slug}/`, Astro.site).href;
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', Astro.site).href },
+      { '@type': 'ListItem', position: 2, name: 'Branding', item: new URL('/#branding', Astro.site).href },
+      { '@type': 'ListItem', position: 3, name: brand.name, item: pageUrl },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: `${brand.name} ${brand.kind.toLowerCase()}`,
+    description,
+    url: pageUrl,
+    image: new URL(image, Astro.site).href,
+    creator: { '@type': 'Person', name: 'Mohamed Idrissi', url: new URL('/', Astro.site).href },
+  },
+];
+---
+
+<BaseLayout title={title} description={description} image={image} schema={schema}>
+  <SiteNav />
+  <main class="brand-page" data-brand={slug}>
+    <nav class="brand-crumbs page-width" aria-label="Breadcrumb">
+      <a href="/#branding"><SketchArrow /> All brands</a>
+      <ol>{brands.map((b) => <li><a href={`/branding/${b.slug}/`} aria-current={b.slug === slug ? 'page' : undefined}>{b.name}</a></li>)}</ol>
+    </nav>
+
+    <slot />
+
+    <section class="brand-next page-width" aria-label="Next brand">
+      <p class="brand-next-label">Next brand</p>
+      <BrandDoor brand={next} wide label={`Open ${next.name}`} />
+    </section>
+
+    <section class="brand-talk page-width" aria-labelledby="brand-talk-title">
+      <h2 id="brand-talk-title">Your brand could be next.</h2>
+      <a class="round-link primary-link" href="/contact/">Let’s talk <SketchArrow /></a>
+    </section>
+  </main>
+
+  <footer class="site-footer page-width">
+    <a class="footer-mark" href="/" aria-label="Back to the homepage"><img src="/images/brand-icon.svg" alt="" /></a>
+    <FooterLinks />
+    <a class="footer-top" href="/#work">See the work <SketchArrow /></a>
+  </footer>
+
+  <script>
+    /* Sections rise in once as they reach the screen. Without the script, or
+       with reduced motion, everything is simply visible. */
+    const items = document.querySelectorAll<HTMLElement>('[data-reveal]');
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!calm && 'IntersectionObserver' in window && items.length) {
+      document.documentElement.classList.add('reveal-ready');
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-in');
+          io.unobserve(entry.target);
+        });
+      }, { rootMargin: '0px 0px -8% 0px' });
+      items.forEach((item) => io.observe(item));
+    }
+  </script>
+</BaseLayout>
