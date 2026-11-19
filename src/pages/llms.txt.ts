@@ -54,6 +54,7 @@ ${films}
 
 ## About this site
 
+- [Branding](${url('/branding/')}): Brand identity work: LearnX, Vanysis and ExploreMorocco
 - [About](${url('/about/')}): Who Mohamed is, how he works and the brands he has worked with
 - [Contact](${url('/contact/')}): Email, WhatsApp and what to include in a brief
 - [Privacy](${url('/privacy/')}): What data the site and Mohamed handle

@@ -376,6 +376,14 @@
   .portfolio-nav .nav-side { gap:.7rem; }
   .portfolio-nav .nav-logo img { width:3.2rem; }
 }
+/* Five links don't fit beside the logo on a phone: logo on its own row, links below. */
+@media(max-width:36rem) {
+  .portfolio-nav { grid-template-columns:auto auto; grid-template-areas:"logo logo" "start end"; justify-content:space-between; row-gap:0; }
+  .portfolio-nav .nav-logo { grid-area:logo; justify-self:center; }
+  .portfolio-nav .nav-side--start { grid-area:start; }
+  .portfolio-nav .nav-side--end { grid-area:end; }
+  .portfolio-nav a { white-space:nowrap; }
+}
 
 /* ---------------------------------------------------------------
    BRANDS: title left, note and pause together on the right, aligned to
